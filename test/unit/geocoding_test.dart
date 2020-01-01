@@ -54,6 +54,25 @@ void main() {
       expect(gr.results.first.placeID, equals("arandomplaceid"));
     });
 
+    test("fromJson with empty json", () {
+      GeocodingResponse gr = GeocodingResponse.fromJson({});
+      expect(gr.status, isNull);
+      expect(gr.errorMessage, isNull);
+      expect(gr.results, isNull);
+    });
+
+    test("fromJson with json without fields", () {
+      GeocodingResponse gr = GeocodingResponse.fromJson({
+        "status": "",
+        "error_message": "",
+        "results": [],
+      });
+      expect(gr, isNotNull);
+      expect(gr.results, equals([]));
+      expect(gr.errorMessage, equals(""));
+      expect(gr.status, equals(""));
+    });
+
     test("fromJson without results", () {
       Object json = {
         "status": "NOT_FOUND",
@@ -63,13 +82,6 @@ void main() {
       GeocodingResponse gr = GeocodingResponse.fromJson(json);
       expect(gr.status, equals("NOT_FOUND"));
       expect(gr.errorMessage, equals("we couldn't find the resource"));
-      expect(gr.results, isNull);
-    });
-
-    test("fromJson with empty fields", () {
-      GeocodingResponse gr = GeocodingResponse.fromJson({});
-      expect(gr.status, isNull);
-      expect(gr.errorMessage, isNull);
       expect(gr.results, isNull);
     });
   });

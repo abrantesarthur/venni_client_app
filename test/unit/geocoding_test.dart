@@ -71,4 +71,144 @@ void main() {
       expect(gr.placeID, equals("arandomplaceid"));
     });
   });
+
+  group("AddrComponent", () {
+    test("fromJson with null json", () {
+      AddrComponent gr = AddrComponent.fromJson(null);
+      expect(gr, isNull);
+    });
+
+    test("fromJson with empty json", () {
+      AddrComponent ac = AddrComponent.fromJson({});
+      expect(ac.longName, isNull);
+      expect(ac.shortName, isNull);
+      expect(ac.types, isNull);
+    });
+
+    test("fromJson works correctly", () {
+      Object json = {
+        "types": ["street_number"],
+        "long_name": "168",
+        "short_name": "168",
+      };
+
+      AddrComponent ac = AddrComponent.fromJson(json);
+      expect(ac.longName, equals("168"));
+      expect(ac.shortName, equals("168"));
+      expect(ac.types.length, equals(1));
+      expect(ac.types.first, equals("street_number"));
+    });
+  });
+
+  group("AddressComponents", () {
+    test("buildAddressMainText with all fields", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["route"],
+            "long_name": "Rua Presbiteriana",
+            "short_name": "Presbiteriana",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["street_number"],
+            "long_name": "50",
+            "short_name": "50",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["sublocality_level_1"],
+            "long_name": "Vila Mariana",
+            "short_name": "Vila Mariana",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(),
+          equals("Rua Presbiteriana, 50 - Vila Mariana"));
+    });
+
+    test("buildAddressMainText without street_number", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["route"],
+            "long_name": "Rua Presbiteriana",
+            "short_name": "Presbiteriana",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["sublocality_level_1"],
+            "long_name": "Vila Mariana",
+            "short_name": "Vila Mariana",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(),
+          equals("Rua Presbiteriana - Vila Mariana"));
+    });
+
+    test("buildAddressMainText without without sublocality", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["route"],
+            "long_name": "Rua Presbiteriana",
+            "short_name": "Presbiteriana",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["street_number"],
+            "long_name": "50",
+            "short_name": "50",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(), equals("Rua Presbiteriana, 50"));
+    });
+
+    test("buildAddressMainText with only street_number", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["route"],
+            "long_name": "Rua Presbiteriana",
+            "short_name": "Presbiteriana",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(), equals("Rua Presbiteriana"));
+    });
+
+    test("buildAddressMainText with only sublocality", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["sublocality_level_1"],
+            "long_name": "Vila Mariana",
+            "short_name": "Vila Mariana",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(), equals("Vila Mariana"));
+    });
+  });
 }

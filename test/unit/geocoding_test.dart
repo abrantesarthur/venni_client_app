@@ -132,6 +132,14 @@ void main() {
           equals("Rua Presbiteriana, 50 - Vila Mariana"));
     });
 
+    test("buildAddressMainText with no fields", () {
+      List<AddrComponent> acList = [];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressMainText(), equals(""));
+    });
+
     test("buildAddressMainText without street_number", () {
       List<AddrComponent> acList = [
         AddrComponent.fromJson(
@@ -249,6 +257,14 @@ void main() {
         acs.buildAddressSecondaryText(),
         equals("Paracatu - MG. 38600000, Brasil"),
       );
+    });
+
+    test("buildAddressSecondaryText with no fields", () {
+      List<AddrComponent> acList = [];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(acs.buildAddressSecondaryText(), equals(""));
     });
 
     test("buildAddressSecondaryText without city with country", () {

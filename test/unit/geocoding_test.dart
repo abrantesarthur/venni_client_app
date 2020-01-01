@@ -2,6 +2,78 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
 void main() {
+  group("GeocodingResponse", () {
+    test("fromJson with null json", () {
+      GeocodingResponse gr = GeocodingResponse.fromJson(null);
+
+      expect(gr, isNull);
+    });
+
+    test("fromJson with complete json", () {
+      Object json = {
+        "status": "NOT_FOUND",
+        "error_message": "we couldn't find the resource",
+        "results": [
+          {
+            "address_components": [
+              {
+                "types": ["street_number"],
+                "long_name": "168",
+                "short_name": "168",
+              },
+              {
+                "types": ["route"],
+                "long_name": "Rua Floriano Peixoto",
+                "short_name": "Rua Floriano Peixoto",
+              },
+            ],
+            "formatted_address": "Rua Floriano Peixoto, 151. Paracatu - MG",
+            "geometry": {
+              "location": {
+                "lat": 90.0,
+                "lng": 180.0,
+              }
+            },
+            "place_id": "arandomplaceid"
+          }
+        ]
+      };
+
+      GeocodingResponse gr = GeocodingResponse.fromJson(json);
+      expect(gr.status, equals("NOT_FOUND"));
+      expect(gr.errorMessage, equals("we couldn't find the resource"));
+      expect(gr.results.length, equals(1));
+      expect(
+        gr.results.first.addressComponents.addressComponents.length,
+        equals(2),
+      );
+      expect(
+        gr.results.first.addressComponents.addressComponents[0].longName,
+        equals("168"),
+      );
+      expect(gr.results.first.placeID, equals("arandomplaceid"));
+    });
+
+    test("fromJson without results", () {
+      Object json = {
+        "status": "NOT_FOUND",
+        "error_message": "we couldn't find the resource",
+      };
+
+      GeocodingResponse gr = GeocodingResponse.fromJson(json);
+      expect(gr.status, equals("NOT_FOUND"));
+      expect(gr.errorMessage, equals("we couldn't find the resource"));
+      expect(gr.results, isNull);
+    });
+
+    test("fromJson with empty fields", () {
+      GeocodingResponse gr = GeocodingResponse.fromJson({});
+      expect(gr.status, isNull);
+      expect(gr.errorMessage, isNull);
+      expect(gr.results, isNull);
+    });
+  });
+
   group("GeocodingResult", () {
     test("fromJson with null json", () {
       GeocodingResult gr = GeocodingResult.fromJson(null);
@@ -17,7 +89,7 @@ void main() {
       expect(gr.placeID, isNull);
     });
 
-    test("fromJson works correctly", () {
+    test("fromJson with complete json", () {
       Object json = {
         "address_components": [
           {

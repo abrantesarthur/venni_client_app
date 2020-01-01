@@ -210,5 +210,221 @@ void main() {
 
       expect(acs.buildAddressMainText(), equals("Vila Mariana"));
     });
+
+    test("buildAddressSecondaryText with all fields", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_2"],
+            "long_name": "Paracatu",
+            "short_name": "Paracatu",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_1"],
+            "long_name": "Minas Gerais",
+            "short_name": "MG",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["country"],
+            "long_name": "Brasil",
+            "short_name": "BR",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Paracatu - MG. 38600000, Brasil"),
+      );
+    });
+
+    test("buildAddressSecondaryText without city with country", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_1"],
+            "long_name": "Minas Gerais",
+            "short_name": "MG",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["country"],
+            "long_name": "Brasil",
+            "short_name": "BR",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Minas Gerais, Brasil"),
+      );
+    });
+    test("buildAddressSecondaryText withou city without country", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_1"],
+            "long_name": "Minas Gerais",
+            "short_name": "MG",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Minas Gerais"),
+      );
+    });
+
+    test("buildAddressSecondaryText without city without state", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["country"],
+            "long_name": "Brasil",
+            "short_name": "BR",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Brasil"),
+      );
+    });
+
+    test("buildAddressSecondaryText without state with country", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_2"],
+            "long_name": "Paracatu",
+            "short_name": "Paracatu",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["country"],
+            "long_name": "Brasil",
+            "short_name": "BR",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Paracatu, Brasil"),
+      );
+    });
+
+    test("buildAddressSecondaryText without state without country", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_2"],
+            "long_name": "Paracatu",
+            "short_name": "Paracatu",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Paracatu"),
+      );
+    });
+
+    test("buildAddressSecondaryText default", () {
+      List<AddrComponent> acList = [
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_2"],
+            "long_name": "Paracatu",
+            "short_name": "Paracatu",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["administrative_area_level_1"],
+            "long_name": "Minas Gerais",
+            "short_name": "MG",
+          },
+        ),
+        AddrComponent.fromJson(
+          {
+            "types": ["postal_code"],
+            "long_name": "38600000",
+            "short_name": "38600000",
+          },
+        ),
+      ];
+
+      AddressComponents acs = AddressComponents(acList);
+
+      expect(
+        acs.buildAddressSecondaryText(),
+        equals("Paracatu - MG"),
+      );
+    });
   });
 }

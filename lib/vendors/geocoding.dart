@@ -122,14 +122,14 @@ class AddressComponents {
 
   AddressComponents(this.addressComponents) : assert(addressComponents != null);
 
-  String _search(String type) {
-    return addressComponents
-            .firstWhere(
-              (component) => component.types.contains(type),
-              orElse: () => null,
-            )
-            ?.longName ??
-        "";
+  String _search(String type, {bool pickShortName = false}) {
+    AddrComponent ac = addressComponents.firstWhere(
+      (component) => component.types.contains(type),
+      orElse: () => null,
+    );
+    String field;
+    if (ac != null) field = pickShortName ? ac.shortName : ac.longName;
+    return field ?? "";
   }
 
   String buildAddressMainText() {
@@ -157,12 +157,29 @@ class AddressComponents {
   }
 
   String buildAddressSecondaryText() {
-    return this._search("administrative_area_level_2") +
-        " - " +
-        this._search("administrative_area_level_1") +
-        ", " +
-        this._search("postal_code") +
-        ", " +
-        this._search("country");
+    String city = this._search("administrative_area_level_2");
+    String shortState = this._search(
+      "administrative_area_level_1",
+      pickShortName: true,
+    );
+    String longState = this._search("administrative_area_level_1");
+    String postalCode = this._search("postal_code");
+    String country = this._search("country");
+    // contains all fields
+    if (city != "" && shortState != "" && postalCode != "" && country != "") {
+      return city + " - " + shortState + ". " + postalCode + ", " + country;
+    }
+    // contains no city
+    if (city == "") {
+      return (longState != ""
+          ? (longState + (country != "" ? ", " + country : "")) // with state
+          : country); // without state
+    }
+    // contains no state
+    if (shortState == "") {
+      return city + (country != "" ? ", " + country : "");
+    }
+    // default
+    return city + " - " + shortState;
   }
 }

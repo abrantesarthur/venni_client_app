@@ -115,7 +115,7 @@ class HomeState extends State<Home> {
 
       // add bounds to map view
       await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
-        AppPolylinePoints.calculateBounds(polyline),
+        AppPolylinePoints.calculatePolylineBounds(polyline),
         30,
       ));
 

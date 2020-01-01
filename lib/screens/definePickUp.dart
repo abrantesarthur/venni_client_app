@@ -30,10 +30,14 @@ class DefinePickUp extends StatefulWidget {
   static const String routeName = "DefinePickUp";
   final GeocodingResult userGeocoding;
   final Address chosenPickUpAddress;
+  final Places places;
 
-  DefinePickUp(
-      {@required this.userGeocoding, @required this.chosenPickUpAddress})
-      : assert(userGeocoding != null);
+  DefinePickUp({
+    @required this.userGeocoding,
+    @required this.chosenPickUpAddress,
+    @required this.places,
+  })  : assert(userGeocoding != null),
+        assert(places != null);
 
   @override
   DefinePickUpState createState() => DefinePickUpState();
@@ -75,7 +79,7 @@ class DefinePickUpState extends State<DefinePickUp> {
       });
     } else {
       // get drop off address predictions
-      List<Address> predictions = await Places.findAddressPredictions(
+      List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
         latitude: widget.userGeocoding.latitude,
         longitude: widget.userGeocoding.longitude,

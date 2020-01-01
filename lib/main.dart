@@ -21,6 +21,7 @@ import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
+import 'package:rider_frontend/vendors/places.dart';
 
 /**
  * https://github.com/flutter/flutter/issues/41383#issuecomment-549432413
@@ -224,6 +225,7 @@ class _AppState extends State<App> {
                   return DefineDropOff(
                     chosenDropOffAddress: args.chosenDropOffAddress,
                     userGeocoding: args.userGeocoding,
+                    places: Places(),
                   );
                 });
               }
@@ -233,8 +235,10 @@ class _AppState extends State<App> {
                 final DefinePickUpArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return DefinePickUp(
-                      chosenPickUpAddress: args.chosenPickUpAddress,
-                      userGeocoding: args.userGeocoding);
+                    chosenPickUpAddress: args.chosenPickUpAddress,
+                    userGeocoding: args.userGeocoding,
+                    places: Places(),
+                  );
                 });
               }
 

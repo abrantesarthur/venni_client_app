@@ -14,7 +14,6 @@ import 'package:rider_frontend/widgets/padlessDivider.dart';
 import 'package:uuid/uuid.dart';
 
 // TODO: focus automatically
-// TODO: google maps is enabled if there is initial address
 
 class DefineDropOffArguments {
   final GeocodingResult userGeocoding;
@@ -30,10 +29,14 @@ class DefineDropOff extends StatefulWidget {
   static const String routeName = "DefineDropOff";
   final GeocodingResult userGeocoding;
   final Address chosenDropOffAddress;
+  final Places places;
 
-  DefineDropOff(
-      {@required this.userGeocoding, @required this.chosenDropOffAddress})
-      : assert(userGeocoding != null);
+  DefineDropOff({
+    @required this.userGeocoding,
+    this.chosenDropOffAddress,
+    @required this.places,
+  })  : assert(userGeocoding != null),
+        assert(places != null);
 
   @override
   DefineDropOffState createState() => DefineDropOffState();
@@ -75,7 +78,7 @@ class DefineDropOffState extends State<DefineDropOff> {
       });
     } else {
       // get drop off address predictions
-      List<Address> predictions = await Places.findAddressPredictions(
+      List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
         latitude: widget.userGeocoding.latitude,
         longitude: widget.userGeocoding.longitude,
@@ -201,6 +204,11 @@ Widget _buildAddressPredictionList(
                 itemBuilder: (context, index) {
                   return BorderlessButton(
                     onTapCallback: () {
+                      // TODO: change behavior to
+                      // set googleMapsEnabled to show map
+                      // set widget.dropOffAddress to picked Address so it is displayed
+                      // change PlacePicker to have option of showing  SelectedPlaceWidget by default
+                      // user taps to select and so updateDropOff is called
                       updateDropOffAndPop(context, addressPredictions[index]);
                     },
                     iconLeft: Icons.add_location,

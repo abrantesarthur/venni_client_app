@@ -26,7 +26,7 @@ class AppPolylinePoints {
     );
   }
 
-  static LatLngBounds calculateBounds(Polyline polyline) {
+  static LatLngBounds calculatePolylineBounds(Polyline polyline) {
     double highestLat = -90;
     double highestLng = -180;
     double lowestLat = 90;

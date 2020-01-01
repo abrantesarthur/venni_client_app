@@ -132,10 +132,6 @@ class DefineRouteState extends State<DefineRoute> {
       context,
       listen: false,
     );
-    RouteModel routeModel = Provider.of<RouteModel>(
-      context,
-      listen: false,
-    );
 
     // define variables based on whether we're choosing dropOff or not
     FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
@@ -144,11 +140,11 @@ class DefineRouteState extends State<DefineRoute> {
     dynamic args = isDropOff
         ? DefineDropOffArguments(
             userGeocoding: userPositionModel.geocoding,
-            chosenDropOffAddress: routeModel.dropOffAddress,
+            chosenDropOffAddress: widget.routeModel.dropOffAddress,
           )
         : DefinePickUpArguments(
             userGeocoding: userPositionModel.geocoding,
-            chosenPickUpAddress: routeModel.pickUpAddress,
+            chosenPickUpAddress: widget.routeModel.pickUpAddress,
           );
     String routeName =
         isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;
@@ -165,12 +161,12 @@ class DefineRouteState extends State<DefineRoute> {
 
     // add selected address to text field
     if (isDropOff) {
-      controller.text = routeModel.dropOffAddress.mainText;
+      controller.text = widget.routeModel.dropOffAddress.mainText;
     } else {
       if (widget.routeModel.pickUpAddress.placeID !=
           widget.userGeocoding.placeID) {
         // update pick up only if it's different from current location
-        controller.text = routeModel.pickUpAddress.mainText;
+        controller.text = widget.routeModel.pickUpAddress.mainText;
       } else {
         controller.text = "";
       }
@@ -187,15 +183,11 @@ class DefineRouteState extends State<DefineRoute> {
       );
     });
 
-    RouteModel routeModel = Provider.of<RouteModel>(
-      context,
-      listen: false,
-    );
     // calculate pick up and drop off geocodings
-    GeocodingResponse pickUpGeocoding =
-        await Geocoding().searchByPlaceID(routeModel.pickUpAddress.placeID);
-    GeocodingResponse dropOffGeocoding =
-        await Geocoding().searchByPlaceID(routeModel.dropOffAddress.placeID);
+    GeocodingResponse pickUpGeocoding = await Geocoding()
+        .searchByPlaceID(widget.routeModel.pickUpAddress.placeID);
+    GeocodingResponse dropOffGeocoding = await Geocoding()
+        .searchByPlaceID(widget.routeModel.dropOffAddress.placeID);
 
     // enrich pick up and drop off addresses with coordinates
     Address updatedPickUpAddress = Address.fromGeocodingResult(
@@ -208,8 +200,8 @@ class DefineRouteState extends State<DefineRoute> {
     );
 
     // update routeModel with enriched addresses
-    routeModel.updatePickUpAddres(updatedPickUpAddress);
-    routeModel.updateDropOffAddres(updatedDropOffAddress);
+    widget.routeModel.updatePickUpAddres(updatedPickUpAddress);
+    widget.routeModel.updateDropOffAddres(updatedDropOffAddress);
 
     Navigator.pop(context, true);
   }

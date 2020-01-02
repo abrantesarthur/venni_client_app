@@ -339,5 +339,3 @@ void main() {
     });
   });
 }
-
-// add tests about gogleMapsEnabled dealing with current location

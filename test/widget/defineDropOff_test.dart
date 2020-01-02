@@ -337,14 +337,3 @@ void main() {
     });
   });
 }
-
-/**
- * dropOffTextEditingController
- * addressPredictions
- * sessionToken
- * googleMapsEnabled
- *  update routeModel and go back to previous screen if pick an address from placePicker
- * TODO: find tests about userGeocoding and chosenDropOffAddress
- *  chosenDropOffAddress
- *    when set, camera moves to the address
- */

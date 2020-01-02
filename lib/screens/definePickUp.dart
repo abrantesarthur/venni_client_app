@@ -56,8 +56,8 @@ class DefinePickUpState extends State<DefinePickUp> {
 
     sessionToken = Uuid().v4();
 
-    // google maps is enabled by default
-    googleMapsEnabled = true;
+    // google maps is enabled if a pickUpAddress is already chosen
+    googleMapsEnabled = widget.chosenPickUpAddress != null;
 
     // suggest locations as user searches locations
     pickUpTextEditingController.addListener(() async {

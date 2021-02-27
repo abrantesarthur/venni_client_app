@@ -1,0 +1,5 @@
+version: "Apple Swift version 5.3.2 (swiftlang-1200.0.45 clang-1200.0.32.28)"
+options: "3f2f56a3251eff1c73f3cb6660f91fa7"
+build_time: [1613880233, 169173000]
+inputs:
+  "/Users/arthur.abrantes/Documents/venni/rider_app/ios/Runner/AppDelegate.swift": [1613876638, 769196823]

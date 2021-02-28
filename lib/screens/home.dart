@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/screens/pickRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
@@ -28,7 +29,7 @@ class HomeState extends State<Home> {
 
     // move camera to user position
     await c.animateCamera(CameraUpdate.newLatLngZoom(
-        LatLng(userPos.latitude, userPos.longitude), 18));
+        LatLng(userPos.latitude, userPos.longitude), 17));
 
     _googleMapController = c;
   }
@@ -76,10 +77,11 @@ class HomeState extends State<Home> {
           child: Container(
             alignment: Alignment.bottomCenter,
             child: AppButton(
+              borderRadius: 10.0,
               iconLeft: Icons.near_me,
               textData: "Para onde vamos?",
               onTapCallBack: () {
-                firebaseModel.auth.signOut();
+                Navigator.pushNamed(context, PickRoute.routeName);
               },
             ),
           ),

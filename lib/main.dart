@@ -10,6 +10,7 @@ import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
+import 'package:rider_frontend/screens/pickRoute.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 
@@ -171,6 +172,7 @@ class _AppState extends State<App> {
             routes: {
               Start.routeName: (context) => Start(),
               Home.routeName: (context) => Home(),
+              PickRoute.routeName: (context) => PickRoute(),
             },
           );
         });

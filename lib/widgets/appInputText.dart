@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:rider_frontend/styles.dart';
 
 class AppInputText extends StatelessWidget {
+  final Function onTapCallback;
   final String hintText;
   final IconData iconData;
   final IconData endIcon;
@@ -22,6 +23,7 @@ class AppInputText extends StatelessWidget {
     this.hintText,
     this.iconData,
     this.endIcon,
+    this.onTapCallback,
     this.onSubmittedCallback,
     this.inputFormatters,
     this.controller,
@@ -52,6 +54,7 @@ class AppInputText extends StatelessWidget {
               : Container(),
           Expanded(
             child: TextField(
+              onTap: onTapCallback,
               enabled: enabled,
               autofocus: autoFocus ?? false,
               focusNode: focusNode,
@@ -63,7 +66,12 @@ class AppInputText extends StatelessWidget {
               obscureText: obscureText ?? false,
               decoration: InputDecoration(
                   hintText: this.hintText,
-                  hintStyle: TextStyle(fontSize: 18),
+                  hintStyle: TextStyle(
+                    fontSize: 18,
+                    color: onTapCallback != null
+                        ? AppColor.secondaryPurple
+                        : AppColor.disabled,
+                  ),
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.only(

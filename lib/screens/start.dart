@@ -28,7 +28,7 @@ class Start extends StatelessWidget {
               Spacer(flex: 5),
               AppButton(
                 textData: "Começar",
-                iconData: Icons.arrow_forward,
+                iconRight: Icons.arrow_forward,
                 onTapCallBack: () {
                   Navigator.pushNamed(context, InsertPhone.routeName);
                 },

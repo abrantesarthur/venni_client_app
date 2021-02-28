@@ -147,52 +147,69 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     final firebaseModel = Provider.of<FirebaseModel>(context, listen: false);
 
     return Scaffold(
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () => Navigator.pop(context)),
-                Spacer(),
-              ],
-            ),
-            SizedBox(height: screenHeight / 25),
-            Text(
-              "Insira seu nº de celular",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            SizedBox(height: screenHeight / 40),
-            InputPhone(
-              enabled: enabled,
-              controller: phoneTextEditingController,
-            ),
-            SizedBox(height: screenHeight / 40),
-            _warningMessage == null
-                ? Spacer(flex: 18)
-                : Expanded(flex: 18, child: _warningMessage),
-            Row(
-              children: [
-                Spacer(),
-                CircularButton(
-                  buttonColor: _circularButtonColor,
-                  child: Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                  onPressedCallback: circularButtonCallback == null
-                      ? () {}
-                      : () => circularButtonCallback(
-                            context,
-                            firebaseModel.auth,
-                            firebaseModel.database,
+      body: LayoutBuilder(
+        builder: (
+          BuildContext context,
+          BoxConstraints viewportConstraints,
+        ) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: OverallPadding(
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          ArrowBackButton(
+                              onTapCallback: () => Navigator.pop(context)),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: screenHeight / 25),
+                      Text(
+                        "Insira seu nº de celular",
+                        style: TextStyle(color: Colors.black, fontSize: 18),
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      InputPhone(
+                        enabled: enabled,
+                        controller: phoneTextEditingController,
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      _warningMessage == null
+                          ? Spacer(flex: 18)
+                          : Expanded(flex: 18, child: _warningMessage),
+                      Row(
+                        children: [
+                          Spacer(),
+                          CircularButton(
+                            buttonColor: _circularButtonColor,
+                            child: Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                              size: 36,
+                            ),
+                            onPressedCallback: circularButtonCallback == null
+                                ? () {}
+                                : () => circularButtonCallback(
+                                      context,
+                                      firebaseModel.auth,
+                                      firebaseModel.database,
+                                    ),
                           ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

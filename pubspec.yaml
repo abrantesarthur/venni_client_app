@@ -1,7 +1,7 @@
 name: rider_frontend
 description: A new Flutter project.
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 1.0.0+1
 
@@ -16,8 +16,9 @@ dependencies:
   firebase_core: ^0.7.0
   firebase_auth: ^0.20.0+1
   firebase_database: ^6.0.0
-  provider: ^4.3.3  
+  provider: ^4.3.3
   google_maps_flutter: ^1.2.0
+  geolocator: ^6.2.1
 
 dev_dependencies:
   flutter_test:

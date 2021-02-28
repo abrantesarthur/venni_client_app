@@ -31,7 +31,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
         body: AppButton(
-            textData: "T", iconData: Icons.arrow_forward, onTapCallBack: null),
+            textData: "T", iconRight: Icons.arrow_forward, onTapCallBack: null),
       ),
     ));
 

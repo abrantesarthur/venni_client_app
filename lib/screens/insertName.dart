@@ -101,66 +101,82 @@ class InsertNameState extends State<InsertName> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () => Navigator.pop(context)),
-                Spacer(),
-              ],
+      body: LayoutBuilder(builder: (
+        BuildContext context,
+        BoxConstraints viewportConstraints,
+      ) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: viewportConstraints.maxHeight,
             ),
-            SizedBox(height: screenHeight / 25),
-            Text(
-              "Insira o seu nome e sobrenome",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            SizedBox(height: screenHeight / 40),
-            Warning(
-              color: AppColor.disabled,
-              message:
-                  "Usaremos seu nome para conseguir te identificar durante corridas e comunicações.",
-            ),
-            SizedBox(height: screenHeight / 40),
-            AppInputText(
-              autoFocus: true,
-              focusNode: nameFocusNode,
-              onSubmittedCallback: (String name) {
-                nameFocusNode.unfocus();
-                FocusScope.of(context).requestFocus(surnameFocusNode);
-              },
-              hintText: "nome",
-              controller: nameTextEditingController,
-              inputFormatters: [LengthLimitingTextInputFormatter(32)],
-            ),
-            SizedBox(height: screenHeight / 40),
-            AppInputText(
-              focusNode: surnameFocusNode,
-              hintText: "sobrenome",
-              controller: surnameTextEditingController,
-              inputFormatters: [LengthLimitingTextInputFormatter(32)],
-            ),
-            Spacer(),
-            Row(
-              children: [
-                Spacer(),
-                CircularButton(
-                  buttonColor: circularButtonColor,
-                  child: Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                  onPressedCallback: circularButtonCallback == null
-                      ? () {}
-                      : () => buttonCallback(context),
+            child: OverallPadding(
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        ArrowBackButton(
+                            onTapCallback: () => Navigator.pop(context)),
+                        Spacer(),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight / 25),
+                    Text(
+                      "Insira o seu nome e sobrenome",
+                      style: TextStyle(color: Colors.black, fontSize: 18),
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    Warning(
+                      color: AppColor.disabled,
+                      message:
+                          "Usaremos seu nome para conseguir te identificar durante corridas e comunicações.",
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    AppInputText(
+                      autoFocus: true,
+                      focusNode: nameFocusNode,
+                      onSubmittedCallback: (String name) {
+                        nameFocusNode.unfocus();
+                        FocusScope.of(context).requestFocus(surnameFocusNode);
+                      },
+                      hintText: "nome",
+                      controller: nameTextEditingController,
+                      inputFormatters: [LengthLimitingTextInputFormatter(32)],
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    AppInputText(
+                      focusNode: surnameFocusNode,
+                      hintText: "sobrenome",
+                      controller: surnameTextEditingController,
+                      inputFormatters: [LengthLimitingTextInputFormatter(32)],
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    Spacer(),
+                    Row(
+                      children: [
+                        Spacer(),
+                        CircularButton(
+                          buttonColor: circularButtonColor,
+                          child: Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                          onPressedCallback: circularButtonCallback == null
+                              ? () {}
+                              : () => buttonCallback(context),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 }

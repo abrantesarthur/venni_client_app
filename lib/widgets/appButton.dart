@@ -3,12 +3,14 @@ import 'package:rider_frontend/styles.dart';
 
 class AppButton extends StatelessWidget {
   final String textData;
-  final IconData iconData;
+  final IconData iconRight;
+  final IconData iconLeft;
   final VoidCallback onTapCallBack;
 
   AppButton({
     @required this.textData,
-    this.iconData,
+    this.iconRight,
+    this.iconLeft,
     @required this.onTapCallBack,
   });
 
@@ -24,6 +26,13 @@ class AppButton extends StatelessWidget {
         height: 80,
         child: Stack(
           children: [
+            this.iconLeft != null
+                ? Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                        padding: EdgeInsets.only(left: 30),
+                        child: Icon(iconLeft, color: Colors.white, size: 24)))
+                : Container(),
             Center(
               child: Text(
                 textData,
@@ -33,12 +42,12 @@ class AppButton extends StatelessWidget {
                     color: Colors.white),
               ),
             ),
-            this.iconData != null
+            this.iconRight != null
                 ? Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
                         padding: EdgeInsets.only(right: 30),
-                        child: Icon(Icons.arrow_forward, color: Colors.white)))
+                        child: Icon(iconRight, color: Colors.white, size: 24)))
                 : Container()
           ],
         ),

@@ -65,6 +65,7 @@ class _AppState extends State<App> {
   // TODO: change navigation transitions
   // TODO: do integration testing
   // TODO: review entire user registration flow
+  // TODO: overflow happens if a "O email já está sendo usado." warning happens
 
   @override
   Widget build(BuildContext context) {

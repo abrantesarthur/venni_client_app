@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/screens/start.dart';
+import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
@@ -18,12 +20,24 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
+  GoogleMapController _googleMapController;
 
-  Completer<GoogleMapController> _googleMapController = Completer();
+  void onMapCreatedCallback(BuildContext context, GoogleMapController c) async {
+    // get user coordinates
+    Position userPos = await determineUserPosition(context);
+
+    // move camera to user position
+    await c.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(userPos.latitude, userPos.longitude), 18));
+
+    _googleMapController = c;
+  }
+
+  @override
+  void dispose() {
+    _googleMapController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,18 +61,24 @@ class HomeState extends State<Home> {
           rotateGesturesEnabled: false,
           zoomControlsEnabled: false,
           mapType: MapType.normal,
-          initialCameraPosition: _kGooglePlex,
+          initialCameraPosition: CameraPosition(
+            target: LatLng(-17.22, -46.87),
+            zoom: 14.4746,
+          ),
           padding: EdgeInsets.only(top: 70.0, bottom: 70.0),
-          onMapCreated: (GoogleMapController controller) {
-            _googleMapController.complete(controller);
+          onMapCreated: (GoogleMapController c) {
+            onMapCreatedCallback(context, c);
           },
         ),
         OverallPadding(
           child: Container(
             alignment: Alignment.bottomCenter,
             child: AppButton(
+              iconLeft: Icons.near_me,
               textData: "Para onde vamos?",
-              onTapCallBack: () {},
+              onTapCallBack: () {
+                firebaseModel.auth.signOut();
+              },
             ),
           ),
         ),

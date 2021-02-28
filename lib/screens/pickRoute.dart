@@ -12,11 +12,30 @@ class PickRoute extends StatefulWidget {
 }
 
 class PickRouteState extends State<PickRoute> {
+  TextEditingController dropOffTextEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // suggest drop off locations as user types text
+    dropOffTextEditingController.addListener(() {
+      String dropOff = dropOffTextEditingController.text ?? "";
+    });
+  }
+
+  @override
+  void dispose() {
+    dropOffTextEditingController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
+      // TODO: decide between single child scroll view and fixed
       body: OverallPadding(
         child: Column(
           children: [

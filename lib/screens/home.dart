@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,9 @@ class HomeState extends State<Home> {
 
     // move camera to user position
     await c.animateCamera(CameraUpdate.newLatLngZoom(
-        LatLng(userPos.latitude, userPos.longitude), 17));
+        LatLng(userPos.latitude, userPos.longitude), 16));
+
+    c.setMapStyle(mapStyle)
 
     _googleMapController = c;
   }
@@ -45,6 +48,7 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final firebaseModel = Provider.of<FirebaseModel>(context);
+    final screenHeight = MediaQuery.of(context).size.height;
 
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen
@@ -61,6 +65,7 @@ class HomeState extends State<Home> {
         GoogleMap(
           myLocationButtonEnabled: true,
           myLocationEnabled: true,
+          trafficEnabled: false,
           rotateGesturesEnabled: false,
           zoomControlsEnabled: false,
           mapType: MapType.normal,
@@ -68,7 +73,8 @@ class HomeState extends State<Home> {
             target: LatLng(-17.22, -46.87),
             zoom: 14.4746,
           ),
-          padding: EdgeInsets.only(top: 70.0, bottom: 70.0),
+          padding:
+              EdgeInsets.only(top: screenHeight / 6, bottom: screenHeight / 6),
           onMapCreated: (GoogleMapController c) {
             onMapCreatedCallback(context, c);
           },

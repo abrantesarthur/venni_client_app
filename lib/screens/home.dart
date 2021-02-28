@@ -35,7 +35,9 @@ class HomeState extends State<Home> {
 
   @override
   void dispose() {
-    _googleMapController.dispose();
+    if (_googleMapController != null) {
+      _googleMapController.dispose();
+    }
     super.dispose();
   }
 

@@ -4,15 +4,17 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
-import 'package:rider_frontend/screens/pickRoute.dart';
+import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
+import 'package:rider_frontend/screens/pickMapLocation.dart';
 
 /**
  * https://github.com/flutter/flutter/issues/41383#issuecomment-549432413
@@ -33,6 +35,7 @@ class _AppState extends State<App> {
   bool _initialized = false;
   bool _error = false;
   FirebaseModel firebaseModel;
+  RouteModel routeModel;
 
   @override
   void initState() {
@@ -100,6 +103,8 @@ class _AppState extends State<App> {
         firebaseAuth: FirebaseAuth.instance,
         firebaseDatabase: FirebaseDatabase.instance,
       );
+
+      routeModel = RouteModel();
     } else {
       return Splash();
     }
@@ -109,7 +114,11 @@ class _AppState extends State<App> {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
-              create: (context) => firebaseModel)
+            create: (context) => firebaseModel,
+          ),
+          ChangeNotifierProvider<RouteModel>(
+            create: (context) => routeModel,
+          )
         ], // pass user model down
         builder: (context, child) {
           return MaterialApp(
@@ -166,13 +175,30 @@ class _AppState extends State<App> {
                 });
               }
 
+              // if PickRoute is pushed
+              if (settings.name == DefineRoute.routeName) {
+                final DefineRouteArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return DefineRoute(userGeocoding: args.userGeocoding);
+                });
+              }
+
+              // if PickRoute is pushed
+              if (settings.name == PickMapLocation.routeName) {
+                final PickMapLocationArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return PickMapLocation(
+                      initialPosition: args.initialPosition,
+                      isDropOff: args.isDropOff);
+                });
+              }
+
               assert(false, 'Need to implement ${settings.name}');
               return null;
             },
             routes: {
               Start.routeName: (context) => Start(),
               Home.routeName: (context) => Home(),
-              PickRoute.routeName: (context) => PickRoute(),
             },
           );
         });

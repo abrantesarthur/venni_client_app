@@ -5,6 +5,7 @@ import 'package:rider_frontend/styles.dart';
 class AppInputText extends StatelessWidget {
   final Function onTapCallback;
   final String hintText;
+  final Color hintColor;
   final IconData iconData;
   final IconData endIcon;
   final Function onSubmittedCallback;
@@ -17,10 +18,12 @@ class AppInputText extends StatelessWidget {
   final bool autoFocus;
   final FocusNode focusNode;
   final bool enabled;
+  final double fontSize;
 
   AppInputText({
     this.enabled,
     this.hintText,
+    this.hintColor,
     this.iconData,
     this.endIcon,
     this.onTapCallback,
@@ -33,6 +36,7 @@ class AppInputText extends StatelessWidget {
     this.obscureText,
     this.autoFocus,
     this.focusNode,
+    this.fontSize,
   });
 
   @override
@@ -62,15 +66,16 @@ class AppInputText extends StatelessWidget {
               onSubmitted: onSubmittedCallback,
               controller: controller,
               keyboardType: keyboardType,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: fontSize ?? 18),
               obscureText: obscureText ?? false,
               decoration: InputDecoration(
                   hintText: this.hintText,
                   hintStyle: TextStyle(
-                    fontSize: 18,
-                    color: onTapCallback != null
-                        ? AppColor.secondaryPurple
-                        : AppColor.disabled,
+                    fontSize: fontSize ?? 18,
+                    color: hintColor ??
+                        (onTapCallback != null
+                            ? AppColor.secondaryPurple
+                            : AppColor.disabled),
                   ),
                   border: InputBorder.none,
                   isDense: true,

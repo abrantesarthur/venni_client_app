@@ -21,33 +21,37 @@ class BorderlessButton extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: onTapCallback,
+      behavior: HitTestBehavior.translucent,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(iconLeft),
           SizedBox(width: screenWidth / 30),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                primaryText,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  primaryText,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              secondaryText != null
-                  ? Text(
-                      secondaryText,
-                      style: TextStyle(
-                        color: AppColor.disabled,
-                        fontSize: 16,
-                      ),
-                    )
-                  : Container()
-            ],
+                secondaryText != null
+                    ? Text(
+                        secondaryText,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColor.disabled,
+                          fontSize: 13,
+                        ),
+                      )
+                    : Container()
+              ],
+            ),
           ),
-          Spacer(),
           Icon(
             iconRight,
             color: Colors.black,

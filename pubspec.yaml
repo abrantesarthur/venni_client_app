@@ -17,8 +17,12 @@ dependencies:
   firebase_auth: ^0.20.0+1
   firebase_database: ^6.0.0
   provider: ^4.3.3
+  http: ^0.12.2
   google_maps_flutter: ^1.2.0
   geolocator: ^6.2.1
+  uuid: ^2.2.2
+  google_maps_place_picker: ^1.0.1
+  permission_handler: 5.0.1+2
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +34,7 @@ flutter:
   uses-material-design: true
   assets:
     - images/
+    - assets/map_style.txt
 
   fonts:
     - family: OpenSans

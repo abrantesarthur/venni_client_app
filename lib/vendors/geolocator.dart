@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 Position userPosition;
 
 // Determine the current position of the device
-Future<Position> determineUserPosition(BuildContext context) async {
+Future<Position> determineUserPosition() async {
   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     return Future.error("Location services are disabled.");
@@ -21,7 +21,7 @@ Future<Position> determineUserPosition(BuildContext context) async {
           "Location permissions permantly denied, we couldn't change settings.");
     } else {
       // try again
-      return determineUserPosition(context);
+      return determineUserPosition();
     }
   }
 

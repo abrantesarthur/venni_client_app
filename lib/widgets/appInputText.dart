@@ -19,8 +19,10 @@ class AppInputText extends StatelessWidget {
   final FocusNode focusNode;
   final bool enabled;
   final double fontSize;
+  final int maxLines;
 
   AppInputText({
+    this.maxLines,
     this.enabled,
     this.hintText,
     this.hintColor,
@@ -59,6 +61,7 @@ class AppInputText extends StatelessWidget {
           Expanded(
             child: TextField(
               onTap: onTapCallback,
+              maxLines: maxLines,
               enabled: enabled,
               autofocus: autoFocus ?? false,
               focusNode: focusNode,

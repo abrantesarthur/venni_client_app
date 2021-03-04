@@ -8,19 +8,28 @@ import 'package:http/http.dart' as http;
 import 'package:rider_frontend/vendors/places.dart';
 
 class Geocoding {
-  static Future<GeocodingResponse> searchByPosition(Position position) async {
-    String url = "https://maps.googleapis.com/maps/api/geocode/json?" +
-        "latlng=${position.latitude},${position.longitude}&" +
-        "language=pt-BR&" +
-        "key=$placesAPIKey";
-
+  static Future<GeocodingResponse> _get(String url) async {
     var response = await http.get(url);
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return GeocodingResponse.fromJson(jsonResponse);
     }
-
     return null;
+  }
+
+  static Future<GeocodingResponse> searchByPosition(Position position) async {
+    String url = "https://maps.googleapis.com/maps/api/geocode/json?" +
+        "latlng=${position.latitude},${position.longitude}&" +
+        "language=pt-BR&" +
+        "key=$placesAPIKey";
+    return Geocoding._get(url);
+  }
+
+  static Future<GeocodingResponse> searchByPlaceID(String placeID) async {
+    String url = "https://maps.googleapis.com/maps/api/geocode/json?" +
+        "place_id=$placeID" +
+        "&key=$placesAPIKey";
+    return Geocoding._get(url);
   }
 }
 

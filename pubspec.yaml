@@ -21,8 +21,10 @@ dependencies:
   google_maps_flutter: ^1.2.0
   geolocator: ^6.2.1
   uuid: ^2.2.2
-  google_maps_place_picker: ^1.0.1
   permission_handler: 5.0.1+2
+  flutter_maps_place_picker:
+    git:
+      url: git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git
 
 dev_dependencies:
   flutter_test:

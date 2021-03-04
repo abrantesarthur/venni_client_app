@@ -33,7 +33,6 @@ class BorderlessButton extends StatelessWidget {
               children: [
                 Text(
                   primaryText,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 16,

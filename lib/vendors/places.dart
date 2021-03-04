@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:google_maps_place_picker/google_maps_place_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/models/address.dart';
 import 'package:uuid/uuid.dart';

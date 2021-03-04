@@ -6,6 +6,7 @@ class AppButton extends StatelessWidget {
   final double borderRadius;
   final IconData iconRight;
   final IconData iconLeft;
+  final Color buttonColor;
   final VoidCallback onTapCallBack;
 
   AppButton({
@@ -13,6 +14,7 @@ class AppButton extends StatelessWidget {
     this.iconRight,
     this.iconLeft,
     this.borderRadius,
+    this.buttonColor,
     @required this.onTapCallBack,
   });
 
@@ -23,7 +25,7 @@ class AppButton extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius ?? 100.0),
-          color: AppColor.primaryPink,
+          color: buttonColor ?? AppColor.primaryPink,
         ),
         height: 80,
         child: Stack(

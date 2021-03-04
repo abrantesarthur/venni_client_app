@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_place_picker/google_maps_place_picker.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/places.dart';
@@ -116,7 +116,6 @@ class PickMapLocationState extends State<PickMapLocation> {
             onPressed: () {
               // build place response
               Address place = Address.fromPickResult(result, widget.isDropOff);
-              print("here");
               Navigator.pop(context, place);
             },
           ),

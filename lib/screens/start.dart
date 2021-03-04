@@ -8,15 +8,20 @@ class Start extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Center(
         child: OverallPadding(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Spacer(flex: 2),
-              Image(image: AssetImage("images/logo.png")),
-              Spacer(),
+              Spacer(flex: 3),
+              Image(
+                image: AssetImage("images/horizontal-pink-logo.png"),
+                width: width * 0.8,
+              ),
+              Spacer(flex: 3),
               Text(
                 "Chame uma corrida",
                 style: TextStyle(

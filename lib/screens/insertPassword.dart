@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/screens/home.dart';
+import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -235,7 +236,7 @@ class InsertPasswordState extends State<InsertPassword> {
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
-    final firebaseModel = Provider.of<FirebaseModel>(context, listen: false);
+    final firebaseModel = Provider.of<FirebaseModel>(context);
 
     return FutureBuilder(
       future: successfullyRegisteredUser,
@@ -249,6 +250,7 @@ class InsertPasswordState extends State<InsertPassword> {
           firebaseModel.listenForStatusChanges();
           // future builder must return Widget, but we want to push a route.
           // thus, schedule pushing for right afer returning a Container.
+          // TODO: there is a bug here. Fix it
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Navigator.pushNamed(context, Home.routeName);
           });
@@ -258,7 +260,7 @@ class InsertPasswordState extends State<InsertPassword> {
         // user has tapped to register, and we are waiting for registration to finish
         if (snapshot.connectionState == ConnectionState.waiting) {
           // show loading screen
-          return _RegistrationLoading();
+          return Splash(text: "Criando sua conta...");
         }
 
         // error cases and default: show password screen
@@ -361,39 +363,6 @@ class InsertPasswordState extends State<InsertPassword> {
           ),
         );
       },
-    );
-  }
-}
-
-class _RegistrationLoading extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: AppColor.primaryPink,
-        child: Center(
-          child: Column(
-            children: [
-              Spacer(),
-              SizedBox(
-                height: 50,
-                width: 50,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 30),
-                child: Text(
-                  "Criando sua conta...",
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

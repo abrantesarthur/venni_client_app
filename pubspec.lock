@@ -216,6 +216,15 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_maps_place_picker:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "7e01b201030b3c70793b2daf0bee12d4f1908982"
+      url: "git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git"
+    source: git
+    version: "1.0.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -261,6 +270,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.0"
+  google_api_headers:
+    dependency: transitive
+    description:
+      name: google_api_headers
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1+2"
   google_fonts:
     dependency: "direct main"
     description:
@@ -282,13 +298,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.0"
-  google_maps_place_picker:
-    dependency: "direct main"
-    description:
-      name: google_maps_place_picker
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.1"
   google_maps_webservice:
     dependency: transitive
     description:
@@ -408,6 +417,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.9.3"
+  package_info:
+    dependency: transitive
+    description:
+      name: package_info
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.3+4"
   path:
     dependency: transitive
     description:

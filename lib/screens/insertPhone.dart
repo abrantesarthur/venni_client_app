@@ -144,7 +144,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final firebaseModel = Provider.of<FirebaseModel>(context, listen: false);
+    final firebaseModel = Provider.of<FirebaseModel>(context);
 
     return Scaffold(
       body: LayoutBuilder(

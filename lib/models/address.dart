@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_place_picker/google_maps_place_picker.dart';
+import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
 class Address {

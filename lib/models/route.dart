@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:rider_frontend/models/address.dart';
 
 class RouteModel extends ChangeNotifier {
-  String pickUpPlaceID;
-  String dropOffPlaceID;
+  Address pickUpAddress;
+  Address dropOffAddress;
 
-  void updatePickUpLocation(String placeID) {
-    pickUpPlaceID = placeID;
+  void updatePickUpAddres(Address address) {
+    print("pick up address updated");
+    print(address.mainText);
+    pickUpAddress = address;
     notifyListeners();
   }
 
-  void updateDropOffLocation(String placeID) {
-    dropOffPlaceID = placeID;
+  void updateDropOffAddres(Address address) {
+    print("drop off address updated");
+    print(address.mainText);
+    dropOffAddress = address;
     notifyListeners();
   }
 }

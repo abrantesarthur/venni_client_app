@@ -2,9 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/screens/defineDropOff.dart';
+import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
@@ -15,6 +19,8 @@ import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
+import 'package:rider_frontend/vendors/geocoding.dart';
+import 'package:rider_frontend/vendors/geolocator.dart';
 
 /**
  * https://github.com/flutter/flutter/issues/41383#issuecomment-549432413
@@ -36,15 +42,33 @@ class _AppState extends State<App> {
   bool _error = false;
   FirebaseModel firebaseModel;
   RouteModel routeModel;
+  UserPositionModel userPositionModel;
 
   @override
   void initState() {
-    initializeFlutterFire();
+    initializeApp();
     super.initState();
   }
 
+  Future<void> initializeApp() async {
+    await initializeUserPosition();
+    await initializeFlutterFire();
+  }
+
+  Future<void> initializeUserPosition() async {
+    // get user position
+    Position userPos = await determineUserPosition();
+
+    // get user geocoding
+    GeocodingResponse geocoding = await Geocoding.searchByPosition(userPos);
+    GeocodingResult geocodingResult = geocoding.results[0];
+
+    // set usertPositionModel
+    userPositionModel = UserPositionModel(geocoding: geocodingResult);
+  }
+
   // Define an async function to initialize FlutterFire
-  void initializeFlutterFire() async {
+  Future<void> initializeFlutterFire() async {
     try {
       // Wait for Firebase to initialize and set `_initialized` state to true
       await Firebase.initializeApp();
@@ -62,6 +86,7 @@ class _AppState extends State<App> {
     }
   }
 
+  // TODO: load user position here, instead of home
   // TODO: when deploying the app, register a release certificate fingerprint
   //    in firebase instead of the debug certificate fingerprint
   //    (https://developers.google.com/android/guides/client-auth)
@@ -70,6 +95,8 @@ class _AppState extends State<App> {
   // TODO: do integration testing
   // TODO: review entire user registration flow
   // TODO: overflow happens if a "O email já está sendo usado." warning happens
+  // TODO:  make sure that user logs out when account is deleted or disactivated in firebase
+  // TODO: decide on which logos to use
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +145,9 @@ class _AppState extends State<App> {
           ),
           ChangeNotifierProvider<RouteModel>(
             create: (context) => routeModel,
+          ),
+          ChangeNotifierProvider<UserPositionModel>(
+            create: (context) => userPositionModel,
           )
         ], // pass user model down
         builder: (context, child) {
@@ -175,11 +205,31 @@ class _AppState extends State<App> {
                 });
               }
 
-              // if PickRoute is pushed
+              // if DefineDropOff is pushed
               if (settings.name == DefineRoute.routeName) {
-                final DefineRouteArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
-                  return DefineRoute(userGeocoding: args.userGeocoding);
+                  return DefineRoute();
+                });
+              }
+
+              // if DefineDropOff is pushed
+              if (settings.name == DefineDropOff.routeName) {
+                final DefineDropOffArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return DefineDropOff(
+                    chosenDropOffAddress: args.chosenDropOffAddress,
+                    userGeocoding: args.userGeocoding,
+                  );
+                });
+              }
+
+              // if DefinePickUp is pushed
+              if (settings.name == DefinePickUp.routeName) {
+                final DefinePickUpArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return DefinePickUp(
+                      chosenPickUpAddress: args.chosenPickUpAddress,
+                      userGeocoding: args.userGeocoding);
                 });
               }
 

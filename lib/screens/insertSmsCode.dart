@@ -296,9 +296,8 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    _firebaseAuth = Provider.of<FirebaseModel>(context, listen: false).auth;
-    _firebaseDatabase =
-        Provider.of<FirebaseModel>(context, listen: false).database;
+    _firebaseAuth = Provider.of<FirebaseModel>(context).auth;
+    _firebaseDatabase = Provider.of<FirebaseModel>(context).database;
 
     if (remainingSeconds <= 0) {
       // if remainingSeconds reaches 0, allow user to resend sms code.

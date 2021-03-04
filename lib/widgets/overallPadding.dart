@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class OverallPadding extends StatelessWidget {
   final Widget child;
   final double bottom;
+  final double top;
 
-  OverallPadding({@required this.child, this.bottom});
+  OverallPadding({@required this.child, this.bottom, this.top});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class OverallPadding extends StatelessWidget {
       padding: EdgeInsets.only(
         left: width / 15,
         right: width / 15,
-        top: height / 12,
+        top: top ?? height / 12,
         bottom: bottom ?? height / 12,
       ),
       child: child,

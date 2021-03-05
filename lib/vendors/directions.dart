@@ -75,9 +75,9 @@ class DirectionsResult {
 
 class Route {
   final String durationText;
-  final double durationSeconds;
+  final int durationSeconds;
   final String distanceText;
-  final double distanceMeters;
+  final int distanceMeters;
   final String startAddress;
   final String endAddress;
   final String overviewPolyline;
@@ -110,9 +110,9 @@ class Route {
 
 class Leg {
   final String durationText;
-  final double durationValue;
+  final int durationValue;
   final String distanceText;
-  final double distanceValue;
+  final int distanceValue;
   final String startAddress;
   final String endAddress;
 
@@ -125,16 +125,18 @@ class Leg {
     @required this.endAddress,
   });
 
-  factory Leg.fromJson(Map<String, dynamic> json) => json != null
-      ? Leg(
-          durationText: json["duration"]["text"],
-          durationValue: json["duration"]["value"],
-          distanceText: json["distance"]["text"],
-          distanceValue: json["distance"]["value"],
-          startAddress: json["start_address"],
-          endAddress: json["end_address"],
-        )
-      : null;
+  factory Leg.fromJson(Map<String, dynamic> json) {
+    return json != null
+        ? Leg(
+            durationText: json["duration"]["text"],
+            durationValue: json["duration"]["value"],
+            distanceText: json["distance"]["text"],
+            distanceValue: json["distance"]["value"],
+            startAddress: json["start_address"],
+            endAddress: json["end_address"],
+          )
+        : null;
+  }
 }
 
 class GeocodedWaypoint extends GeocoderStatus {

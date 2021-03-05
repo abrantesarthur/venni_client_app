@@ -11,6 +11,7 @@ import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
+import 'package:rider_frontend/vendors/directions.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -120,7 +121,12 @@ class HomeState extends State<Home> {
                           userGeocoding: userPos.geocoding,
                         ));
 
-                print(requestRide);
+                if (routeModel.pickUpAddress != null &&
+                    routeModel.dropOffAddress != null) {
+                  DirectionsResponse dr = await Directions().searchByPlaceIDs(
+                      originPlaceID: routeModel.pickUpAddress.placeID,
+                      destinationPlaceID: routeModel.dropOffAddress.placeID);
+                }
               },
             ),
           ),

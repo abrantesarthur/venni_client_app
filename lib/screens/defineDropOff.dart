@@ -222,7 +222,6 @@ void updateDropOffAndPop(
   Address address,
 ) {
   RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
-
   // set location as drop off point
   routeModel.updateDropOffAddres(address);
 

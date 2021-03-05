@@ -11,6 +11,7 @@ import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
+import 'package:rider_frontend/widgets/warning.dart';
 
 class DefineRouteArguments {
   final RouteModel routeModel;
@@ -42,6 +43,9 @@ class DefineRouteState extends State<DefineRoute> {
   FocusNode pickUpFocusNode = FocusNode();
   TextEditingController dropOffController = TextEditingController();
   TextEditingController pickUpController = TextEditingController();
+  String warning;
+  Color buttonColor;
+  bool activateCallback;
 
   @override
   void initState() {
@@ -55,11 +59,23 @@ class DefineRouteState extends State<DefineRoute> {
     final pickUpAddress = widget.routeModel.pickUpAddress;
     final userLatitude = widget.userGeocoding.latitude;
     final userLongitude = widget.userGeocoding.longitude;
-
     if (userLatitude != pickUpAddress.latitude ||
         userLongitude != pickUpAddress.longitude) {
       pickUpController.text = pickUpAddress.mainText;
     }
+
+    // set button state
+    setButtonState(
+      pickUp: widget.routeModel.pickUpAddress,
+      dropOff: widget.routeModel.dropOffAddress,
+    );
+
+    widget.routeModel.addListener(() {
+      setButtonState(
+        pickUp: widget.routeModel.pickUpAddress,
+        dropOff: widget.routeModel.dropOffAddress,
+      );
+    });
 
     super.initState();
   }
@@ -71,6 +87,34 @@ class DefineRouteState extends State<DefineRoute> {
     dropOffFocusNode.dispose();
     pickUpFocusNode.dispose();
     super.dispose();
+  }
+
+  void setButtonState({@required Address pickUp, @required Address dropOff}) {
+    // not allow user to pick route if they haven't pick both addresses
+    if (pickUp == null || dropOff == null) {
+      setState(() {
+        warning = null;
+        buttonColor = AppColor.disabled;
+        activateCallback = false;
+      });
+    } else {
+      // display warning if both addresses are equal
+      if (pickUp.placeID == dropOff.placeID) {
+        setState(() {
+          warning =
+              "O endereço de partida e o destino são iguais. Tente novamente.";
+          buttonColor = AppColor.disabled;
+          activateCallback = false;
+        });
+      } else {
+        // otherwise, allow user to pick route
+        setState(() {
+          warning = null;
+          buttonColor = AppColor.primaryPink;
+          activateCallback = true;
+        });
+      }
+    }
   }
 
   // onTapCallback pushes new screen where user can pick an address
@@ -117,7 +161,13 @@ class DefineRouteState extends State<DefineRoute> {
     if (isDropOff) {
       controller.text = routeModel.dropOffAddress.mainText;
     } else {
-      controller.text = routeModel.pickUpAddress.mainText;
+      if (widget.routeModel.pickUpAddress.placeID !=
+          widget.userGeocoding.placeID) {
+        // update pick up only if it's different from current location
+        controller.text = routeModel.pickUpAddress.mainText;
+      } else {
+        controller.text = "";
+      }
     }
   }
 
@@ -132,6 +182,7 @@ class DefineRouteState extends State<DefineRoute> {
       resizeToAvoidBottomInset: false,
       body: OverallPadding(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -189,18 +240,17 @@ class DefineRouteState extends State<DefineRoute> {
                 )
               ],
             ),
+            SizedBox(height: screenWidth / 20),
+            warning != null ? Warning(message: warning) : Container(),
             Spacer(),
             AppButton(
-              buttonColor: routeModel.dropOffAddress != null &&
-                      routeModel.pickUpAddress != null
-                  ? AppColor.primaryPink
-                  : AppColor.disabled,
+              buttonColor: buttonColor,
               textData: "Pronto",
-              onTapCallBack: routeModel.dropOffAddress != null &&
-                      routeModel.pickUpAddress != null
-                  ? () => Navigator.pop(
-                      context, true) // return true to request ride
-                  : () {},
+              onTapCallBack: () {
+                if (activateCallback != null) {
+                  Navigator.pop(context, true);
+                }
+              },
             ),
           ],
         ),

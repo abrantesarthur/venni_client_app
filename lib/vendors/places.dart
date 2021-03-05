@@ -38,7 +38,7 @@ class Places {
         if (autocompleteJson["status"] == "OK") {
           var predictions = autocompleteJson["predictions"];
           predictionList = (predictions as List)
-              .map((e) => Address.fromAutocompleteResponse(e, isDropOff))
+              .map((p) => Address.fromAutocompleteResponse(p, isDropOff))
               .toList();
         }
       }

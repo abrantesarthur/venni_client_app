@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
@@ -12,6 +13,7 @@ import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/vendors/directions.dart';
+import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -26,6 +28,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   GoogleMapController _googleMapController;
   String _mapStyle;
+  Map<PolylineId, Polyline> polylines = {};
 
   @override
   void initState() {
@@ -97,6 +100,7 @@ class HomeState extends State<Home> {
           onMapCreated: (GoogleMapController c) {
             onMapCreatedCallback(context, c);
           },
+          polylines: Set<Polyline>.of(polylines.values),
         ),
         OverallPadding(
           child: Container(
@@ -131,8 +135,16 @@ class HomeState extends State<Home> {
                       destinationPlaceID: routeModel.dropOffAddress.placeID);
                   // if request succeeded
                   if (dr.isOkay) {
+                    PolylineId polylineId = PolylineId("poly");
+                    Polyline polyline =
+                        AppPolylinePoints.getPolylineFromEncodedPoints(
+                      id: polylineId,
+                      encodedPoints: dr.result.route.encodedPoints,
+                    );
+                    polylines[polylineId] = polyline;
+                    setState(() {});
                   } else {
-                    // display warning
+                    // TODO: display warning
                   }
                 }
               },

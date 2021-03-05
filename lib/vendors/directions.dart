@@ -80,12 +80,12 @@ class Route {
   final int distanceMeters;
   final String startAddress;
   final String endAddress;
-  final String overviewPolyline;
+  final String encodedPoints;
 
   Route({
     @required this.durationText,
     @required this.durationSeconds,
-    @required this.overviewPolyline,
+    @required this.encodedPoints,
     @required this.distanceText,
     @required this.distanceMeters,
     @required this.startAddress,
@@ -102,7 +102,7 @@ class Route {
             distanceMeters: leg.distanceValue,
             startAddress: leg.startAddress,
             endAddress: leg.endAddress,
-            overviewPolyline: json["overview_polyline"]["points"],
+            encodedPoints: json["overview_polyline"]["points"],
           )
         : null;
   }

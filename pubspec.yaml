@@ -22,6 +22,7 @@ dependencies:
   geolocator: ^6.2.1
   uuid: ^2.2.2
   permission_handler: 5.0.1+2
+  flutter_polyline_points: ^0.2.4
   flutter_maps_place_picker:
     git:
       url: git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git

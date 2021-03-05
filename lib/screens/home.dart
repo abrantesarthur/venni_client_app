@@ -105,6 +105,7 @@ class HomeState extends State<Home> {
               borderRadius: 10.0,
               iconLeft: Icons.near_me,
               textData: "Para onde vamos?",
+              // TODO: extract to another function
               onTapCallBack: () async {
                 // pickUp location defaults to user's current address
                 if (routeModel.pickUpAddress == null) {
@@ -121,11 +122,18 @@ class HomeState extends State<Home> {
                           userGeocoding: userPos.geocoding,
                         ));
 
-                if (routeModel.pickUpAddress != null &&
-                    routeModel.dropOffAddress != null) {
+                // draw directions on map if user tapped to request ride
+                // TODO: extract to another function
+                if (requestRide) {
+                  // get directions
                   DirectionsResponse dr = await Directions().searchByPlaceIDs(
                       originPlaceID: routeModel.pickUpAddress.placeID,
                       destinationPlaceID: routeModel.dropOffAddress.placeID);
+                  // if request succeeded
+                  if (dr.isOkay) {
+                  } else {
+                    // display warning
+                  }
                 }
               },
             ),

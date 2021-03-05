@@ -239,7 +239,7 @@ class DefineRouteState extends State<DefineRoute> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // TODO: render icon with higher definition
-                Image(image: AssetImage("images/pickroute.png")),
+                Image(image: AssetImage("images/dropOffToPickUpIcon.png")),
                 Column(
                   children: [
                     AppInputText(

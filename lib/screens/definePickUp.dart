@@ -125,7 +125,7 @@ class DefinePickUpState extends State<DefinePickUp> {
                       },
                       fontSize: 16,
                       width: screenWidth / 1.3,
-                      hintText: "Para onde?",
+                      hintText: "De onde?",
                       hintColor: AppColor.disabled,
                       controller: pickUpTextEditingController,
                     ),

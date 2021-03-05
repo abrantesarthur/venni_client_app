@@ -29,12 +29,15 @@ class HomeState extends State<Home> {
   GoogleMapController _googleMapController;
   String _mapStyle;
   Map<PolylineId, Polyline> polylines = {};
+  Set<Marker> markers = {};
   bool requestRide;
+  bool myLocationButtonEnabled;
 
   @override
   void initState() {
     super.initState();
     requestRide = false;
+    myLocationButtonEnabled = true;
 
     // load map style
     rootBundle
@@ -59,10 +62,6 @@ class HomeState extends State<Home> {
     });
   }
 
-  void calculateBounds(RouteModel routeModel) {
-    // TODO: need latitude longitude!
-  }
-
   Future<void> drawPolyline(RouteModel routeModel) async {
     // get directions
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
@@ -77,11 +76,30 @@ class HomeState extends State<Home> {
       );
       polylines[polylineId] = polyline;
 
-      // calculate latitude longitude bounds
-
       // add bounds to map view
-      // _googleMapController
-      //     .animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+      _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
+        routeModel.calculateBounds(),
+        60,
+      ));
+
+      // set markers
+      // TODO: extract to function
+      Marker pickUpMarker = Marker(
+        markerId: MarkerId("pickUpMarker"),
+        position: LatLng(
+          routeModel.pickUpAddress.latitude,
+          routeModel.pickUpAddress.longitude,
+        ),
+      );
+      Marker dropOffMarker = Marker(
+        markerId: MarkerId("dropOffMakrer"),
+        position: LatLng(
+          routeModel.dropOffAddress.latitude,
+          routeModel.dropOffAddress.longitude,
+        ),
+      );
+      markers.add(pickUpMarker);
+      markers.add(dropOffMarker);
 
       setState(() {});
     } else {
@@ -116,6 +134,10 @@ class HomeState extends State<Home> {
 
     // if user tapped to request ride
     if (requestRide) {
+      // remove myLocationBuuton
+      // TODO: reactivate whenever user cancels ride
+      myLocationButtonEnabled = false;
+
       // draw directions on map
       await drawPolyline(routeModel);
 
@@ -148,7 +170,7 @@ class HomeState extends State<Home> {
         body: Stack(
       children: [
         GoogleMap(
-          myLocationButtonEnabled: true,
+          myLocationButtonEnabled: myLocationButtonEnabled,
           myLocationEnabled: true,
           trafficEnabled: false,
           zoomControlsEnabled: false,
@@ -170,6 +192,7 @@ class HomeState extends State<Home> {
             onMapCreatedCallback(context, c);
           },
           polylines: Set<Polyline>.of(polylines.values),
+          markers: markers,
         ),
         OverallPadding(
           child: Container(

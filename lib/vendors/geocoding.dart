@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/vendors/googleService.dart';
-import 'package:rider_frontend/vendors/places.dart';
 
 class Geocoding extends GoogleWebService {
   Geocoding() : super(baseUrl: "https://maps.googleapis.com/maps/api/geocode");

@@ -60,7 +60,8 @@ class _AppState extends State<App> {
     Position userPos = await determineUserPosition();
 
     // get user geocoding
-    GeocodingResponse geocoding = await Geocoding.searchByPosition(userPos);
+    GeocodingResponse geocoding = await Geocoding().searchByPosition(userPos);
+
     GeocodingResult geocodingResult = geocoding.results[0];
 
     // set usertPositionModel
@@ -207,8 +208,12 @@ class _AppState extends State<App> {
 
               // if DefineDropOff is pushed
               if (settings.name == DefineRoute.routeName) {
+                DefineRouteArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
-                  return DefineRoute();
+                  return DefineRoute(
+                    routeModel: args.routeModel,
+                    userGeocoding: args.userGeocoding,
+                  );
                 });
               }
 

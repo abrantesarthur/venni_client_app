@@ -227,5 +227,5 @@ void updateDropOffAndPop(
   routeModel.updateDropOffAddres(address);
 
   // go back to DefineRoute screen
-  Navigator.pop(context, address);
+  Navigator.pop(context);
 }

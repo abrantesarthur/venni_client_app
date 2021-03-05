@@ -43,7 +43,7 @@ Future<void> _moveCameraToAddress(
     // calculate latitude and longitude if necessary
     if (address.latitude == null || address.longitude == null) {
       GeocodingResponse geocodingResponse =
-          await Geocoding.searchByPlaceID(address.placeID);
+          await Geocoding().searchByPlaceID(address.placeID);
       GeocodingResult geocodingResult = geocodingResponse.results[0];
       address.latitude = geocodingResult.latitude;
       address.longitude = geocodingResult.longitude;

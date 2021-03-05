@@ -104,14 +104,23 @@ class HomeState extends State<Home> {
               borderRadius: 10.0,
               iconLeft: Icons.near_me,
               textData: "Para onde vamos?",
-              onTapCallBack: () {
+              onTapCallBack: () async {
                 // pickUp location defaults to user's current address
-                routeModel.updatePickUpAddres(Address.fromGeocodingResult(
-                  geocodingResult: userPos.geocoding,
-                  dropOff: false,
-                ));
+                if (routeModel.pickUpAddress == null) {
+                  routeModel.updatePickUpAddres(Address.fromGeocodingResult(
+                    geocodingResult: userPos.geocoding,
+                    dropOff: false,
+                  ));
+                }
 
-                Navigator.pushNamed(context, DefineRoute.routeName);
+                final requestRide =
+                    await Navigator.pushNamed(context, DefineRoute.routeName,
+                        arguments: DefineRouteArguments(
+                          routeModel: routeModel,
+                          userGeocoding: userPos.geocoding,
+                        ));
+
+                print(requestRide);
               },
             ),
           ),

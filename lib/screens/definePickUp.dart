@@ -227,5 +227,5 @@ void updatePickUpAndPop(
   routeModel.updatePickUpAddres(address);
 
   // go back to DefineRoute screen
-  Navigator.pop(context, address);
+  Navigator.pop(context);
 }

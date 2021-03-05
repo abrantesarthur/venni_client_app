@@ -6,15 +6,11 @@ class RouteModel extends ChangeNotifier {
   Address dropOffAddress;
 
   void updatePickUpAddres(Address address) {
-    print("pick up address updated");
-    print(address.mainText);
     pickUpAddress = address;
     notifyListeners();
   }
 
   void updateDropOffAddres(Address address) {
-    print("drop off address updated");
-    print(address.mainText);
     dropOffAddress = address;
     notifyListeners();
   }

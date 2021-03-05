@@ -6,13 +6,31 @@ import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
+class DefineRouteArguments {
+  final RouteModel routeModel;
+  final GeocodingResult userGeocoding;
+
+  DefineRouteArguments({
+    @required this.routeModel,
+    @required this.userGeocoding,
+  }) : assert(routeModel != null);
+}
+
 class DefineRoute extends StatefulWidget {
   static const String routeName = "DefineRoute";
+  final RouteModel routeModel;
+  final GeocodingResult userGeocoding;
+
+  DefineRoute({
+    @required this.routeModel,
+    @required this.userGeocoding,
+  }) : assert(routeModel != null);
 
   @override
   DefineRouteState createState() => DefineRouteState();
@@ -27,8 +45,22 @@ class DefineRouteState extends State<DefineRoute> {
 
   @override
   void initState() {
-    dropOffController.text = "";
+    // TODO: review this after I finish calling a ride
+
+    // text field initial values
+    dropOffController.text = widget.routeModel.dropOffAddress != null
+        ? widget.routeModel.dropOffAddress.mainText
+        : "";
     pickUpController.text = "";
+    final pickUpAddress = widget.routeModel.pickUpAddress;
+    final userLatitude = widget.userGeocoding.latitude;
+    final userLongitude = widget.userGeocoding.longitude;
+
+    if (userLatitude != pickUpAddress.latitude ||
+        userLongitude != pickUpAddress.longitude) {
+      pickUpController.text = pickUpAddress.mainText;
+    }
+
     super.initState();
   }
 
@@ -75,14 +107,18 @@ class DefineRouteState extends State<DefineRoute> {
     focusNode.unfocus();
 
     // push screen to allow user to select an address
-    final address = await Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       routeName,
       arguments: args,
     ) as Address;
 
     // add selected address to text field
-    controller.text = address.mainText;
+    if (isDropOff) {
+      controller.text = routeModel.dropOffAddress.mainText;
+    } else {
+      controller.text = routeModel.pickUpAddress.mainText;
+    }
   }
 
   @override
@@ -90,6 +126,7 @@ class DefineRouteState extends State<DefineRoute> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final RouteModel routeModel = Provider.of<RouteModel>(context);
+    final UserPositionModel userPos = Provider.of<UserPositionModel>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -99,8 +136,7 @@ class DefineRouteState extends State<DefineRoute> {
             Row(
               children: [
                 ArrowBackButton(onTapCallback: () {
-                  // TODO: might need to issue a cancel request
-                  Navigator.pop(context);
+                  Navigator.pop(context, false);
                 }),
                 Spacer(),
               ],
@@ -162,7 +198,8 @@ class DefineRouteState extends State<DefineRoute> {
               textData: "Pronto",
               onTapCallBack: routeModel.dropOffAddress != null &&
                       routeModel.pickUpAddress != null
-                  ? () => Navigator.pop(context)
+                  ? () => Navigator.pop(
+                      context, true) // return true to request ride
                   : () {},
             ),
           ],

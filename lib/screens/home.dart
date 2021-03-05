@@ -29,10 +29,13 @@ class HomeState extends State<Home> {
   GoogleMapController _googleMapController;
   String _mapStyle;
   Map<PolylineId, Polyline> polylines = {};
+  bool requestRide;
 
   @override
   void initState() {
     super.initState();
+    requestRide = false;
+
     // load map style
     rootBundle
         .loadString("assets/map_style.txt")
@@ -56,15 +59,81 @@ class HomeState extends State<Home> {
     });
   }
 
+  void calculateBounds(RouteModel routeModel) {
+    // TODO: need latitude longitude!
+  }
+
+  Future<void> drawPolyline(RouteModel routeModel) async {
+    // get directions
+    DirectionsResponse dr = await Directions().searchByPlaceIDs(
+        originPlaceID: routeModel.pickUpAddress.placeID,
+        destinationPlaceID: routeModel.dropOffAddress.placeID);
+    if (dr.isOkay) {
+      // set polylines
+      PolylineId polylineId = PolylineId("poly");
+      Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
+        id: polylineId,
+        encodedPoints: dr.result.route.encodedPoints,
+      );
+      polylines[polylineId] = polyline;
+
+      // calculate latitude longitude bounds
+
+      // add bounds to map view
+      // _googleMapController
+      //     .animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+
+      setState(() {});
+    } else {
+      // TODO: display warning
+    }
+  }
+
+  void defineRoute({
+    @required RouteModel routeModel,
+    @required UserPositionModel userPos,
+  }) async {
+    // pickUp location defaults to user's current address
+    if (routeModel.pickUpAddress == null) {
+      routeModel.updatePickUpAddres(Address.fromGeocodingResult(
+        geocodingResult: userPos.geocoding,
+        dropOff: false,
+      ));
+    }
+
+    final _requestRide = await Navigator.pushNamed(
+      context,
+      DefineRoute.routeName,
+      arguments: DefineRouteArguments(
+        routeModel: routeModel,
+        userGeocoding: userPos.geocoding,
+      ),
+    );
+
+    setState(() {
+      requestRide = _requestRide;
+    });
+
+    // if user tapped to request ride
+    if (requestRide) {
+      // draw directions on map
+      await drawPolyline(routeModel);
+
+      // hide "Para onde Vamos" button
+      // show "Confirmar" button
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // get user position
+    // TODO: should this be listen: false?
     UserPositionModel userPos =
         Provider.of<UserPositionModel>(context, listen: false);
     final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
+    RouteModel routeModel = Provider.of<RouteModel>(context);
 
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen
@@ -110,43 +179,11 @@ class HomeState extends State<Home> {
               iconLeft: Icons.near_me,
               textData: "Para onde vamos?",
               // TODO: extract to another function
-              onTapCallBack: () async {
-                // pickUp location defaults to user's current address
-                if (routeModel.pickUpAddress == null) {
-                  routeModel.updatePickUpAddres(Address.fromGeocodingResult(
-                    geocodingResult: userPos.geocoding,
-                    dropOff: false,
-                  ));
-                }
-
-                final requestRide =
-                    await Navigator.pushNamed(context, DefineRoute.routeName,
-                        arguments: DefineRouteArguments(
-                          routeModel: routeModel,
-                          userGeocoding: userPos.geocoding,
-                        ));
-
-                // draw directions on map if user tapped to request ride
-                // TODO: extract to another function
-                if (requestRide) {
-                  // get directions
-                  DirectionsResponse dr = await Directions().searchByPlaceIDs(
-                      originPlaceID: routeModel.pickUpAddress.placeID,
-                      destinationPlaceID: routeModel.dropOffAddress.placeID);
-                  // if request succeeded
-                  if (dr.isOkay) {
-                    PolylineId polylineId = PolylineId("poly");
-                    Polyline polyline =
-                        AppPolylinePoints.getPolylineFromEncodedPoints(
-                      id: polylineId,
-                      encodedPoints: dr.result.route.encodedPoints,
-                    );
-                    polylines[polylineId] = polyline;
-                    setState(() {});
-                  } else {
-                    // TODO: display warning
-                  }
-                }
+              onTapCallBack: () {
+                defineRoute(
+                  routeModel: routeModel,
+                  userPos: userPos,
+                );
               },
             ),
           ),

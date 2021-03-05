@@ -8,6 +8,7 @@ class AppButton extends StatelessWidget {
   final IconData iconLeft;
   final Color buttonColor;
   final VoidCallback onTapCallBack;
+  final Widget child;
 
   AppButton({
     @required this.textData,
@@ -15,6 +16,7 @@ class AppButton extends StatelessWidget {
     this.iconLeft,
     this.borderRadius,
     this.buttonColor,
+    this.child,
     @required this.onTapCallBack,
   });
 
@@ -39,13 +41,15 @@ class AppButton extends StatelessWidget {
                     ))
                 : Container(),
             Center(
-              child: Text(
-                textData,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    color: Colors.white),
-              ),
+              child: child != null
+                  ? child
+                  : Text(
+                      textData,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: Colors.white),
+                    ),
             ),
             this.iconRight != null
                 ? Align(

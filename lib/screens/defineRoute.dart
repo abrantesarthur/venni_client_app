@@ -46,6 +46,7 @@ class DefineRouteState extends State<DefineRoute> {
   String warning;
   Color buttonColor;
   bool activateCallback;
+  Widget buttonChild;
 
   @override
   void initState() {
@@ -171,12 +172,47 @@ class DefineRouteState extends State<DefineRoute> {
     }
   }
 
+  // buttonCallback enriches pickUp and dropOff addresses with coordinates before
+  // returning to previous screen
+  void buttonCallback(BuildContext context) async {
+    // show loading icon
+    setState(() {
+      buttonChild = CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      );
+    });
+
+    RouteModel routeModel = Provider.of<RouteModel>(
+      context,
+      listen: false,
+    );
+    // calculate pick up and drop off geocodings
+    GeocodingResponse pickUpGeocoding =
+        await Geocoding().searchByPlaceID(routeModel.pickUpAddress.placeID);
+    GeocodingResponse dropOffGeocoding =
+        await Geocoding().searchByPlaceID(routeModel.dropOffAddress.placeID);
+
+    // enrich pick up and drop off addresses with coordinates
+    Address updatedPickUpAddress = Address.fromGeocodingResult(
+      geocodingResult: pickUpGeocoding.results.first,
+      dropOff: false,
+    );
+    Address updatedDropOffAddress = Address.fromGeocodingResult(
+      geocodingResult: dropOffGeocoding.results.first,
+      dropOff: true,
+    );
+
+    // update routeModel with enriched addresses
+    routeModel.updatePickUpAddres(updatedPickUpAddress);
+    routeModel.updateDropOffAddres(updatedDropOffAddress);
+
+    Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final RouteModel routeModel = Provider.of<RouteModel>(context);
-    final UserPositionModel userPos = Provider.of<UserPositionModel>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -244,11 +280,12 @@ class DefineRouteState extends State<DefineRoute> {
             warning != null ? Warning(message: warning) : Container(),
             Spacer(),
             AppButton(
+              child: buttonChild,
               buttonColor: buttonColor,
               textData: "Pronto",
-              onTapCallBack: () {
-                if (activateCallback != null) {
-                  Navigator.pop(context, true);
+              onTapCallBack: () async {
+                if (activateCallback == true) {
+                  buttonCallback(context);
                 }
               },
             ),

@@ -90,7 +90,7 @@ class HomeState extends State<Home> {
         polyline.points.last.latitude,
         polyline.points.last.longitude,
       ),
-      icon: BitmapDescriptor.fromBytes(byteData),
+      icon: dropOffMarkerIcon,
     );
     markers.add(pickUpMarker);
     markers.add(dropOffMarker);

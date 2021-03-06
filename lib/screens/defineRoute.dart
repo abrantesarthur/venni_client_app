@@ -50,7 +50,7 @@ class DefineRouteState extends State<DefineRoute> {
 
   @override
   void initState() {
-    // TODO: review this after I finish calling a ride
+    super.initState();
 
     // text field initial values
     dropOffController.text = widget.routeModel.dropOffAddress != null
@@ -77,8 +77,13 @@ class DefineRouteState extends State<DefineRoute> {
         dropOff: widget.routeModel.dropOffAddress,
       );
     });
+  }
 
-    super.initState();
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
@@ -239,7 +244,10 @@ class DefineRouteState extends State<DefineRoute> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // TODO: render icon with higher definition
-                Image(image: AssetImage("images/dropOffToPickUpIcon.png")),
+                Image(
+                  image: AssetImage("images/dropOffToPickUpIcon.png"),
+                  width: screenWidth / 38,
+                ),
                 Column(
                   children: [
                     AppInputText(

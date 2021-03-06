@@ -31,12 +31,14 @@ class HomeState extends State<Home> {
   Map<PolylineId, Polyline> polylines = {};
   Set<Marker> markers = {};
   bool requestRide;
+  bool myLocationEnabled;
   bool myLocationButtonEnabled;
 
   @override
   void initState() {
     super.initState();
     requestRide = false;
+    myLocationEnabled = true;
     myLocationButtonEnabled = true;
 
     // load map style
@@ -62,7 +64,40 @@ class HomeState extends State<Home> {
     });
   }
 
+  Future<void> drawMarkers(Polyline polyline) async {
+    BitmapDescriptor pickUpMarkerIcon = await BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(devicePixelRatio: 2.5),
+      "images/pickUp.png",
+    );
+    BitmapDescriptor dropOffMarkerIcon = await BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(
+        devicePixelRatio: 1,
+        size: Size(1, 1),
+      ),
+      "images/dropOff.png",
+    );
+    Marker pickUpMarker = Marker(
+      markerId: MarkerId("pickUpMarker"),
+      position: LatLng(
+        polyline.points.first.latitude,
+        polyline.points.first.longitude,
+      ),
+      icon: pickUpMarkerIcon,
+    );
+    Marker dropOffMarker = Marker(
+      markerId: MarkerId("dropOffMakrer"),
+      position: LatLng(
+        polyline.points.last.latitude,
+        polyline.points.last.longitude,
+      ),
+      icon: BitmapDescriptor.fromBytes(byteData),
+    );
+    markers.add(pickUpMarker);
+    markers.add(dropOffMarker);
+  }
+
   Future<void> drawPolyline(RouteModel routeModel) async {
+    print("drawPolyline called");
     // get directions
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
         originPlaceID: routeModel.pickUpAddress.placeID,
@@ -77,30 +112,13 @@ class HomeState extends State<Home> {
       polylines[polylineId] = polyline;
 
       // add bounds to map view
-      _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
-        routeModel.calculateBounds(),
-        60,
+      await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
+        AppPolylinePoints.calculateBounds(polyline),
+        30,
       ));
 
-      // set markers
-      // TODO: extract to function
-      Marker pickUpMarker = Marker(
-        markerId: MarkerId("pickUpMarker"),
-        position: LatLng(
-          routeModel.pickUpAddress.latitude,
-          routeModel.pickUpAddress.longitude,
-        ),
-      );
-      Marker dropOffMarker = Marker(
-        markerId: MarkerId("dropOffMakrer"),
-        position: LatLng(
-          routeModel.dropOffAddress.latitude,
-          routeModel.dropOffAddress.longitude,
-        ),
-      );
-      markers.add(pickUpMarker);
-      markers.add(dropOffMarker);
-
+      // draw  markers
+      await drawMarkers(polyline);
       setState(() {});
     } else {
       // TODO: display warning
@@ -134,8 +152,9 @@ class HomeState extends State<Home> {
 
     // if user tapped to request ride
     if (requestRide) {
-      // remove myLocationBuuton
       // TODO: reactivate whenever user cancels ride
+      // hide user's location details
+      myLocationEnabled = false;
       myLocationButtonEnabled = false;
 
       // draw directions on map
@@ -171,7 +190,7 @@ class HomeState extends State<Home> {
       children: [
         GoogleMap(
           myLocationButtonEnabled: myLocationButtonEnabled,
-          myLocationEnabled: true,
+          myLocationEnabled: myLocationEnabled,
           trafficEnabled: false,
           zoomControlsEnabled: false,
           mapType: MapType.normal,

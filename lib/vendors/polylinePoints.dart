@@ -20,8 +20,29 @@ class AppPolylinePoints {
     // build polyline
     return Polyline(
       polylineId: id,
-      color: AppColor.primaryPink,
+      color: Colors.black,
       points: coordinates,
+      width: 5,
+      geodesic: true,
+    );
+  }
+
+  static LatLngBounds calculateBounds(Polyline polyline) {
+    double highestLat = -90;
+    double highestLng = -180;
+    double lowestLat = 90;
+    double lowestLng = 180;
+
+    polyline.points.forEach((point) {
+      if (point.latitude > highestLat) highestLat = point.latitude;
+      if (point.longitude > highestLng) highestLng = point.longitude;
+      if (point.latitude < lowestLat) lowestLat = point.latitude;
+      if (point.longitude < lowestLng) lowestLng = point.longitude;
+    });
+
+    return LatLngBounds(
+      southwest: LatLng(lowestLat, lowestLng),
+      northeast: LatLng(highestLat, highestLng),
     );
   }
 }

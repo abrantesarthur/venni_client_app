@@ -114,7 +114,10 @@ class DefinePickUpState extends State<DefinePickUp> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // TODO: render icon with higher definition
-                    Image(image: AssetImage("images/dropOff.png")),
+                    Image(
+                      image: AssetImage("images/pickUp.png"),
+                      width: screenWidth / 20,
+                    ),
                     AppInputText(
                       onTapCallback: () {
                         // renew session token and hide map

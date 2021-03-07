@@ -14,6 +14,7 @@ import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/vendors/directions.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
+import 'package:rider_frontend/vendors/svg.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -64,17 +65,17 @@ class HomeState extends State<Home> {
     });
   }
 
-  Future<void> drawMarkers(Polyline polyline) async {
-    BitmapDescriptor pickUpMarkerIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(devicePixelRatio: 2.5),
-      "images/pickUp.png",
+  Future<void> drawMarkers(
+    BuildContext context,
+    Polyline polyline,
+  ) async {
+    BitmapDescriptor pickUpMarkerIcon = await Svg.bitmapDescriptorFromSvg(
+      context,
+      "images/pickUpIcon.svg",
     );
-    BitmapDescriptor dropOffMarkerIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(
-        devicePixelRatio: 1,
-        size: Size(1, 1),
-      ),
-      "images/dropOff.png",
+    BitmapDescriptor dropOffMarkerIcon = await Svg.bitmapDescriptorFromSvg(
+      context,
+      "images/dropOffIcon.svg",
     );
     Marker pickUpMarker = Marker(
       markerId: MarkerId("pickUpMarker"),
@@ -96,7 +97,10 @@ class HomeState extends State<Home> {
     markers.add(dropOffMarker);
   }
 
-  Future<void> drawPolyline(RouteModel routeModel) async {
+  Future<void> drawPolyline(
+    BuildContext context,
+    RouteModel routeModel,
+  ) async {
     print("drawPolyline called");
     // get directions
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
@@ -118,7 +122,7 @@ class HomeState extends State<Home> {
       ));
 
       // draw  markers
-      await drawMarkers(polyline);
+      await drawMarkers(context, polyline);
       setState(() {});
     } else {
       // TODO: display warning
@@ -126,6 +130,7 @@ class HomeState extends State<Home> {
   }
 
   void defineRoute({
+    @required BuildContext context,
     @required RouteModel routeModel,
     @required UserPositionModel userPos,
   }) async {
@@ -158,7 +163,7 @@ class HomeState extends State<Home> {
       myLocationButtonEnabled = false;
 
       // draw directions on map
-      await drawPolyline(routeModel);
+      await drawPolyline(context, routeModel);
 
       // hide "Para onde Vamos" button
       // show "Confirmar" button
@@ -223,6 +228,7 @@ class HomeState extends State<Home> {
               // TODO: extract to another function
               onTapCallBack: () {
                 defineRoute(
+                  context: context,
                   routeModel: routeModel,
                   userPos: userPos,
                 );

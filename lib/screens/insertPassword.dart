@@ -303,6 +303,7 @@ class InsertPasswordState extends State<InsertPassword> {
                             hintText: "senha",
                             controller: passwordTextEditingController,
                             obscureText: obscurePassword,
+                            maxLines: 1,
                             inputFormatters: [
                               LengthLimitingTextInputFormatter(32)
                             ],

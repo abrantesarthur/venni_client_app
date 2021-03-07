@@ -101,7 +101,8 @@ class AddrComponent {
         ? AddrComponent(
             types: (json['types'] as List)?.cast<String>(),
             longName: json['long_name'],
-            shortName: json['short_name'])
+            shortName: json['short_name'],
+          )
         : null;
   }
 }

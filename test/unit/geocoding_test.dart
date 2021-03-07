@@ -3,6 +3,20 @@ import 'package:rider_frontend/vendors/geocoding.dart';
 
 void main() {
   group("GeocodingResult", () {
+    test("fromJson with null json", () {
+      GeocodingResult gr = GeocodingResult.fromJson(null);
+      expect(gr, isNull);
+    });
+
+    test("fromJson with empty json", () {
+      GeocodingResult gr = GeocodingResult.fromJson({});
+      expect(gr.addressComponents, isNull);
+      expect(gr.formattedAddress, isNull);
+      expect(gr.latitude, isNull);
+      expect(gr.longitude, isNull);
+      expect(gr.placeID, isNull);
+    });
+
     test("fromJson works correctly", () {
       Object json = {
         "address_components": [
@@ -55,12 +69,6 @@ void main() {
       expect(gr.latitude, equals(90.0));
       expect(gr.longitude, equals(180.0));
       expect(gr.placeID, equals("arandomplaceid"));
-
-      // final AddressComponents addressComponents;
-      // final String formattedAddress;
-      // final double latitude;
-      // final double longitude;
-      // final String placeID;
     });
   });
 }

@@ -206,7 +206,7 @@ class _AppState extends State<App> {
                 });
               }
 
-              // if DefineDropOff is pushed
+              // if DefineRoute is pushed
               if (settings.name == DefineRoute.routeName) {
                 DefineRouteArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {

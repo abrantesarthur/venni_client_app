@@ -4,15 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
 import 'insertPhone_test.dart';
+
+class MockUserPositionModel extends Mock implements UserPositionModel {}
+
+class MockRouteModel extends Mock implements RouteModel {}
+
+class MockGeocodingResult extends Mock implements GeocodingResult {}
 
 void main() {
   MockFirebaseModel mockFirebaseModel;
@@ -21,6 +30,9 @@ void main() {
   MockNavigatorObserver mockNavigatorObserver;
   MockUserCredential mockUserCredential;
   MockUser mockUser;
+  MockUserPositionModel mockUserPositionModel;
+  MockRouteModel mockRouteModel;
+  MockGeocodingResult mockGeocodingResult;
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -30,31 +42,43 @@ void main() {
     mockNavigatorObserver = MockNavigatorObserver();
     mockUserCredential = MockUserCredential();
     mockUser = MockUser();
+    mockUserPositionModel = MockUserPositionModel();
+    mockRouteModel = MockRouteModel();
+    mockGeocodingResult = MockGeocodingResult();
 
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
+    when(mockUserPositionModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockGeocodingResult.latitude).thenReturn(0);
+    when(mockGeocodingResult.longitude).thenReturn(0);
   });
 
   Future<void> pumpWidget(WidgetTester tester) async {
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<FirebaseModel>(
-            create: (context) => mockFirebaseModel)
-      ],
-      builder: (context, child) => MaterialApp(
-        home: InsertPassword(
-          userCredential: mockUserCredential,
-          userEmail: "valid@domain.com",
-          name: "Fulano",
-          surname: "de Tal",
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<FirebaseModel>(
+              create: (context) => mockFirebaseModel),
+          ChangeNotifierProvider<UserPositionModel>(
+              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<RouteModel>(
+              create: (context) => mockRouteModel)
+        ],
+        builder: (context, child) => MaterialApp(
+          home: InsertPassword(
+            userCredential: mockUserCredential,
+            userEmail: "valid@domain.com",
+            name: "Fulano",
+            surname: "de Tal",
+          ),
+          routes: {
+            Home.routeName: (context) => Home(),
+            Start.routeName: (context) => Start(),
+          },
+          navigatorObservers: [mockNavigatorObserver],
         ),
-        routes: {
-          Home.routeName: (context) => Home(),
-          Start.routeName: (context) => Start(),
-        },
-        navigatorObservers: [mockNavigatorObserver],
       ),
-    ));
+    );
   }
 
   group("state", () {

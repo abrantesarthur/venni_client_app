@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
@@ -14,6 +16,7 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
+import 'insertPassword_test.dart';
 import 'insertPhone_test.dart';
 
 void main() {
@@ -23,6 +26,9 @@ void main() {
   MockNavigatorObserver mockNavigatorObserver;
   MockUserCredential mockUserCredential;
   MockUser mockUser;
+  MockUserPositionModel mockUserPositionModel;
+  MockRouteModel mockRouteModel;
+  MockGeocodingResult mockGeocodingResult;
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,10 +38,16 @@ void main() {
     mockNavigatorObserver = MockNavigatorObserver();
     mockUserCredential = MockUserCredential();
     mockUser = MockUser();
+    mockUserPositionModel = MockUserPositionModel();
+    mockRouteModel = MockRouteModel();
+    mockGeocodingResult = MockGeocodingResult();
 
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
     when(mockFirebaseModel.isRegistered).thenReturn(true);
+    when(mockUserPositionModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockGeocodingResult.latitude).thenReturn(0);
+    when(mockGeocodingResult.longitude).thenReturn(0);
   });
 
   void setupFirebaseMocks({
@@ -220,7 +232,11 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
-              create: (context) => mockFirebaseModel)
+              create: (context) => mockFirebaseModel),
+          ChangeNotifierProvider<UserPositionModel>(
+              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<RouteModel>(
+              create: (context) => mockRouteModel)
         ],
         child: MaterialApp(
           home: InsertSmsCode(
@@ -496,7 +512,11 @@ void main() {
         MultiProvider(
           providers: [
             ChangeNotifierProvider<FirebaseModel>(
-                create: (context) => mockFirebaseModel)
+                create: (context) => mockFirebaseModel),
+            ChangeNotifierProvider<UserPositionModel>(
+                create: (context) => mockUserPositionModel),
+            ChangeNotifierProvider<RouteModel>(
+                create: (context) => mockRouteModel)
           ],
           child: MaterialApp(
             home: InsertSmsCode(

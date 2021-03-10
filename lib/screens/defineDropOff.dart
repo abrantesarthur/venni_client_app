@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
@@ -116,9 +117,8 @@ class DefineDropOffState extends State<DefineDropOff> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // TODO: render icon with higher definition
-                    Image(
-                      image: AssetImage("images/dropOff.png"),
+                    SvgPicture.asset(
+                      "images/dropOffIcon.svg",
                       width: screenWidth / 20,
                     ),
                     AppInputText(
@@ -134,6 +134,7 @@ class DefineDropOffState extends State<DefineDropOff> {
                       hintText: "Para onde?",
                       hintColor: AppColor.disabled,
                       controller: dropOffTextEditingController,
+                      autoFocus: widget.chosenDropOffAddress == null,
                     ),
                   ],
                 ),

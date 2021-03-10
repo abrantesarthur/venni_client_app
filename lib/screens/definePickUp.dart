@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
@@ -117,9 +118,8 @@ class DefinePickUpState extends State<DefinePickUp> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // TODO: render icon with higher definition
-                    Image(
-                      image: AssetImage("images/pickUp.png"),
+                    SvgPicture.asset(
+                      "images/pickUpIcon.svg",
                       width: screenWidth / 20,
                     ),
                     AppInputText(
@@ -135,6 +135,7 @@ class DefinePickUpState extends State<DefinePickUp> {
                       hintText: "De onde?",
                       hintColor: AppColor.disabled,
                       controller: pickUpTextEditingController,
+                      autoFocus: widget.chosenPickUpAddress == null,
                     ),
                   ],
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
@@ -236,9 +237,9 @@ class DefineRouteState extends State<DefineRoute> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // TODO: render icon with higher definition
-                Image(
-                  image: AssetImage("images/dropOffToPickUpIcon.png"),
-                  width: screenWidth / 38,
+                SvgPicture.asset(
+                  "images/dropOffToPickUpIcon.svg",
+                  width: screenWidth / 36,
                 ),
                 Column(
                   children: [

@@ -20,8 +20,8 @@ class Svg {
     MediaQueryData queryData = MediaQuery.of(context);
     double devicePixelRatio = queryData.devicePixelRatio;
     double width =
-        32 * devicePixelRatio; // where 32 is your SVG's original width
-    double height = 32 * devicePixelRatio; // same thing
+        16 * devicePixelRatio; // where 16 is your SVG's original width
+    double height = 16 * devicePixelRatio; // same thing
 
     // Convert to ui.Picture
     ui.Picture picture = svgDrawableRoot.toPicture(size: Size(width, height));

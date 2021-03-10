@@ -29,16 +29,16 @@ class HomeState extends State<Home> {
   String _mapStyle;
   Map<PolylineId, Polyline> polylines = {};
   Set<Marker> markers = {};
-  bool requestRide;
   bool myLocationEnabled;
   bool myLocationButtonEnabled;
+  var rideStatus;
 
   @override
   void initState() {
     super.initState();
-    requestRide = false;
     myLocationEnabled = true;
     myLocationButtonEnabled = true;
+    rideStatus = RideStatus.off;
 
     // load map style
     rootBundle
@@ -149,16 +149,15 @@ class HomeState extends State<Home> {
       ),
     );
 
-    setState(() {
-      requestRide = _requestRide;
-    });
-
     // if user tapped to request ride
-    if (requestRide) {
+    if (_requestRide) {
       // TODO: reactivate whenever user cancels ride
       // hide user's location details
       myLocationEnabled = false;
       myLocationButtonEnabled = false;
+
+      // change ride status to hide "Para onde vamos" and show "Confirmar" button
+      rideStatus = RideStatus.waitingForConfirmation;
 
       // draw directions on map
       await drawPolyline(context, routeModel);
@@ -217,24 +216,50 @@ class HomeState extends State<Home> {
           markers: markers,
         ),
         OverallPadding(
-          child: Container(
-            alignment: Alignment.bottomCenter,
-            child: AppButton(
-              borderRadius: 10.0,
-              iconLeft: Icons.near_me,
-              textData: "Para onde vamos?",
-              // TODO: extract to another function
-              onTapCallBack: () {
-                defineRoute(
-                  context: context,
-                  routeModel: routeModel,
-                  userPos: userPos,
-                );
-              },
-            ),
-          ),
+          child: rideStatus == RideStatus.off
+              ? Container(
+                  alignment: Alignment.bottomCenter,
+                  child: AppButton(
+                    borderRadius: 10.0,
+                    iconLeft: Icons.near_me,
+                    textData: "Para onde vamos?",
+                    // TODO: extract to another function
+                    onTapCallBack: () {
+                      defineRoute(
+                        context: context,
+                        routeModel: routeModel,
+                        userPos: userPos,
+                      );
+                    },
+                  ),
+                )
+              : (rideStatus == RideStatus.waitingForConfirmation)
+                  ? Container(
+                      alignment: Alignment.bottomCenter,
+                      child: AppButton(
+                        borderRadius: 10.0,
+                        iconLeft: Icons.near_me,
+                        textData: "Esperando por motorista",
+                        // TODO: extract to another function
+                        onTapCallBack: () {
+                          defineRoute(
+                            context: context,
+                            routeModel: routeModel,
+                            userPos: userPos,
+                          );
+                        },
+                      ),
+                    )
+                  : Container(),
         ),
       ],
     ));
   }
+}
+
+enum RideStatus {
+  off,
+  waitingForConfirmation,
+  waitingForRider,
+  riding,
 }

@@ -184,26 +184,6 @@ class DefineRouteState extends State<DefineRoute> {
       );
     });
 
-    // calculate pick up and drop off geocodings
-    GeocodingResponse pickUpGeocoding = await Geocoding()
-        .searchByPlaceID(widget.routeModel.pickUpAddress.placeID);
-    GeocodingResponse dropOffGeocoding = await Geocoding()
-        .searchByPlaceID(widget.routeModel.dropOffAddress.placeID);
-
-    // enrich pick up and drop off addresses with coordinates
-    Address updatedPickUpAddress = Address.fromGeocodingResult(
-      geocodingResult: pickUpGeocoding.results.first,
-      dropOff: false,
-    );
-    Address updatedDropOffAddress = Address.fromGeocodingResult(
-      geocodingResult: dropOffGeocoding.results.first,
-      dropOff: true,
-    );
-
-    // update routeModel with enriched addresses
-    widget.routeModel.updatePickUpAddres(updatedPickUpAddress);
-    widget.routeModel.updateDropOffAddres(updatedDropOffAddress);
-
     Navigator.pop(context, true);
   }
 

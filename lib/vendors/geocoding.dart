@@ -68,30 +68,20 @@ class GeocodingResult {
   });
 
   factory GeocodingResult.fromJson(Map json) {
-    if (json == null) return null;
-    double _getLatitude(Map geometry) {
-      return geometry != null
-          ? (geometry["location"] != null ? geometry["location"]["lat"] : null)
-          : null;
-    }
-
-    double _getLongitude(Map geometry) {
-      return geometry != null
-          ? (geometry["location"] != null ? geometry["location"]["lng"] : null)
-          : null;
-    }
-
+    // TODO: this is ugly. maybe export the type casting to a function
     List<AddrComponent> acList = (json["address_components"] as List)
         ?.map((ac) => AddrComponent.fromJson(ac))
         ?.toList();
-    AddressComponents acs = acList != null ? AddressComponents(acList) : null;
-    return GeocodingResult(
-      addressComponents: acs,
-      formattedAddress: json["formatted_address"],
-      latitude: _getLatitude(json["geometry"]),
-      longitude: _getLongitude(json["geometry"]),
-      placeID: json["place_id"],
-    );
+    AddressComponents acs = AddressComponents(acList);
+    return json != null
+        ? GeocodingResult(
+            addressComponents: acs,
+            formattedAddress: json["formatted_address"],
+            latitude: json["geometry"]["location"]["lat"],
+            longitude: json["geometry"]["location"]["lng"],
+            placeID: json["place_id"],
+          )
+        : null;
   }
 }
 
@@ -111,8 +101,7 @@ class AddrComponent {
         ? AddrComponent(
             types: (json['types'] as List)?.cast<String>(),
             longName: json['long_name'],
-            shortName: json['short_name'],
-          )
+            shortName: json['short_name'])
         : null;
   }
 }
@@ -120,66 +109,34 @@ class AddrComponent {
 class AddressComponents {
   final List<AddrComponent> addressComponents;
 
-  AddressComponents(this.addressComponents) : assert(addressComponents != null);
+  AddressComponents(this.addressComponents);
 
-  String _search(String type, {bool pickShortName = false}) {
-    AddrComponent ac = addressComponents.firstWhere(
-      (component) => component.types.contains(type),
-      orElse: () => null,
-    );
-    String field;
-    if (ac != null) field = pickShortName ? ac.shortName : ac.longName;
-    return field ?? "";
+  String search(String type) {
+    return addressComponents
+            .firstWhere(
+              (component) => component.types.contains(type),
+              orElse: () => null,
+            )
+            ?.longName ??
+        "";
   }
 
   String buildAddressMainText() {
-    String route = this._search("route");
-    String streetNumber = this._search("street_number");
-    String sublocality = this._search("sublocality_level_1");
-    // contains route, street number and sublocality
-    if (route != "" && streetNumber != "" && sublocality != "") {
-      return route + ", " + streetNumber + " - " + sublocality;
-    }
-    // without street number
-    if (route != "" && streetNumber == "" && sublocality != "") {
-      return route + " - " + sublocality;
-    }
-    // without sublocality
-    if (route != "" && streetNumber != "" && sublocality == "") {
-      return route + ", " + streetNumber;
-    }
-    // contains only street number
-    if (route != "" && streetNumber == "" && sublocality == "") {
-      return route;
-    }
-    // doesnt contain route
-    return sublocality;
+    return this.search("route") +
+        ", " +
+        this.search("street_number") +
+        (this.search("sublocality_level_1") != ""
+            ? " - " + this.search("sublocality_level_1")
+            : "");
   }
 
   String buildAddressSecondaryText() {
-    String city = this._search("administrative_area_level_2");
-    String shortState = this._search(
-      "administrative_area_level_1",
-      pickShortName: true,
-    );
-    String longState = this._search("administrative_area_level_1");
-    String postalCode = this._search("postal_code");
-    String country = this._search("country");
-    // contains all fields
-    if (city != "" && shortState != "" && postalCode != "" && country != "") {
-      return city + " - " + shortState + ". " + postalCode + ", " + country;
-    }
-    // contains no city
-    if (city == "") {
-      return (longState != ""
-          ? (longState + (country != "" ? ", " + country : "")) // with state
-          : country); // without state
-    }
-    // contains no state
-    if (shortState == "") {
-      return city + (country != "" ? ", " + country : "");
-    }
-    // default
-    return city + " - " + shortState;
+    return this.search("administrative_area_level_2") +
+        " - " +
+        this.search("administrative_area_level_1") +
+        ", " +
+        this.search("postal_code") +
+        ", " +
+        this.search("country");
   }
 }

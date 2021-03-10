@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/vendors/googleService.dart';
 
+// TODO: test the shit out of this
+
 class Directions extends GoogleWebService {
   Directions()
       : super(baseUrl: "https://maps.googleapis.com/maps/api/directions");
@@ -59,18 +61,13 @@ class DirectionsResult {
   });
 
   factory DirectionsResult.fromJson(Map json) {
-    if (json == null) return null;
     List<GeocodedWaypoint> gWps = (json["geocoded_waypoints"] as List)
         ?.map((gwp) => GeocodedWaypoint.fromJson(gwp))
         ?.toList();
-    List routes = (json["routes"] as List);
-    Route route = routes != null
-        ? (routes.isNotEmpty ? Route.fromJson(routes.first) : null)
-        : null;
     return json != null
         ? DirectionsResult(
             geocodedWaypoints: gWps,
-            route: route,
+            route: Route.fromJson((json["routes"] as List)?.first),
           )
         : null;
   }
@@ -96,38 +93,34 @@ class Route {
   });
 
   factory Route.fromJson(Map<String, dynamic> json) {
-    if (json == null) return null;
-    List legs = json["legs"] as List;
-    Leg leg = legs != null
-        ? (legs.isNotEmpty ? Leg.fromJson(legs.first) : null)
+    Leg leg = Leg.fromJson((json["legs"] as List)?.first);
+    return json != null
+        ? Route(
+            durationText: leg.durationText,
+            durationSeconds: leg.durationValue,
+            distanceText: leg.distanceText,
+            distanceMeters: leg.distanceValue,
+            startAddress: leg.startAddress,
+            endAddress: leg.endAddress,
+            encodedPoints: json["overview_polyline"]["points"],
+          )
         : null;
-    return Route(
-      durationText: leg != null ? leg.durationText : null,
-      durationSeconds: leg != null ? leg.durationSeconds : null,
-      distanceText: leg != null ? leg.distanceText : null,
-      distanceMeters: leg != null ? leg.distanceMeters : null,
-      startAddress: leg != null ? leg.startAddress : null,
-      endAddress: leg != null ? leg.endAddress : null,
-      encodedPoints: json["overview_polyline"] != null
-          ? json["overview_polyline"]["points"]
-          : null,
-    );
   }
 }
 
 class Leg {
   final String durationText;
-  final int durationSeconds;
+  final int durationValue;
   final String distanceText;
-  final int distanceMeters;
+  final int distanceValue;
   final String startAddress;
   final String endAddress;
 
   Leg({
     @required this.durationText,
-    @required this.durationSeconds,
+    @required this.durationValue,
     @required this.distanceText,
-    @required this.distanceMeters,
+    @required this.distanceValue,
     @required this.startAddress,
     @required this.endAddress,
   });
@@ -135,14 +128,10 @@ class Leg {
   factory Leg.fromJson(Map<String, dynamic> json) {
     return json != null
         ? Leg(
-            durationText:
-                json["duration"] != null ? json["duration"]["text"] : null,
-            durationSeconds:
-                json["duration"] != null ? json["duration"]["value"] : null,
-            distanceText:
-                json["distance"] != null ? json["distance"]["text"] : null,
-            distanceMeters:
-                json["distance"] != null ? json["distance"]["value"] : null,
+            durationText: json["duration"]["text"],
+            durationValue: json["duration"]["value"],
+            distanceText: json["distance"]["text"],
+            distanceValue: json["distance"]["value"],
             startAddress: json["start_address"],
             endAddress: json["end_address"],
           )

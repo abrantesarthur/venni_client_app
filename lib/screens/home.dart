@@ -115,7 +115,7 @@ class HomeState extends State<Home> {
 
       // add bounds to map view
       await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
-        AppPolylinePoints.calculatePolylineBounds(polyline),
+        AppPolylinePoints.calculateBounds(polyline),
         30,
       ));
 
@@ -127,11 +127,11 @@ class HomeState extends State<Home> {
     }
   }
 
-  void defineRoute({
-    @required BuildContext context,
-    @required RouteModel routeModel,
-    @required UserPositionModel userPos,
-  }) async {
+  void defineRoute(BuildContext context) async {
+    RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
+    UserPositionModel userPos =
+        Provider.of<UserPositionModel>(context, listen: false);
+
     // pickUp location defaults to user's current address
     if (routeModel.pickUpAddress == null) {
       routeModel.updatePickUpAddres(Address.fromGeocodingResult(
@@ -176,7 +176,6 @@ class HomeState extends State<Home> {
     final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    RouteModel routeModel = Provider.of<RouteModel>(context);
 
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen
@@ -223,13 +222,8 @@ class HomeState extends State<Home> {
                     borderRadius: 10.0,
                     iconLeft: Icons.near_me,
                     textData: "Para onde vamos?",
-                    // TODO: extract to another function
                     onTapCallBack: () {
-                      defineRoute(
-                        context: context,
-                        routeModel: routeModel,
-                        userPos: userPos,
-                      );
+                      defineRoute(context);
                     },
                   ),
                 )
@@ -240,13 +234,8 @@ class HomeState extends State<Home> {
                         borderRadius: 10.0,
                         iconLeft: Icons.near_me,
                         textData: "Esperando por motorista",
-                        // TODO: extract to another function
                         onTapCallBack: () {
-                          defineRoute(
-                            context: context,
-                            routeModel: routeModel,
-                            userPos: userPos,
-                          );
+                          defineRoute(context);
                         },
                       ),
                     )
@@ -254,6 +243,65 @@ class HomeState extends State<Home> {
         ),
       ],
     ));
+  }
+}
+
+Widget _buildRideCard({
+  @required BuildContext context,
+  @required HomeState homeState,
+  @required var rideStatus,
+}) {
+  switch (rideStatus) {
+    case RideStatus.off:
+      return Container(
+        alignment: Alignment.bottomCenter,
+        child: AppButton(
+          borderRadius: 10.0,
+          iconLeft: Icons.near_me,
+          textData: "Para onde vamos?",
+          onTapCallBack: () {
+            homeState.defineRoute(context);
+          },
+        ),
+      );
+    case RideStatus.waitingForConfirmation:
+      return Container(
+        alignment: Alignment.bottomCenter,
+        child: AppButton(
+          borderRadius: 10.0,
+          iconLeft: Icons.near_me,
+          textData: "Waiting for confirmation.",
+          onTapCallBack: () {
+            homeState.defineRoute(context);
+          },
+        ),
+      );
+    case RideStatus.waitingForRider:
+      return Container(
+        alignment: Alignment.bottomCenter,
+        child: AppButton(
+          borderRadius: 10.0,
+          iconLeft: Icons.near_me,
+          textData: "Waiting for rider.",
+          onTapCallBack: () {
+            homeState.defineRoute(context);
+          },
+        ),
+      );
+    case RideStatus.riding:
+      return Container(
+        alignment: Alignment.bottomCenter,
+        child: AppButton(
+          borderRadius: 10.0,
+          iconLeft: Icons.near_me,
+          textData: "riding.",
+          onTapCallBack: () {
+            homeState.defineRoute(context);
+          },
+        ),
+      );
+    default:
+      return Container();
   }
 }
 

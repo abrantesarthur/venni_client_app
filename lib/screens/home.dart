@@ -260,7 +260,7 @@ Widget _buildRideCard({
           Spacer(),
           FloatingCard(
             bottom: 0,
-            child: _buildWaitingForRideWidget(context),
+            child: _buildWaitingForConfirmationWidget(context),
           ),
           OverallPadding(
             bottom: screenHeight / 20,
@@ -301,7 +301,7 @@ Widget _buildRideCard({
   }
 }
 
-Widget _buildWaitingForRideWidget(BuildContext context) {
+Widget _buildWaitingForConfirmationWidget(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   return Column(

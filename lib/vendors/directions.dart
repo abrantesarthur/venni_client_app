@@ -97,9 +97,9 @@ class Route {
     return json != null
         ? Route(
             durationText: leg.durationText,
-            durationSeconds: leg.durationValue,
+            durationSeconds: leg.durationSeconds,
             distanceText: leg.distanceText,
-            distanceMeters: leg.distanceValue,
+            distanceMeters: leg.distanceMeters,
             startAddress: leg.startAddress,
             endAddress: leg.endAddress,
             encodedPoints: json["overview_polyline"]["points"],
@@ -110,17 +110,17 @@ class Route {
 
 class Leg {
   final String durationText;
-  final int durationValue;
+  final int durationSeconds;
   final String distanceText;
-  final int distanceValue;
+  final int distanceMeters;
   final String startAddress;
   final String endAddress;
 
   Leg({
     @required this.durationText,
-    @required this.durationValue,
+    @required this.durationSeconds,
     @required this.distanceText,
-    @required this.distanceValue,
+    @required this.distanceMeters,
     @required this.startAddress,
     @required this.endAddress,
   });
@@ -129,9 +129,9 @@ class Leg {
     return json != null
         ? Leg(
             durationText: json["duration"]["text"],
-            durationValue: json["duration"]["value"],
+            durationSeconds: json["duration"]["value"],
             distanceText: json["distance"]["text"],
-            distanceValue: json["distance"]["value"],
+            distanceMeters: json["distance"]["value"],
             startAddress: json["start_address"],
             endAddress: json["end_address"],
           )

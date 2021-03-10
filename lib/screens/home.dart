@@ -10,12 +10,15 @@ import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
+import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/directions.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/vendors/svg.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:rider_frontend/widgets/padlessDivider.dart';
 
 class Home extends StatefulWidget {
   static const routeName = "home";
@@ -31,6 +34,9 @@ class HomeState extends State<Home> {
   Set<Marker> markers = {};
   bool myLocationEnabled;
   bool myLocationButtonEnabled;
+  double googleMapsTopPadding;
+  double googleMapsBottomPadding;
+
   var rideStatus;
 
   @override
@@ -99,7 +105,6 @@ class HomeState extends State<Home> {
     BuildContext context,
     RouteModel routeModel,
   ) async {
-    print("drawPolyline called");
     // get directions
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
         originPlaceID: routeModel.pickUpAddress.placeID,
@@ -131,6 +136,7 @@ class HomeState extends State<Home> {
     RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
     UserPositionModel userPos =
         Provider.of<UserPositionModel>(context, listen: false);
+    final screenHeight = MediaQuery.of(context).size.height;
 
     // pickUp location defaults to user's current address
     if (routeModel.pickUpAddress == null) {
@@ -151,19 +157,21 @@ class HomeState extends State<Home> {
 
     // if user tapped to request ride
     if (_requestRide) {
-      // TODO: reactivate whenever user cancels ride
-      // hide user's location details
-      myLocationEnabled = false;
-      myLocationButtonEnabled = false;
+      setState(() {
+        // hide user's location details
+        myLocationEnabled = false;
+        myLocationButtonEnabled = false;
 
-      // change ride status to hide "Para onde vamos" and show "Confirmar" button
-      rideStatus = RideStatus.waitingForConfirmation;
+        // reset paddings
+        googleMapsBottomPadding = screenHeight * 0.4;
+        googleMapsTopPadding = screenHeight * 0.06;
+
+        // change ride status to hide "Para onde vamos" and show "Confirmar" button
+        rideStatus = RideStatus.waitingForConfirmation;
+      });
 
       // draw directions on map
       await drawPolyline(context, routeModel);
-
-      // hide "Para onde Vamos" button
-      // show "Confirmar" button
     }
   }
 
@@ -203,8 +211,8 @@ class HomeState extends State<Home> {
             zoom: 16.5,
           ),
           padding: EdgeInsets.only(
-            top: screenHeight / 6,
-            bottom: screenHeight / 6,
+            top: googleMapsTopPadding ?? screenHeight / 12,
+            bottom: googleMapsBottomPadding ?? screenHeight / 7,
             left: screenWidth / 20,
             right: screenWidth / 20,
           ),
@@ -214,32 +222,10 @@ class HomeState extends State<Home> {
           polylines: Set<Polyline>.of(polylines.values),
           markers: markers,
         ),
-        OverallPadding(
-          child: rideStatus == RideStatus.off
-              ? Container(
-                  alignment: Alignment.bottomCenter,
-                  child: AppButton(
-                    borderRadius: 10.0,
-                    iconLeft: Icons.near_me,
-                    textData: "Para onde vamos?",
-                    onTapCallBack: () {
-                      defineRoute(context);
-                    },
-                  ),
-                )
-              : (rideStatus == RideStatus.waitingForConfirmation)
-                  ? Container(
-                      alignment: Alignment.bottomCenter,
-                      child: AppButton(
-                        borderRadius: 10.0,
-                        iconLeft: Icons.near_me,
-                        textData: "Esperando por motorista",
-                        onTapCallBack: () {
-                          defineRoute(context);
-                        },
-                      ),
-                    )
-                  : Container(),
+        _buildRideCard(
+          context: context,
+          homeState: this,
+          rideStatus: rideStatus,
         ),
       ],
     ));
@@ -251,40 +237,51 @@ Widget _buildRideCard({
   @required HomeState homeState,
   @required var rideStatus,
 }) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
   switch (rideStatus) {
     case RideStatus.off:
-      return Container(
-        alignment: Alignment.bottomCenter,
-        child: AppButton(
-          borderRadius: 10.0,
-          iconLeft: Icons.near_me,
-          textData: "Para onde vamos?",
-          onTapCallBack: () {
-            homeState.defineRoute(context);
-          },
+      return OverallPadding(
+        child: Container(
+          alignment: Alignment.bottomCenter,
+          child: AppButton(
+            borderRadius: 10.0,
+            iconLeft: Icons.near_me,
+            textData: "Para onde vamos?",
+            onTapCallBack: () {
+              homeState.defineRoute(context);
+            },
+          ),
         ),
       );
     case RideStatus.waitingForConfirmation:
-      return Container(
-        alignment: Alignment.bottomCenter,
-        child: AppButton(
-          borderRadius: 10.0,
-          iconLeft: Icons.near_me,
-          textData: "Waiting for confirmation.",
-          onTapCallBack: () {
-            homeState.defineRoute(context);
-          },
-        ),
+      return Column(
+        children: [
+          Spacer(),
+          FloatingCard(
+            bottom: 0,
+            child: _buildWaitingForRideWidget(context),
+          ),
+          OverallPadding(
+            bottom: screenHeight / 20,
+            top: screenHeight / 40,
+            child: AppButton(
+              textData: "Confirmar Trajeto",
+              onTapCallBack: () {
+                homeState.setState(() {});
+              },
+            ),
+          )
+        ],
       );
     case RideStatus.waitingForRider:
       return Container(
         alignment: Alignment.bottomCenter,
         child: AppButton(
           borderRadius: 10.0,
-          iconLeft: Icons.near_me,
           textData: "Waiting for rider.",
           onTapCallBack: () {
-            homeState.defineRoute(context);
+            homeState.setState(() {});
           },
         ),
       );
@@ -293,7 +290,6 @@ Widget _buildRideCard({
         alignment: Alignment.bottomCenter,
         child: AppButton(
           borderRadius: 10.0,
-          iconLeft: Icons.near_me,
           textData: "riding.",
           onTapCallBack: () {
             homeState.defineRoute(context);
@@ -303,6 +299,118 @@ Widget _buildRideCard({
     default:
       return Container();
   }
+}
+
+Widget _buildWaitingForRideWidget(BuildContext context) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  return Column(
+    children: [
+      SizedBox(height: screenHeight / 200),
+      Row(
+        children: [
+          Text(
+            "Chegada ao destino",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          Text(
+            "14:27", // TODO: make dynamic
+            style: TextStyle(fontSize: 18),
+          ),
+        ],
+      ),
+      SizedBox(height: screenHeight / 200),
+      Row(
+        children: [
+          Text(
+            "Preço",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Spacer(),
+          Text(
+            "R\$ 5,60", // TODO: make dynamic
+            style: TextStyle(fontSize: 18),
+          ),
+        ],
+      ),
+      SizedBox(height: screenHeight / 200),
+      Divider(thickness: 0.1, color: Colors.black),
+      SizedBox(height: screenHeight / 200),
+      Text(
+        "Escolha a forma de pagamento",
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      ),
+      SizedBox(height: screenHeight / 75),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          GestureDetector(
+            child: Material(
+              type: MaterialType.card,
+              elevation: 4.0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                  side: BorderSide(
+                      color: AppColor.secondaryGreen) // TODO: make dynamic
+                  ),
+              child: Padding(
+                padding: EdgeInsets.all(5),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.money,
+                      size: 40,
+                      color: AppColor.secondaryGreen, // TODO: make dynamic
+                    ),
+                    SizedBox(width: screenWidth / 50),
+                    Text(
+                      "Dinheiro",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColor.secondaryGreen, // TODO: make dynamic
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          GestureDetector(
+            child: Material(
+              type: MaterialType.card,
+              elevation: 4.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(5),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.credit_card,
+                      size: 40,
+                      color: Colors.black, // TODO: make dynamic
+                    ),
+                    SizedBox(width: screenWidth / 50),
+                    Text(
+                      "Cartão",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black, // TODO: make dynamic
+                      ),
+                    ),
+                    Icon(Icons.arrow_right),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      SizedBox(height: screenHeight / 200),
+    ],
+  );
 }
 
 enum RideStatus {

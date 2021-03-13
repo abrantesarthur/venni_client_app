@@ -105,7 +105,7 @@ class HomeState extends State<Home> {
     BuildContext context,
     RouteModel routeModel,
   ) async {
-    // TODO: change to make call only in the backend
+    // TODO: move this to defineRoute. Should probably extend the RouteModel. Maybe change name as well.
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
         originPlaceID: routeModel.pickUpAddress.placeID,
         destinationPlaceID: routeModel.dropOffAddress.placeID);
@@ -175,10 +175,6 @@ class HomeState extends State<Home> {
     }
   }
 
-  void printToken(FirebaseModel firebaseModel) async {
-    String idToken = await firebaseModel.auth.currentUser.getIdToken(true);
-    print(idToken);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,8 +185,6 @@ class HomeState extends State<Home> {
     final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    printToken(firebaseModel);
 
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen

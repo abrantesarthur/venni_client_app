@@ -89,7 +89,7 @@ class _AppState extends State<App> {
   }
 
 
-  // TODO: fix unit tests, then think about callign directions API only in backend
+  // TODO: think about callign directions API only in backend
   // TODO: load user position here, instead of home
   // TODO: make sure client cannot write to database (cloud functions do that)
   // TODO: change the database rules to not allow anyone to edit it

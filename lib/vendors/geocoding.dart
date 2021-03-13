@@ -119,9 +119,9 @@ class AddrComponent {
 class AddressComponents {
   final List<AddrComponent> addressComponents;
 
-  AddressComponents(this.addressComponents);
+  AddressComponents(this.addressComponents) : assert(addressComponents != null);
 
-  String search(String type) {
+  String _search(String type) {
     return addressComponents
             .firstWhere(
               (component) => component.types.contains(type),
@@ -133,21 +133,37 @@ class AddressComponents {
 
 // TODO: fix this. it didn;t save my alterations
   String buildAddressMainText() {
-    return this.search("route") +
-        ", " +
-        this.search("street_number") +
-        (this.search("sublocality_level_1") != ""
-            ? " - " + this.search("sublocality_level_1")
-            : "");
+    String route = this._search("route");
+    String streetNumber = this._search("street_number");
+    String sublocality = this._search("sublocality_level_1");
+    // contains route, street number and sublocality
+    if (route != "" && streetNumber != "" && sublocality != "") {
+      return route + ", " + streetNumber + " - " + sublocality;
+    }
+    // without street number
+    if (route != "" && streetNumber == "" && sublocality != "") {
+      return route + " - " + sublocality;
+    }
+    // without sublocality
+    if (route != "" && streetNumber != "" && sublocality == "") {
+      return route + ", " + streetNumber;
+    }
+    // contains only street number
+    if (route != "" && streetNumber == "" && sublocality == "") {
+      return route;
+    }
+    // doesnt contain route
+    return sublocality;
+
   }
 
   String buildAddressSecondaryText() {
-    return this.search("administrative_area_level_2") +
+    return this._search("administrative_area_level_2") +
         " - " +
-        this.search("administrative_area_level_1") +
+        this._search("administrative_area_level_1") +
         ", " +
-        this.search("postal_code") +
+        this._search("postal_code") +
         ", " +
-        this.search("country");
+        this._search("country");
   }
 }

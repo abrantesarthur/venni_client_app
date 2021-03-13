@@ -105,7 +105,7 @@ class HomeState extends State<Home> {
     BuildContext context,
     RouteModel routeModel,
   ) async {
-    // get directions
+    // TODO: change to make call only in the backend
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
         originPlaceID: routeModel.pickUpAddress.placeID,
         destinationPlaceID: routeModel.dropOffAddress.placeID);
@@ -175,6 +175,11 @@ class HomeState extends State<Home> {
     }
   }
 
+  void printToken(FirebaseModel firebaseModel) async {
+    String idToken = await firebaseModel.auth.currentUser.getIdToken(true);
+    print(idToken);
+  }
+
   @override
   Widget build(BuildContext context) {
     // get user position
@@ -184,6 +189,8 @@ class HomeState extends State<Home> {
     final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    printToken(firebaseModel);
 
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen

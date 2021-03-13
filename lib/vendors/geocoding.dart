@@ -68,20 +68,30 @@ class GeocodingResult {
   });
 
   factory GeocodingResult.fromJson(Map json) {
-    // TODO: this is ugly. maybe export the type casting to a function
+    if (json == null) return null;
+    double _getLatitude(Map geometry) {
+      return geometry != null
+          ? (geometry["location"] != null ? geometry["location"]["lat"] : null)
+          : null;
+    }
+
+    double _getLongitude(Map geometry) {
+      return geometry != null
+          ? (geometry["location"] != null ? geometry["location"]["lng"] : null)
+          : null;
+    }
+
     List<AddrComponent> acList = (json["address_components"] as List)
         ?.map((ac) => AddrComponent.fromJson(ac))
         ?.toList();
-    AddressComponents acs = AddressComponents(acList);
-    return json != null
-        ? GeocodingResult(
-            addressComponents: acs,
-            formattedAddress: json["formatted_address"],
-            latitude: json["geometry"]["location"]["lat"],
-            longitude: json["geometry"]["location"]["lng"],
-            placeID: json["place_id"],
-          )
-        : null;
+    AddressComponents acs = acList != null ? AddressComponents(acList) : null;
+    return GeocodingResult(
+      addressComponents: acs,
+      formattedAddress: json["formatted_address"],
+      latitude: _getLatitude(json["geometry"]),
+      longitude: _getLongitude(json["geometry"]),
+      placeID: json["place_id"],
+    );
   }
 }
 
@@ -121,6 +131,7 @@ class AddressComponents {
         "";
   }
 
+// TODO: fix this. it didn;t save my alterations
   String buildAddressMainText() {
     return this.search("route") +
         ", " +

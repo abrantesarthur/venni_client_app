@@ -1,21 +1,16 @@
-# GO ?= go
-# GOGENERATE ?= $(GO) generate
-# GOINSTALL ?= $(GO) install
+FLUTTER ?= flutter
+FLUTTERRUN ?= $(FLUTTER) run
 
 ################################################################################
 ## Main make targets
 ################################################################################
+.PHONY: run-dev
+run-dev:
+	$(FLUTTERRUN) -t lib/main_dev.dart
 
-# .PHONY: deps
-# deps: docker/up docker/wait migrations/up migrations/test/up
-# 	$(GOMOD) tidy
-
-# .PHONY: undeps
-# undeps: docker/down
-
-# .PHONY: run
-# run:
-# 	$(GORUN) . api
+.PHONY: run
+run:
+	$(FLUTTERRUN) -t lib/main_prod.dart
 
 ################################################################################
 ## test targets
@@ -23,12 +18,16 @@
 
 .PHONY: unit_test
 unit_test:
-	flutter test --name=test/unit/* --coverage
+	flutter test test/unit/* --coverage
 	
 .PHONY: widget_test
-unit_test:
-	flutter test --name=test/widget/* --coverage
+widget_test:
+	flutter test test/widget/* --coverage
 
 .PHONY: integration_test
-unit_test:
-	flutter test --name=test/integration/* --coverage
+integration_test:
+	flutter test test/integration/* --coverage
+
+.PHONY: test
+test:
+	flutter test test/*

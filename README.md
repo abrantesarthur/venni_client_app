@@ -1,4 +1,4 @@
-# rider_frontend
+# riderapp
 
 A new Flutter project.
 

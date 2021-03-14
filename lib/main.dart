@@ -9,30 +9,24 @@ import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
+import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/home.dart';
+import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
-import 'package:rider_frontend/screens/insertEmail.dart';
-import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/screens/pickMapLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
-import 'package:rider_frontend/screens/pickMapLocation.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/vendors/places.dart';
-
 /**
  * https://github.com/flutter/flutter/issues/41383#issuecomment-549432413
  * zhouhao27's solution for xcode problems with import firebase_auth
  * 
  */
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(App());
-}
 
 class App extends StatefulWidget {
   _AppState createState() => _AppState();

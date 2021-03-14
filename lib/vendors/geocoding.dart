@@ -5,10 +5,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/vendors/googleService.dart';
 
 class Geocoding extends GoogleWebService {
-  Geocoding() : super(baseUrl: "https://maps.googleapis.com/maps/api/geocode");
+  Geocoding() : super(baseUrl: AppConfig.env.values.geocodingBaseURL);
 
   Future<GeocodingResponse> searchByPosition(Position position) async {
     String params = "latlng=${position.latitude},${position.longitude}";
@@ -131,7 +132,6 @@ class AddressComponents {
     return field ?? "";
   }
 
-
 // TODO: fix this. it didn;t save my alterations
   String buildAddressMainText() {
     String route = this._search("route");
@@ -155,7 +155,6 @@ class AddressComponents {
     }
     // doesnt contain route
     return sublocality;
-
   }
 
   String buildAddressSecondaryText() {
@@ -183,6 +182,5 @@ class AddressComponents {
     }
     // default
     return city + " - " + shortState;
-
   }
 }

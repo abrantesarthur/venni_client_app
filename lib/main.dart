@@ -6,9 +6,14 @@ void main() {
   AppConfig(
     flavor: Flavor.DEV,
     values: ConfigValues(
-        cloudFunctionsBaseURL:
-            "https://us-central1-venni-rider-staging.cloudfunctions.net/",
-        googleApiKey: "AIzaSyDHUnoB6uGH-8OoW4SIBnJRVpzRVD8fNVw"),
+      directionsBaseURL: "https://maps.googleapis.com/maps/api/directions",
+      geocodingBaseURL: "https://maps.googleapis.com/maps/api/geocode",
+      autocompleteBaseURL:
+          "https://maps.googleapis.com/maps/api/place/autocomplete/json?",
+      cloudFunctionsBaseURL:
+          "https://us-central1-venni-rider-staging.cloudfunctions.net/",
+      googleApiKey: "AIzaSyDHUnoB6uGH-8OoW4SIBnJRVpzRVD8fNVw",
+    ),
   );
 
   WidgetsFlutterBinding.ensureInitialized();

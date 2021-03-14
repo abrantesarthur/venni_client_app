@@ -6,7 +6,11 @@ FLUTTERRUN ?= $(FLUTTER) run
 ################################################################################
 .PHONY: run-dev
 run-dev:
-	$(FLUTTERRUN) -t lib/main_dev.dart
+	$(FLUTTERRUN)
+
+.PHONY: run-prod
+run-dev:
+	$(FLUTTERRUN) -t lib/main_prod.dart
 
 ################################################################################
 ## test targets

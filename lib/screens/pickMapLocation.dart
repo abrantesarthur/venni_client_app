@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/places.dart';
@@ -26,8 +27,10 @@ class PickMapLocation extends StatefulWidget {
 }
 
 class PickMapLocationState extends State<PickMapLocation> {
+  String _googleApiKey;
   @override
   void initState() {
+    _googleApiKey = AppConfig.env.values.googleApiKey;
     super.initState();
   }
 
@@ -37,7 +40,7 @@ class PickMapLocationState extends State<PickMapLocation> {
       body: Stack(
         children: [
           PlacePicker(
-            apiKey: placesAPIKey,
+            apiKey: _googleApiKey,
             initialPosition: widget.initialPosition,
             useCurrentLocation: false,
             enableMyLocationButton: false,

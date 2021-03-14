@@ -3,11 +3,19 @@ import 'package:rider_frontend/app.dart';
 
 enum Flavor { DEV, PROD }
 
+// TODO: add sensitive variables to secure storage package
+// TODO: initialize firebase according to environment
 class ConfigValues {
+  final String directionsBaseURL;
+  final String geocodingBaseURL;
+  final String autocompleteBaseURL;
   final String cloudFunctionsBaseURL;
   final String googleApiKey;
 
   ConfigValues({
+    @required this.directionsBaseURL,
+    @required this.geocodingBaseURL,
+    @required this.autocompleteBaseURL,
     @required this.cloudFunctionsBaseURL,
     @required this.googleApiKey,
   });

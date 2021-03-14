@@ -175,7 +175,6 @@ class HomeState extends State<Home> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     // get user position

@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>393677487406-q9247ceknm6hmavlbrs7f7ivh4hh3p4n.apps.googleusercontent.com</string>
+	<string>393677487406-l6346gg4uhv5vkdn1q0bsj2apsgi5gvs.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.393677487406-q9247ceknm6hmavlbrs7f7ivh4hh3p4n</string>
+	<string>com.googleusercontent.apps.393677487406-l6346gg4uhv5vkdn1q0bsj2apsgi5gvs</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>393677487406-qkvkv1qe1ioqcoh3obvtht0m49mcbebi.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.venni.riderapp</string>
+	<string>com.venni.rider</string>
 	<key>PROJECT_ID</key>
 	<string>venni-rider-staging</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:393677487406:ios:7aea1cbe75b2c9a1c34ebf</string>
+	<string>1:393677487406:ios:79b4fae35d3aa1aec34ebf</string>
 	<key>DATABASE_URL</key>
 	<string>https://venni-rider-staging-default-rtdb.firebaseio.com</string>
 </dict>

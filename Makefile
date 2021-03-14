@@ -8,26 +8,18 @@ FLUTTERRUN ?= $(FLUTTER) run
 run-dev:
 	$(FLUTTERRUN) -t lib/main_dev.dart
 
-.PHONY: run
-run:
-	$(FLUTTERRUN) -t lib/main_prod.dart
-
 ################################################################################
 ## test targets
 ################################################################################
 
 .PHONY: unit_test
 unit_test:
-	flutter test test/unit/* --coverage
+	flutter test --name=test/unit/* --coverage
 	
 .PHONY: widget_test
-widget_test:
-	flutter test test/widget/* --coverage
+unit_test:
+	flutter test --name=test/widget/* --coverage
 
 .PHONY: integration_test
-integration_test:
-	flutter test test/integration/* --coverage
-
-.PHONY: test
-test:
-	flutter test test/*
+unit_test:
+	flutter test --name=test/integration/* --coverage

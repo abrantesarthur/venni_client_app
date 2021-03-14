@@ -117,14 +117,14 @@ class InsertPhoneNumberState extends State<InsertPhone> {
           phoneNumber: phoneNumber,
           verificationCompleted: (PhoneAuthCredential credential) {
             verificationCompletedCallback(
-              context: context,
-              credential: credential,
-              firebaseDatabase: firebaseDatabase,
-              firebaseAuth: firebaseAuth,
-              onExceptionCallback: (FirebaseAuthException e) =>
+                context: context,
+                credential: credential,
+                firebaseDatabase: firebaseDatabase,
+                firebaseAuth: firebaseAuth,
+                onExceptionCallback: (FirebaseAuthException e) {
                   setInactiveState(
-                      message: "Algo deu errado. Tente novamente."),
-            );
+                      message: "Algo deu errado. Tente novamente.");
+                });
           },
           verificationFailed: (FirebaseAuthException e) {
             String errorMsg = verificationFailedCallback(e);

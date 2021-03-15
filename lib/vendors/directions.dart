@@ -20,7 +20,7 @@ class Directions extends GoogleWebService {
   }
 
   DirectionsResponse _decode(http.Response response) {
-    if (response != null && response.statusCode == 200) {
+    if (response != null && response.statusCode < 300) {
       return DirectionsResponse.fromJson(jsonDecode(response.body));
     }
     return null;
@@ -67,12 +67,10 @@ class DirectionsResult {
     Route route = routes != null
         ? (routes.isNotEmpty ? Route.fromJson(routes.first) : null)
         : null;
-    return json != null
-        ? DirectionsResult(
-            geocodedWaypoints: gWps,
-            route: route,
-          )
-        : null;
+    return DirectionsResult(
+      geocodedWaypoints: gWps,
+      route: route,
+    );
   }
 }
 

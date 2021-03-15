@@ -5,6 +5,7 @@ enum Flavor { DEV, PROD }
 
 // TODO: add sensitive variables to secure storage package
 // TODO: initialize firebase according to environment
+// TODO: get android and iOS maps keys from the environment (AppDelegate.swift, main AndroidManifest.xml)
 class ConfigValues {
   final String directionsBaseURL;
   final String geocodingBaseURL;

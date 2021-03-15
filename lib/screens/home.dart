@@ -105,31 +105,25 @@ class HomeState extends State<Home> {
     BuildContext context,
     RouteModel routeModel,
   ) async {
-    // TODO: move this to defineRoute. Should probably extend the RouteModel. Maybe change name as well.
-    DirectionsResponse dr = await Directions().searchByPlaceIDs(
-        originPlaceID: routeModel.pickUpAddress.placeID,
-        destinationPlaceID: routeModel.dropOffAddress.placeID);
-    if (dr.isOkay) {
-      // set polylines
-      PolylineId polylineId = PolylineId("poly");
-      Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
-        id: polylineId,
-        encodedPoints: dr.result.route.encodedPoints,
-      );
-      polylines[polylineId] = polyline;
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
-      // add bounds to map view
-      await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
-        AppPolylinePoints.calculateBounds(polyline),
-        30,
-      ));
+    // set polylines
+    PolylineId polylineId = PolylineId("poly");
+    Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
+      id: polylineId,
+      encodedPoints: route.encodedPoints,
+    );
+    polylines[polylineId] = polyline;
 
-      // draw  markers
-      await drawMarkers(context, polyline);
-      setState(() {});
-    } else {
-      // TODO: display warning
-    }
+    // add bounds to map view
+    await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
+      AppPolylinePoints.calculateBounds(polyline),
+      30,
+    ));
+
+    // draw  markers
+    await drawMarkers(context, polyline);
+    setState(() {});
   }
 
   void defineRoute(BuildContext context) async {

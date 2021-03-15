@@ -15,6 +15,13 @@ class RouteModel extends ChangeNotifier {
 
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
+  String get rideStatus => _rideStatus;
+  double get farePrice => _farePrice;
+  int get distanceMeters => _distanceMeters;
+  String get distanceText => _distanceText;
+  int get durationSeconds => _durationSeconds;
+  String get durationText => _durationText;
+  String get encodedPoints => _encodedPoints;
 
   void updatePickUpAddres(Address address) {
     _currentPickUpAddress = address;

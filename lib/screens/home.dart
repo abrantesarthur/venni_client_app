@@ -195,40 +195,41 @@ class HomeState extends State<Home> {
     }
 
     return Scaffold(
-        body: Stack(
-      children: [
-        GoogleMap(
-          myLocationButtonEnabled: myLocationButtonEnabled,
-          myLocationEnabled: myLocationEnabled,
-          trafficEnabled: false,
-          zoomControlsEnabled: false,
-          mapType: MapType.normal,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(
-              userPos.geocoding.latitude,
-              userPos.geocoding.longitude,
+      body: Stack(
+        children: [
+          GoogleMap(
+            myLocationButtonEnabled: myLocationButtonEnabled,
+            myLocationEnabled: myLocationEnabled,
+            trafficEnabled: false,
+            zoomControlsEnabled: false,
+            mapType: MapType.normal,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(
+                userPos.geocoding.latitude,
+                userPos.geocoding.longitude,
+              ),
+              zoom: 16.5,
             ),
-            zoom: 16.5,
+            padding: EdgeInsets.only(
+              top: googleMapsTopPadding ?? screenHeight / 12,
+              bottom: googleMapsBottomPadding ?? screenHeight / 7,
+              left: screenWidth / 20,
+              right: screenWidth / 20,
+            ),
+            onMapCreated: (GoogleMapController c) {
+              onMapCreatedCallback(context, c);
+            },
+            polylines: Set<Polyline>.of(polylines.values),
+            markers: markers,
           ),
-          padding: EdgeInsets.only(
-            top: googleMapsTopPadding ?? screenHeight / 12,
-            bottom: googleMapsBottomPadding ?? screenHeight / 7,
-            left: screenWidth / 20,
-            right: screenWidth / 20,
+          _buildRideCard(
+            context: context,
+            homeState: this,
+            rideStatus: rideStatus,
           ),
-          onMapCreated: (GoogleMapController c) {
-            onMapCreatedCallback(context, c);
-          },
-          polylines: Set<Polyline>.of(polylines.values),
-          markers: markers,
-        ),
-        _buildRideCard(
-          context: context,
-          homeState: this,
-          rideStatus: rideStatus,
-        ),
-      ],
-    ));
+        ],
+      ),
+    );
   }
 }
 

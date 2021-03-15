@@ -199,6 +199,13 @@ class DefineRouteState extends State<DefineRoute> {
       destinationPlaceID: route.dropOffAddress.placeID,
     );
 
+    if (response.isOkay) {
+      // update route model
+      route.fromRideRequest(response.result);
+    } else {
+      // TODO: handle errors
+    }
+
     Navigator.pop(context, true);
   }
 

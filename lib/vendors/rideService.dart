@@ -23,9 +23,6 @@ class Ride extends CloudFunctionsWebService {
   }
 
   RideRequestResponse _decode(http.Response response) {
-    print("response code");
-    print(response.statusCode);
-    print(response.body);
     if (response != null && response.statusCode < 300) {
       return RideRequestResponse.fromJson(jsonDecode(response.body));
     } // TODO: log this somewhere
@@ -45,10 +42,6 @@ class RideRequestResponse extends CloudFunctionsResponse<RideRequestResult> {
         );
 
   factory RideRequestResponse.fromJson(Map<String, dynamic> json) {
-    print("RideRequestResponse");
-    print(json["status"]);
-    if (json["error_message"] != null) print(json["error_message"]);
-    if (json["result"] != null) print(json["result"]);
     return (json == null)
         ? null
         : RideRequestResponse(

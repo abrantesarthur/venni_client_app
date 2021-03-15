@@ -13,7 +13,7 @@ class Ride extends CloudFunctionsWebService {
   }) async {
     Map<String, String> data = {
       "origin_place_id": originPlaceID,
-      "desination_place_id": destinationPlaceID,
+      "destination_place_id": destinationPlaceID,
     };
 
     return _decode(await doPost(
@@ -23,10 +23,12 @@ class Ride extends CloudFunctionsWebService {
   }
 
   RideRequestResponse _decode(http.Response response) {
+    print("response code");
+    print(response.statusCode);
+    print(response.body);
     if (response != null && response.statusCode < 300) {
       return RideRequestResponse.fromJson(jsonDecode(response.body));
-    }
-    // TODO: log this somewhere
+    } // TODO: log this somewhere
     return null;
   }
 }
@@ -43,12 +45,16 @@ class RideRequestResponse extends CloudFunctionsResponse<RideRequestResult> {
         );
 
   factory RideRequestResponse.fromJson(Map<String, dynamic> json) {
+    print("RideRequestResponse");
+    print(json["status"]);
+    if (json["error_message"] != null) print(json["error_message"]);
+    if (json["result"] != null) print(json["result"]);
     return (json == null)
         ? null
         : RideRequestResponse(
             status: json["status"],
             errorMessage: json["error_message"],
-            result: json["result"],
+            result: RideRequestResult.fromJson(json["result"]),
           );
   }
 }
@@ -82,11 +88,11 @@ class RideRequestResult {
     return (json == null)
         ? null
         : RideRequestResult(
-            uid: json["uuid"],
+            uid: json["uid"],
             rideStatus: json["ride_status"],
             originPlaceID: json["origin_place_id"],
             destinationPlaceID: json["destination_place_id"],
-            farePrice: json["fare_price"],
+            farePrice: double.parse(json["fare_price"]),
             distanceMeters: json["distance_meters"],
             distanceText: json["distance_text"],
             durationSeconds: json["duration_seconds"],

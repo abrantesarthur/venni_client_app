@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
+import 'package:rider_frontend/vendors/rideService.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
@@ -183,6 +185,19 @@ class DefineRouteState extends State<DefineRoute> {
         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
       );
     });
+
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
+
+    // get user ID token from firebase
+    String userIdToken = await firebase.auth.currentUser.getIdToken();
+
+    // send ride request to retrieve fare price, ride distance, polyline, etc.
+    Ride ride = Ride(userIdToken: userIdToken);
+    RideRequestResponse response = await ride.request(
+      originPlaceID: route.pickUpAddress.placeID,
+      destinationPlaceID: route.dropOffAddress.placeID,
+    );
 
     Navigator.pop(context, true);
   }

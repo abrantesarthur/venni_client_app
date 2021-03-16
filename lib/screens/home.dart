@@ -164,25 +164,10 @@ class HomeState extends State<Home> {
   }
 
   void defineRoute(BuildContext context) async {
-    RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
-    UserPositionModel userPos =
-        Provider.of<UserPositionModel>(context, listen: false);
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    // pickUp location defaults to user's current address
-    if (routeModel.pickUpAddress == null) {
-      routeModel.updatePickUpAddres(Address.fromGeocodingResult(
-        geocodingResult: userPos.geocoding,
-        dropOff: false,
-      ));
-    }
-
     Navigator.pushNamed(
       context,
       DefineRoute.routeName,
       arguments: DefineRouteArguments(
-        routeModel: routeModel,
-        userGeocoding: userPos.geocoding,
         mode: DefineRouteMode.request,
       ),
     );
@@ -294,8 +279,6 @@ List<Widget> _buildRemainingStackChildren({
                         context,
                         DefineRoute.routeName,
                         arguments: DefineRouteArguments(
-                          routeModel: route,
-                          userGeocoding: userPos.geocoding,
                           mode: DefineRouteMode.edit,
                         ),
                       );

@@ -212,8 +212,6 @@ class _AppState extends State<App> {
                 DefineRouteArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return DefineRoute(
-                    routeModel: args.routeModel,
-                    userGeocoding: args.userGeocoding,
                     mode: args.mode,
                   );
                 });

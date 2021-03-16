@@ -22,28 +22,20 @@ enum DefineRouteMode {
 }
 
 class DefineRouteArguments {
-  final RouteModel routeModel;
-  final GeocodingResult userGeocoding;
   final DefineRouteMode mode;
 
   DefineRouteArguments({
     @required this.mode,
-    @required this.routeModel,
-    @required this.userGeocoding,
-  }) : assert(routeModel != null);
+  });
 }
 
 class DefineRoute extends StatefulWidget {
   static const String routeName = "DefineRoute";
-  final RouteModel routeModel;
-  final GeocodingResult userGeocoding;
   final DefineRouteMode mode;
 
   DefineRoute({
     @required this.mode,
-    @required this.routeModel,
-    @required this.userGeocoding,
-  }) : assert(routeModel != null);
+  });
 
   @override
   DefineRouteState createState() => DefineRouteState();
@@ -60,35 +52,50 @@ class DefineRouteState extends State<DefineRoute> {
   bool activateCallback;
   Widget buttonChild;
 
+// TODO: get models using postFrameCallback method
   @override
   void initState() {
     super.initState();
 
-    // text field initial values
-    dropOffController.text = widget.routeModel.dropOffAddress != null
-        ? widget.routeModel.dropOffAddress.mainText
-        : "";
-    pickUpController.text = "";
-    final pickUpAddress = widget.routeModel.pickUpAddress;
-    final userLatitude = widget.userGeocoding.latitude;
-    final userLongitude = widget.userGeocoding.longitude;
-    // change pick up text field only if it's different from user location
-    if (userLatitude != pickUpAddress.latitude ||
-        userLongitude != pickUpAddress.longitude) {
-      pickUpController.text = pickUpAddress.mainText;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // get relevant models
+      RouteModel route = Provider.of<RouteModel>(context, listen: false);
+      UserPositionModel userPos =
+          Provider.of<UserPositionModel>(context, listen: false);
 
-    // set button state
-    setButtonState(
-      pickUp: widget.routeModel.pickUpAddress,
-      dropOff: widget.routeModel.dropOffAddress,
-    );
+      // pickUp location defaults to user's current address
+      if (route.pickUpAddress == null) {
+        route.updatePickUpAddres(Address.fromGeocodingResult(
+          geocodingResult: userPos.geocoding,
+          dropOff: false,
+        ));
+      }
 
-    widget.routeModel.addListener(() {
+      // text field initial values
+      dropOffController.text =
+          route.dropOffAddress != null ? route.dropOffAddress.mainText : "";
+      pickUpController.text = "";
+      final pickUpAddress = route.pickUpAddress;
+      final userLatitude = userPos.geocoding.latitude;
+      final userLongitude = userPos.geocoding.longitude;
+      // change pick up text field only if it's different from user location
+      if (userLatitude != pickUpAddress.latitude ||
+          userLongitude != pickUpAddress.longitude) {
+        pickUpController.text = pickUpAddress.mainText;
+      }
+
+      // set button state
       setButtonState(
-        pickUp: widget.routeModel.pickUpAddress,
-        dropOff: widget.routeModel.dropOffAddress,
+        pickUp: route.pickUpAddress,
+        dropOff: route.dropOffAddress,
       );
+
+      route.addListener(() {
+        setButtonState(
+          pickUp: route.pickUpAddress,
+          dropOff: route.dropOffAddress,
+        );
+      });
     });
   }
 
@@ -141,24 +148,26 @@ class DefineRouteState extends State<DefineRoute> {
     @required BuildContext context,
     @required bool isDropOff,
   }) async {
-    UserPositionModel userPositionModel = Provider.of<UserPositionModel>(
+    UserPositionModel userPos = Provider.of<UserPositionModel>(
       context,
       listen: false,
     );
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
     // define variables based on whether we're choosing dropOff or not
     FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
     TextEditingController controller =
         isDropOff ? dropOffController : pickUpController;
+    // TODO: probably don't have to pass userGeocoding or dropOffAddres
     dynamic args = isDropOff
         ? DefineDropOffArguments(
-            userGeocoding: userPositionModel.geocoding,
-            chosenDropOffAddress: widget.routeModel.dropOffAddress,
+            userGeocoding: userPos.geocoding,
+            chosenDropOffAddress: route.dropOffAddress,
             mode: widget.mode,
           )
         : DefinePickUpArguments(
-            userGeocoding: userPositionModel.geocoding,
-            chosenPickUpAddress: widget.routeModel.pickUpAddress,
+            userGeocoding: userPos.geocoding,
+            chosenPickUpAddress: route.pickUpAddress,
             mode: widget.mode,
           );
     String routeName =
@@ -175,13 +184,12 @@ class DefineRouteState extends State<DefineRoute> {
     ) as Address;
 
     // add selected address to text field
-    if (isDropOff && widget.routeModel.dropOffAddress != null) {
-      controller.text = widget.routeModel.dropOffAddress.mainText;
+    if (isDropOff && route.dropOffAddress != null) {
+      controller.text = route.dropOffAddress.mainText;
     } else {
-      if (widget.routeModel.pickUpAddress.placeID !=
-          widget.userGeocoding.placeID) {
+      if (route.pickUpAddress.placeID != userPos.geocoding.placeID) {
         // update pick up only if it's different from current location
-        controller.text = widget.routeModel.pickUpAddress.mainText;
+        controller.text = route.pickUpAddress.mainText;
       } else {
         controller.text = "";
       }

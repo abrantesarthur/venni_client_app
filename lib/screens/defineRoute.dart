@@ -159,14 +159,8 @@ class DefineRouteState extends State<DefineRoute> {
         isDropOff ? dropOffController : pickUpController;
     // TODO: probably don't have to pass userGeocoding or dropOffAddres
     dynamic args = isDropOff
-        ? DefineDropOffArguments(
-            mode: widget.mode,
-          )
-        : DefinePickUpArguments(
-            userGeocoding: userPos.geocoding,
-            chosenPickUpAddress: route.pickUpAddress,
-            mode: widget.mode,
-          );
+        ? DefineDropOffArguments(mode: widget.mode)
+        : DefinePickUpArguments(mode: widget.mode);
     String routeName =
         isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;
 

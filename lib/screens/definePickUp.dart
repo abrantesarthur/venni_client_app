@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
@@ -19,31 +20,22 @@ import 'package:uuid/uuid.dart';
 // TODO: google maps is enabled if there is initial address
 
 class DefinePickUpArguments {
-  final GeocodingResult userGeocoding;
-  final Address chosenPickUpAddress;
   final DefineRouteMode mode;
 
   DefinePickUpArguments({
-    @required this.userGeocoding,
-    @required this.chosenPickUpAddress,
     @required this.mode,
-  }) : assert(userGeocoding != null);
+  });
 }
 
 class DefinePickUp extends StatefulWidget {
   static const String routeName = "DefinePickUp";
-  final GeocodingResult userGeocoding;
-  final Address chosenPickUpAddress;
   final Places places;
   final DefineRouteMode mode;
 
   DefinePickUp({
-    @required this.userGeocoding,
-    @required this.chosenPickUpAddress,
     @required this.places,
     @required this.mode,
-  })  : assert(userGeocoding != null),
-        assert(places != null);
+  }) : assert(places != null);
 
   @override
   DefinePickUpState createState() => DefinePickUpState();
@@ -62,12 +54,19 @@ class DefinePickUpState extends State<DefinePickUp> {
 
     sessionToken = Uuid().v4();
 
-    // google maps is enabled if a pickUpAddress is already chosen
-    googleMapsEnabled = widget.chosenPickUpAddress != null;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      // get relevant models
+      RouteModel route = Provider.of<RouteModel>(context, listen: false);
+      UserPositionModel userPos =
+          Provider.of<UserPositionModel>(context, listen: false);
 
-    // suggest locations as user searches locations
-    pickUpTextEditingController.addListener(() async {
-      await textFieldListener(false);
+// google maps is enabled if a pickUpAddress is already chosen
+      googleMapsEnabled = route.pickUpAddress != null;
+
+      // suggest locations as user searches locations
+      pickUpTextEditingController.addListener(() async {
+        await textFieldListener(false, userPos.geocoding);
+      });
     });
   }
 
@@ -77,7 +76,8 @@ class DefinePickUpState extends State<DefinePickUp> {
     super.dispose();
   }
 
-  Future<void> textFieldListener(bool isDropOff) async {
+  Future<void> textFieldListener(
+      bool isDropOff, GeocodingResult userGeocoding) async {
     String location = pickUpTextEditingController.text ?? "";
     if (location.length == 0) {
       setState(() {
@@ -87,8 +87,8 @@ class DefinePickUpState extends State<DefinePickUp> {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
-        latitude: widget.userGeocoding.latitude,
-        longitude: widget.userGeocoding.longitude,
+        latitude: userGeocoding.latitude,
+        longitude: userGeocoding.longitude,
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
@@ -102,6 +102,10 @@ class DefinePickUpState extends State<DefinePickUp> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
+    UserPositionModel userPos =
+        Provider.of<UserPositionModel>(context, listen: false);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -140,7 +144,7 @@ class DefinePickUpState extends State<DefinePickUp> {
                       hintText: "De onde?",
                       hintColor: AppColor.disabled,
                       controller: pickUpTextEditingController,
-                      autoFocus: widget.chosenPickUpAddress == null,
+                      autoFocus: route.pickUpAddress == null,
                     ),
                   ],
                 ),
@@ -177,9 +181,9 @@ class DefinePickUpState extends State<DefinePickUp> {
               : Expanded(
                   child: buildPlacePicker(
                   context: context,
-                  userGeocoding: widget.userGeocoding,
+                  userGeocoding: userPos.geocoding,
                   isDropOff: false,
-                  initialAddress: widget.chosenPickUpAddress,
+                  initialAddress: route.pickUpAddress,
                 ))
         ],
       ),

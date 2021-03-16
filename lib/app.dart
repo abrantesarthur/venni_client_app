@@ -230,8 +230,6 @@ class _AppState extends State<App> {
                 final DefinePickUpArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return DefinePickUp(
-                    chosenPickUpAddress: args.chosenPickUpAddress,
-                    userGeocoding: args.userGeocoding,
                     places: Places(),
                     mode: args.mode,
                   );

@@ -16,11 +16,18 @@ import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
+enum DefineRouteMode {
+  request,
+  edit,
+}
+
 class DefineRouteArguments {
   final RouteModel routeModel;
   final GeocodingResult userGeocoding;
+  final DefineRouteMode mode;
 
   DefineRouteArguments({
+    @required this.mode,
     @required this.routeModel,
     @required this.userGeocoding,
   }) : assert(routeModel != null);
@@ -30,8 +37,10 @@ class DefineRoute extends StatefulWidget {
   static const String routeName = "DefineRoute";
   final RouteModel routeModel;
   final GeocodingResult userGeocoding;
+  final DefineRouteMode mode;
 
   DefineRoute({
+    @required this.mode,
     @required this.routeModel,
     @required this.userGeocoding,
   }) : assert(routeModel != null);
@@ -63,6 +72,7 @@ class DefineRouteState extends State<DefineRoute> {
     final pickUpAddress = widget.routeModel.pickUpAddress;
     final userLatitude = widget.userGeocoding.latitude;
     final userLongitude = widget.userGeocoding.longitude;
+    // change pick up text field only if it's different from user location
     if (userLatitude != pickUpAddress.latitude ||
         userLongitude != pickUpAddress.longitude) {
       pickUpController.text = pickUpAddress.mainText;
@@ -144,10 +154,12 @@ class DefineRouteState extends State<DefineRoute> {
         ? DefineDropOffArguments(
             userGeocoding: userPositionModel.geocoding,
             chosenDropOffAddress: widget.routeModel.dropOffAddress,
+            mode: widget.mode,
           )
         : DefinePickUpArguments(
             userGeocoding: userPositionModel.geocoding,
             chosenPickUpAddress: widget.routeModel.pickUpAddress,
+            mode: widget.mode,
           );
     String routeName =
         isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;

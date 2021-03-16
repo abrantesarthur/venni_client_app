@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -147,6 +148,7 @@ class HomeState extends State<Home> {
       arguments: DefineRouteArguments(
         routeModel: routeModel,
         userGeocoding: userPos.geocoding,
+        mode: DefineRouteMode.request,
       ),
     );
 
@@ -177,6 +179,7 @@ class HomeState extends State<Home> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
+    // TODO: change this to a listener maybe and add it to all screens where user needs to be logged in
     if (!firebaseModel.isRegistered) {
       //  if user logs out, send user back to start screen
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -228,8 +231,6 @@ class HomeState extends State<Home> {
 List<Widget> _buildRemainingStackChildren({
   @required BuildContext context,
   @required HomeState homeState,
-  @required ScreenCoordinate pickUpMarkerScreenCoordinate,
-  @required ScreenCoordinate dropOffMarkerScreenCoordinate,
 }) {
   RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
@@ -252,21 +253,60 @@ List<Widget> _buildRemainingStackChildren({
   }
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
+  UserPositionModel userPos =
+      Provider.of<UserPositionModel>(context, listen: false);
+
   switch (route.rideStatus) {
     case RideStatus.waitingForConfirmation:
       return [
         Column(
           children: [
             Spacer(),
-            _buildWaitingForConfirmationWidget(context),
+            _buildRideSummaryFloatingCard(context),
             OverallPadding(
               bottom: screenHeight / 20,
               top: screenHeight / 40,
-              child: AppButton(
-                textData: "Confirmar Trajeto",
-                onTapCallBack: () {
-                  homeState.setState(() {});
-                },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppButton(
+                    textData: "Editar Rota",
+                    borderRadius: 10.0,
+                    height: screenHeight / 15,
+                    width: screenWidth / 2.5,
+                    buttonColor: Colors.grey[900],
+                    textStyle: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    onTapCallBack: () async {
+                      await Navigator.pushNamed(
+                        context,
+                        DefineRoute.routeName,
+                        arguments: DefineRouteArguments(
+                          routeModel: route,
+                          userGeocoding: userPos.geocoding,
+                          mode: DefineRouteMode.edit,
+                        ),
+                      );
+                    },
+                  ),
+                  AppButton(
+                    textData: "Confirmar",
+                    borderRadius: 10.0,
+                    height: screenHeight / 15,
+                    width: screenWidth / 2.5,
+                    textStyle: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    onTapCallBack: () {
+                      homeState.setState(() {});
+                    },
+                  ),
+                ],
               ),
             )
           ],
@@ -303,7 +343,7 @@ List<Widget> _buildRemainingStackChildren({
   }
 }
 
-Widget _buildWaitingForConfirmationWidget(BuildContext context) {
+Widget _buildRideSummaryFloatingCard(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   return FloatingCard(

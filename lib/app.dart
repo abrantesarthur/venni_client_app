@@ -214,6 +214,7 @@ class _AppState extends State<App> {
                   return DefineRoute(
                     routeModel: args.routeModel,
                     userGeocoding: args.userGeocoding,
+                    mode: args.mode,
                   );
                 });
               }
@@ -223,10 +224,10 @@ class _AppState extends State<App> {
                 final DefineDropOffArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return DefineDropOff(
-                    chosenDropOffAddress: args.chosenDropOffAddress,
-                    userGeocoding: args.userGeocoding,
-                    places: Places(),
-                  );
+                      chosenDropOffAddress: args.chosenDropOffAddress,
+                      userGeocoding: args.userGeocoding,
+                      places: Places(),
+                      mode: args.mode);
                 });
               }
 
@@ -238,6 +239,7 @@ class _AppState extends State<App> {
                     chosenPickUpAddress: args.chosenPickUpAddress,
                     userGeocoding: args.userGeocoding,
                     places: Places(),
+                    mode: args.mode,
                   );
                 });
               }

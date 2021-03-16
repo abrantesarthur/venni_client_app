@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -20,10 +21,12 @@ import 'package:uuid/uuid.dart';
 class DefinePickUpArguments {
   final GeocodingResult userGeocoding;
   final Address chosenPickUpAddress;
+  final DefineRouteMode mode;
 
   DefinePickUpArguments({
     @required this.userGeocoding,
     @required this.chosenPickUpAddress,
+    @required this.mode,
   }) : assert(userGeocoding != null);
 }
 
@@ -32,11 +35,13 @@ class DefinePickUp extends StatefulWidget {
   final GeocodingResult userGeocoding;
   final Address chosenPickUpAddress;
   final Places places;
+  final DefineRouteMode mode;
 
   DefinePickUp({
     @required this.userGeocoding,
     @required this.chosenPickUpAddress,
     @required this.places,
+    @required this.mode,
   })  : assert(userGeocoding != null),
         assert(places != null);
 

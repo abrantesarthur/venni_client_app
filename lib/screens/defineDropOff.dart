@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -14,13 +15,13 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/padlessDivider.dart';
 import 'package:uuid/uuid.dart';
 
-// TODO: focus automatically
-
 class DefineDropOffArguments {
   final GeocodingResult userGeocoding;
   final Address chosenDropOffAddress;
+  final DefineRouteMode mode;
 
   DefineDropOffArguments({
+    @required this.mode,
     @required this.userGeocoding,
     @required this.chosenDropOffAddress,
   }) : assert(userGeocoding != null);
@@ -31,8 +32,10 @@ class DefineDropOff extends StatefulWidget {
   final GeocodingResult userGeocoding;
   final Address chosenDropOffAddress;
   final Places places;
+  final DefineRouteMode mode;
 
   DefineDropOff({
+    @required this.mode,
     @required this.userGeocoding,
     this.chosenDropOffAddress,
     @required this.places,

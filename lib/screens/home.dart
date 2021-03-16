@@ -11,16 +11,13 @@ import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/directions.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
-import 'package:rider_frontend/vendors/rideService.dart';
+import 'package:rider_frontend/cloud_functions/rideService.dart';
 import 'package:rider_frontend/vendors/svg.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:rider_frontend/widgets/padlessDivider.dart';
 
 class Home extends StatefulWidget {
   static const routeName = "home";
@@ -38,8 +35,6 @@ class HomeState extends State<Home> {
   bool myLocationButtonEnabled;
   double googleMapsTopPadding;
   double googleMapsBottomPadding;
-
-  RideStatus rideStatus;
 
   @override
   void initState() {
@@ -82,22 +77,25 @@ class HomeState extends State<Home> {
       context,
       "images/dropOffIcon.svg",
     );
+    LatLng pickUpMarkerPosition = LatLng(
+      polyline.points.first.latitude,
+      polyline.points.first.longitude,
+    );
     Marker pickUpMarker = Marker(
       markerId: MarkerId("pickUpMarker"),
-      position: LatLng(
-        polyline.points.first.latitude,
-        polyline.points.first.longitude,
-      ),
+      position: pickUpMarkerPosition,
       icon: pickUpMarkerIcon,
+    );
+    LatLng dropOffMarkerPosition = LatLng(
+      polyline.points.last.latitude,
+      polyline.points.last.longitude,
     );
     Marker dropOffMarker = Marker(
       markerId: MarkerId("dropOffMakrer"),
-      position: LatLng(
-        polyline.points.last.latitude,
-        polyline.points.last.longitude,
-      ),
+      position: dropOffMarkerPosition,
       icon: dropOffMarkerIcon,
     );
+
     markers.add(pickUpMarker);
     markers.add(dropOffMarker);
   }
@@ -118,7 +116,7 @@ class HomeState extends State<Home> {
 
     // add bounds to map view
     // for some reason we have to delay computation so animateCamera works
-    Future.delayed(Duration(milliseconds: 10), () async {
+    Future.delayed(Duration(milliseconds: 50), () async {
       await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
         AppPolylinePoints.calculateBounds(polyline),
         30,
@@ -127,7 +125,6 @@ class HomeState extends State<Home> {
 
     // draw  markers
     await drawMarkers(context, polyline);
-    setState(() {});
   }
 
   void defineRoute(BuildContext context) async {
@@ -155,6 +152,9 @@ class HomeState extends State<Home> {
 
     // if user tapped to request ride
     if (_requestRide) {
+      // draw directions on map
+      await drawPolyline(context);
+
       setState(() {
         // hide user's location details
         myLocationEnabled = false;
@@ -163,13 +163,7 @@ class HomeState extends State<Home> {
         // reset paddings
         googleMapsBottomPadding = screenHeight * 0.4;
         googleMapsTopPadding = screenHeight * 0.06;
-
-        // change ride status to hide "Para onde vamos" and show "Confirmar" button
-        rideStatus = RideStatus.waitingForConfirmation;
       });
-
-      // draw directions on map
-      await drawPolyline(context);
     }
   }
 
@@ -223,7 +217,6 @@ class HomeState extends State<Home> {
           for (var widget in _buildRemainingStackChildren(
             context: context,
             homeState: this,
-            rideStatus: rideStatus,
           ))
             widget,
         ],
@@ -232,28 +225,15 @@ class HomeState extends State<Home> {
   }
 }
 
-// Widget _buildEditRouteWidgets() {
-//   return FloatingCard(
-//     bottom: 0,
-//     child: Row(
-//       children: [
-//         Text("alterar destino"),
-//         Icon(
-//           Icons.keyboard_arrow_right,
-//           size: 18,
-//           color: AppColor.disabled,
-//         )
-//       ],
-//     ),
-//   );
-// }
-
 List<Widget> _buildRemainingStackChildren({
   @required BuildContext context,
   @required HomeState homeState,
-  @required var rideStatus,
+  @required ScreenCoordinate pickUpMarkerScreenCoordinate,
+  @required ScreenCoordinate dropOffMarkerScreenCoordinate,
 }) {
-  if (rideStatus == null) {
+  RouteModel route = Provider.of<RouteModel>(context, listen: false);
+
+  if (route.rideStatus == null) {
     return [
       OverallPadding(
         child: Container(
@@ -270,21 +250,15 @@ List<Widget> _buildRemainingStackChildren({
       )
     ];
   }
-  RouteModel route = Provider.of<RouteModel>(context, listen: false);
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
-  switch (rideStatus) {
+  switch (route.rideStatus) {
     case RideStatus.waitingForConfirmation:
       return [
         Column(
           children: [
             Spacer(),
-
-            SizedBox(height: screenHeight / 10), // TODO: remove
-            FloatingCard(
-              bottom: 0,
-              child: _buildWaitingForConfirmationWidget(context),
-            ),
+            _buildWaitingForConfirmationWidget(context),
             OverallPadding(
               bottom: screenHeight / 20,
               top: screenHeight / 40,
@@ -296,7 +270,7 @@ List<Widget> _buildRemainingStackChildren({
               ),
             )
           ],
-        )
+        ),
       ];
     case RideStatus.waitingForRider:
       return [
@@ -332,111 +306,114 @@ List<Widget> _buildRemainingStackChildren({
 Widget _buildWaitingForConfirmationWidget(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
-  return Column(
-    children: [
-      SizedBox(height: screenHeight / 200),
-      Row(
-        children: [
-          Text(
-            "Chegada ao destino",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Spacer(),
-          Text(
-            "14:27", // TODO: make dynamic
-            style: TextStyle(fontSize: 18),
-          ),
-        ],
-      ),
-      SizedBox(height: screenHeight / 200),
-      Row(
-        children: [
-          Text(
-            "Preço",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Spacer(),
-          Text(
-            "R\$ 5,60", // TODO: make dynamic
-            style: TextStyle(fontSize: 18),
-          ),
-        ],
-      ),
-      SizedBox(height: screenHeight / 200),
-      Divider(thickness: 0.1, color: Colors.black),
-      SizedBox(height: screenHeight / 200),
-      Text(
-        "Escolha a forma de pagamento",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-      ),
-      SizedBox(height: screenHeight / 75),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          GestureDetector(
-            child: Material(
-              type: MaterialType.card,
-              elevation: 4.0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  side: BorderSide(
-                      color: AppColor.secondaryGreen) // TODO: make dynamic
-                  ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.money,
-                      size: 40,
-                      color: AppColor.secondaryGreen, // TODO: make dynamic
+  return FloatingCard(
+    bottom: 0,
+    child: Column(
+      children: [
+        SizedBox(height: screenHeight / 200),
+        Row(
+          children: [
+            Text(
+              "Chegada ao destino",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Text(
+              "14:27", // TODO: make dynamic
+              style: TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+        SizedBox(height: screenHeight / 200),
+        Row(
+          children: [
+            Text(
+              "Preço",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Text(
+              "R\$ 5,60", // TODO: make dynamic
+              style: TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+        SizedBox(height: screenHeight / 200),
+        Divider(thickness: 0.1, color: Colors.black),
+        SizedBox(height: screenHeight / 200),
+        Text(
+          "Escolha a forma de pagamento",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        SizedBox(height: screenHeight / 75),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            GestureDetector(
+              child: Material(
+                type: MaterialType.card,
+                elevation: 4.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    side: BorderSide(
+                        color: AppColor.secondaryGreen) // TODO: make dynamic
                     ),
-                    SizedBox(width: screenWidth / 50),
-                    Text(
-                      "Dinheiro",
-                      style: TextStyle(
-                        fontSize: 16,
+                child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.money,
+                        size: 40,
                         color: AppColor.secondaryGreen, // TODO: make dynamic
                       ),
-                    ),
-                  ],
+                      SizedBox(width: screenWidth / 50),
+                      Text(
+                        "Dinheiro",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColor.secondaryGreen, // TODO: make dynamic
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          GestureDetector(
-            child: Material(
-              type: MaterialType.card,
-              elevation: 4.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(5),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.credit_card,
-                      size: 40,
-                      color: Colors.black, // TODO: make dynamic
-                    ),
-                    SizedBox(width: screenWidth / 50),
-                    Text(
-                      "Cartão",
-                      style: TextStyle(
-                        fontSize: 16,
+            GestureDetector(
+              child: Material(
+                type: MaterialType.card,
+                elevation: 4.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.credit_card,
+                        size: 40,
                         color: Colors.black, // TODO: make dynamic
                       ),
-                    ),
-                    Icon(Icons.arrow_right),
-                  ],
+                      SizedBox(width: screenWidth / 50),
+                      Text(
+                        "Cartão",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black, // TODO: make dynamic
+                        ),
+                      ),
+                      Icon(Icons.arrow_right),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      SizedBox(height: screenHeight / 200),
-    ],
+          ],
+        ),
+        SizedBox(height: screenHeight / 200),
+      ],
+    ),
   );
 }

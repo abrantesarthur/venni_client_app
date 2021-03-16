@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/screens/home.dart';
-import 'package:rider_frontend/vendors/rideService.dart';
+import 'package:rider_frontend/cloud_functions/rideService.dart';
 
 class RouteModel extends ChangeNotifier {
   Address _currentPickUpAddress;
@@ -31,6 +31,11 @@ class RouteModel extends ChangeNotifier {
 
   void updateDropOffAddres(Address address) {
     _currentDropOffAddress = address;
+    notifyListeners();
+  }
+
+  void updateRideStatus(RideStatus rideStatus) {
+    _rideStatus = rideStatus;
     notifyListeners();
   }
 

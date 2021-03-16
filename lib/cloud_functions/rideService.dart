@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:rider_frontend/vendors/cloudFunctionsService.dart';
+import 'package:rider_frontend/cloud_functions/cloudFunctionsService.dart';
 
 enum RideStatus {
   finished,

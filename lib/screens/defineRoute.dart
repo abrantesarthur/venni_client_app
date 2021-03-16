@@ -52,7 +52,6 @@ class DefineRouteState extends State<DefineRoute> {
   bool activateCallback;
   Widget buttonChild;
 
-// TODO: get models using postFrameCallback method
   @override
   void initState() {
     super.initState();
@@ -161,8 +160,6 @@ class DefineRouteState extends State<DefineRoute> {
     // TODO: probably don't have to pass userGeocoding or dropOffAddres
     dynamic args = isDropOff
         ? DefineDropOffArguments(
-            userGeocoding: userPos.geocoding,
-            chosenDropOffAddress: route.dropOffAddress,
             mode: widget.mode,
           )
         : DefinePickUpArguments(

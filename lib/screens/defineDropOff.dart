@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
@@ -16,31 +17,22 @@ import 'package:rider_frontend/widgets/padlessDivider.dart';
 import 'package:uuid/uuid.dart';
 
 class DefineDropOffArguments {
-  final GeocodingResult userGeocoding;
-  final Address chosenDropOffAddress;
   final DefineRouteMode mode;
 
   DefineDropOffArguments({
     @required this.mode,
-    @required this.userGeocoding,
-    @required this.chosenDropOffAddress,
-  }) : assert(userGeocoding != null);
+  });
 }
 
 class DefineDropOff extends StatefulWidget {
   static const String routeName = "DefineDropOff";
-  final GeocodingResult userGeocoding;
-  final Address chosenDropOffAddress;
   final Places places;
   final DefineRouteMode mode;
 
   DefineDropOff({
     @required this.mode,
-    @required this.userGeocoding,
-    this.chosenDropOffAddress,
     @required this.places,
-  })  : assert(userGeocoding != null),
-        assert(places != null);
+  }) : assert(places != null);
 
   @override
   DefineDropOffState createState() => DefineDropOffState();
@@ -58,13 +50,20 @@ class DefineDropOffState extends State<DefineDropOff> {
 
     sessionToken = Uuid().v4();
 
-    // if there is an initial address show google maps.
-    // it is configured to show that address too
-    googleMapsEnabled = widget.chosenDropOffAddress != null;
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      // get relevant models
+      RouteModel route = Provider.of<RouteModel>(context, listen: false);
+      UserPositionModel userPos =
+          Provider.of<UserPositionModel>(context, listen: false);
 
-    // suggest locations as user searches locations
-    dropOffTextEditingController.addListener(() async {
-      await textFieldListener(true);
+      // if there is an initial address show google maps.
+      // it is configured to show that address too
+      googleMapsEnabled = route.dropOffAddress != null;
+
+      // suggest locations as user searches locations
+      dropOffTextEditingController.addListener(() async {
+        await textFieldListener(true, userPos.geocoding);
+      });
     });
   }
 
@@ -74,7 +73,8 @@ class DefineDropOffState extends State<DefineDropOff> {
     super.dispose();
   }
 
-  Future<void> textFieldListener(bool isDropOff) async {
+  Future<void> textFieldListener(
+      bool isDropOff, GeocodingResult userGeocoding) async {
     String location = dropOffTextEditingController.text ?? "";
     if (location.length == 0) {
       setState(() {
@@ -84,8 +84,8 @@ class DefineDropOffState extends State<DefineDropOff> {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
-        latitude: widget.userGeocoding.latitude,
-        longitude: widget.userGeocoding.longitude,
+        latitude: userGeocoding.latitude,
+        longitude: userGeocoding.longitude,
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
@@ -99,6 +99,9 @@ class DefineDropOffState extends State<DefineDropOff> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    UserPositionModel userPos = Provider.of<UserPositionModel>(context);
+    RouteModel route = Provider.of<RouteModel>(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -137,7 +140,7 @@ class DefineDropOffState extends State<DefineDropOff> {
                       hintText: "Para onde?",
                       hintColor: AppColor.disabled,
                       controller: dropOffTextEditingController,
-                      autoFocus: widget.chosenDropOffAddress == null,
+                      autoFocus: route.dropOffAddress == null,
                     ),
                   ],
                 ),
@@ -174,9 +177,9 @@ class DefineDropOffState extends State<DefineDropOff> {
               : Expanded(
                   child: buildPlacePicker(
                   context: context,
-                  userGeocoding: widget.userGeocoding,
+                  userGeocoding: userPos.geocoding,
                   isDropOff: true,
-                  initialAddress: widget.chosenDropOffAddress,
+                  initialAddress: route.dropOffAddress,
                 ))
         ],
       ),

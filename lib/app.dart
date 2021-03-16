@@ -221,11 +221,7 @@ class _AppState extends State<App> {
               if (settings.name == DefineDropOff.routeName) {
                 final DefineDropOffArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
-                  return DefineDropOff(
-                      chosenDropOffAddress: args.chosenDropOffAddress,
-                      userGeocoding: args.userGeocoding,
-                      places: Places(),
-                      mode: args.mode);
+                  return DefineDropOff(places: Places(), mode: args.mode);
                 });
               }
 

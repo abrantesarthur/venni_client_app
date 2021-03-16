@@ -5,8 +5,10 @@ class FloatingCard extends StatelessWidget {
   final double top;
   final double bottom;
   final Widget child;
+  final double width;
 
   FloatingCard({
+    this.width,
     this.bottom,
     this.top,
     @required this.child,
@@ -14,12 +16,12 @@ class FloatingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      width: width,
+      width: width ?? screenWidth,
       padding: EdgeInsets.only(
-        left: width / 15,
-        right: width / 15,
+        left: screenWidth / 15,
+        right: screenWidth / 15,
       ),
       child: Material(
         type: MaterialType.card,
@@ -28,7 +30,7 @@ class FloatingCard extends StatelessWidget {
         ),
         elevation: 8.0,
         child: Padding(
-          padding: EdgeInsets.all(width / 40),
+          padding: EdgeInsets.all(screenWidth / 40),
           child: child,
         ),
       ),

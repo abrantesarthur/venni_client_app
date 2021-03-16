@@ -220,84 +220,112 @@ class HomeState extends State<Home> {
             polylines: Set<Polyline>.of(polylines.values),
             markers: markers,
           ),
-          _buildRideCard(
+          for (var widget in _buildRemainingStackChildren(
             context: context,
             homeState: this,
             rideStatus: rideStatus,
-          ),
+          ))
+            widget,
         ],
       ),
     );
   }
 }
 
-Widget _buildRideCard({
+// Widget _buildEditRouteWidgets() {
+//   return FloatingCard(
+//     bottom: 0,
+//     child: Row(
+//       children: [
+//         Text("alterar destino"),
+//         Icon(
+//           Icons.keyboard_arrow_right,
+//           size: 18,
+//           color: AppColor.disabled,
+//         )
+//       ],
+//     ),
+//   );
+// }
+
+List<Widget> _buildRemainingStackChildren({
   @required BuildContext context,
   @required HomeState homeState,
   @required var rideStatus,
 }) {
   if (rideStatus == null) {
-    return OverallPadding(
-      child: Container(
-        alignment: Alignment.bottomCenter,
-        child: AppButton(
-          borderRadius: 10.0,
-          iconLeft: Icons.near_me,
-          textData: "Para onde vamos?",
-          onTapCallBack: () {
-            homeState.defineRoute(context);
-          },
+    return [
+      OverallPadding(
+        child: Container(
+          alignment: Alignment.bottomCenter,
+          child: AppButton(
+            borderRadius: 10.0,
+            iconLeft: Icons.near_me,
+            textData: "Para onde vamos?",
+            onTapCallBack: () {
+              homeState.defineRoute(context);
+            },
+          ),
         ),
-      ),
-    );
+      )
+    ];
   }
+  RouteModel route = Provider.of<RouteModel>(context, listen: false);
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   switch (rideStatus) {
     case RideStatus.waitingForConfirmation:
-      return Column(
-        children: [
-          Spacer(),
-          FloatingCard(
-            bottom: 0,
-            child: _buildWaitingForConfirmationWidget(context),
-          ),
-          OverallPadding(
-            bottom: screenHeight / 20,
-            top: screenHeight / 40,
-            child: AppButton(
-              textData: "Confirmar Trajeto",
-              onTapCallBack: () {
-                homeState.setState(() {});
-              },
+      return [
+        Column(
+          children: [
+            Spacer(),
+
+            SizedBox(height: screenHeight / 10), // TODO: remove
+            FloatingCard(
+              bottom: 0,
+              child: _buildWaitingForConfirmationWidget(context),
             ),
-          )
-        ],
-      );
+            OverallPadding(
+              bottom: screenHeight / 20,
+              top: screenHeight / 40,
+              child: AppButton(
+                textData: "Confirmar Trajeto",
+                onTapCallBack: () {
+                  homeState.setState(() {});
+                },
+              ),
+            )
+          ],
+        )
+      ];
     case RideStatus.waitingForRider:
-      return Container(
-        alignment: Alignment.bottomCenter,
-        child: AppButton(
-          borderRadius: 10.0,
-          textData: "Waiting for rider.",
-          onTapCallBack: () {
-            homeState.setState(() {});
-          },
-        ),
-      );
+      return [
+        Container(
+          alignment: Alignment.bottomCenter,
+          child: AppButton(
+            borderRadius: 10.0,
+            textData: "Waiting for rider.",
+            onTapCallBack: () {
+              homeState.setState(() {});
+            },
+          ),
+        )
+      ];
     case RideStatus.inProgress:
-      return Container(
-        alignment: Alignment.bottomCenter,
-        child: AppButton(
-          borderRadius: 10.0,
-          textData: "in Progress",
-          onTapCallBack: () {
-            homeState.setState(() {});
-          },
-        ),
-      );
+      return [
+        Container(
+          alignment: Alignment.bottomCenter,
+          child: AppButton(
+            borderRadius: 10.0,
+            textData: "in Progress",
+            onTapCallBack: () {
+              homeState.setState(() {});
+            },
+          ),
+        )
+      ];
     default:
-      return Container();
+      return [Container()];
   }
 }
 

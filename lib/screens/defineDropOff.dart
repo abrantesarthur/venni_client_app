@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
-import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -16,23 +15,11 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/padlessDivider.dart';
 import 'package:uuid/uuid.dart';
 
-class DefineDropOffArguments {
-  final DefineRouteMode mode;
-
-  DefineDropOffArguments({
-    @required this.mode,
-  });
-}
-
 class DefineDropOff extends StatefulWidget {
   static const String routeName = "DefineDropOff";
   final Places places;
-  final DefineRouteMode mode;
 
-  DefineDropOff({
-    @required this.mode,
-    @required this.places,
-  }) : assert(places != null);
+  DefineDropOff({@required this.places}) : assert(places != null);
 
   @override
   DefineDropOffState createState() => DefineDropOffState();
@@ -211,11 +198,6 @@ Widget _buildAddressPredictionList(
                 itemBuilder: (context, index) {
                   return BorderlessButton(
                     onTapCallback: () {
-                      // TODO: change behavior to
-                      // set googleMapsEnabled to show map
-                      // set widget.dropOffAddress to picked Address so it is displayed
-                      // change PlacePicker to have option of showing  SelectedPlaceWidget by default
-                      // user taps to select and so updateDropOff is called
                       updateDropOffAndPop(context, addressPredictions[index]);
                     },
                     iconLeft: Icons.add_location,

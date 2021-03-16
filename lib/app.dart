@@ -219,20 +219,15 @@ class _AppState extends State<App> {
 
               // if DefineDropOff is pushed
               if (settings.name == DefineDropOff.routeName) {
-                final DefineDropOffArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
-                  return DefineDropOff(places: Places(), mode: args.mode);
+                  return DefineDropOff(places: Places());
                 });
               }
 
               // if DefinePickUp is pushed
               if (settings.name == DefinePickUp.routeName) {
-                final DefinePickUpArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
-                  return DefinePickUp(
-                    places: Places(),
-                    mode: args.mode,
-                  );
+                  return DefinePickUp(places: Places());
                 });
               }
 

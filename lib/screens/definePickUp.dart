@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
-import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -16,26 +15,11 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/padlessDivider.dart';
 import 'package:uuid/uuid.dart';
 
-// TODO: focus automatically
-// TODO: google maps is enabled if there is initial address
-
-class DefinePickUpArguments {
-  final DefineRouteMode mode;
-
-  DefinePickUpArguments({
-    @required this.mode,
-  });
-}
-
 class DefinePickUp extends StatefulWidget {
   static const String routeName = "DefinePickUp";
   final Places places;
-  final DefineRouteMode mode;
 
-  DefinePickUp({
-    @required this.places,
-    @required this.mode,
-  }) : assert(places != null);
+  DefinePickUp({@required this.places}) : assert(places != null);
 
   @override
   DefinePickUpState createState() => DefinePickUpState();

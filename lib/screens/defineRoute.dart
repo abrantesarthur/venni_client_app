@@ -8,7 +8,6 @@ import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/cloud_functions/rideService.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -157,10 +156,6 @@ class DefineRouteState extends State<DefineRoute> {
     FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
     TextEditingController controller =
         isDropOff ? dropOffController : pickUpController;
-    // TODO: probably don't have to pass userGeocoding or dropOffAddres
-    dynamic args = isDropOff
-        ? DefineDropOffArguments(mode: widget.mode)
-        : DefinePickUpArguments(mode: widget.mode);
     String routeName =
         isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;
 
@@ -168,11 +163,7 @@ class DefineRouteState extends State<DefineRoute> {
     focusNode.unfocus();
 
     // push screen to allow user to select an address
-    await Navigator.pushNamed(
-      context,
-      routeName,
-      arguments: args,
-    ) as Address;
+    await Navigator.pushNamed(context, routeName) as Address;
 
     // add selected address to text field
     if (isDropOff && route.dropOffAddress != null) {

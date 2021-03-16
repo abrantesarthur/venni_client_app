@@ -163,7 +163,7 @@ class DefineRouteState extends State<DefineRoute> {
     ) as Address;
 
     // add selected address to text field
-    if (isDropOff) {
+    if (isDropOff && widget.routeModel.dropOffAddress != null) {
       controller.text = widget.routeModel.dropOffAddress.mainText;
     } else {
       if (widget.routeModel.pickUpAddress.placeID !=
@@ -203,7 +203,7 @@ class DefineRouteState extends State<DefineRoute> {
       // update route model
       route.fromRideRequest(response.result);
     } else {
-      // TODO: handle errors
+      // TODO: handle errors or at least not return true
     }
 
     Navigator.pop(context, true);

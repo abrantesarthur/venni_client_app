@@ -87,20 +87,20 @@ class RideRequestResult {
   });
 
   factory RideRequestResult.fromJson(Map<String, dynamic> json) {
-    return (json == null)
-        ? null
-        : RideRequestResult(
-            uid: json["uid"],
-            rideStatus: json["ride_status"],
-            originPlaceID: json["origin_place_id"],
-            destinationPlaceID: json["destination_place_id"],
-            farePrice: double.parse(json["fare_price"]),
-            distanceMeters: json["distance_meters"],
-            distanceText: json["distance_text"],
-            durationSeconds: json["duration_seconds"],
-            durationText: json["duration_text"],
-            encodedPoints: json["encoded_points"],
-          );
+    if (json == null) return null;
+    RideStatus status = getRideStatusFromString(json["ride_status"]);
+    return RideRequestResult(
+      uid: json["uid"],
+      rideStatus: status,
+      originPlaceID: json["origin_place_id"],
+      destinationPlaceID: json["destination_place_id"],
+      farePrice: double.parse(json["fare_price"]),
+      distanceMeters: json["distance_meters"],
+      distanceText: json["distance_text"],
+      durationSeconds: json["duration_seconds"],
+      durationText: json["duration_text"],
+      encodedPoints: json["encoded_points"],
+    );
   }
 }
 

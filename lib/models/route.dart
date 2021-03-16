@@ -42,6 +42,7 @@ class RouteModel extends ChangeNotifier {
     _durationSeconds = rrr.durationSeconds;
     _durationText = rrr.durationText;
     _encodedPoints = rrr.encodedPoints;
+    print(_rideStatus.toString());
     notifyListeners();
   }
 }

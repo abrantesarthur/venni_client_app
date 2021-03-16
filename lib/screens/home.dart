@@ -12,6 +12,7 @@ import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/directions.dart';
+import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/vendors/rideService.dart';
 import 'package:rider_frontend/vendors/svg.dart';
@@ -103,32 +104,29 @@ class HomeState extends State<Home> {
 
   Future<void> drawPolyline(
     BuildContext context,
-    RouteModel routeModel,
   ) async {
-    DirectionsResponse dr = await Directions().searchByPlaceIDs(
-        originPlaceID: routeModel.pickUpAddress.placeID,
-        destinationPlaceID: routeModel.dropOffAddress.placeID);
-    if (dr.isOkay) {
-      // set polylines
-      PolylineId polylineId = PolylineId("poly");
-      Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
-        id: polylineId,
-        encodedPoints: dr.result.route.encodedPoints,
-      );
-      polylines[polylineId] = polyline;
+    // get route model
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
-      // add bounds to map view
+    // set polylines
+    PolylineId polylineId = PolylineId("poly");
+    Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
+      id: polylineId,
+      encodedPoints: route.encodedPoints,
+    );
+    polylines[polylineId] = polyline;
+
+    // add bounds to map view
+    // for some reason we have to delay computation so animateCamera works
+    Future.delayed(Duration(milliseconds: 10), () async {
       await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
         AppPolylinePoints.calculateBounds(polyline),
         30,
       ));
+    });
 
-      // draw  markers
-      await drawMarkers(context, polyline);
-      setState(() {});
-    } else {
-      // TODO: display warning
-    }
+    // draw  markers
+    await drawMarkers(context, polyline);
   }
 
   void defineRoute(BuildContext context) async {
@@ -170,7 +168,7 @@ class HomeState extends State<Home> {
       });
 
       // draw directions on map
-      await drawPolyline(context, routeModel);
+      await drawPolyline(context);
     }
   }
 
@@ -293,7 +291,7 @@ Widget _buildRideCard({
           borderRadius: 10.0,
           textData: "in Progress",
           onTapCallBack: () {
-            homeState.defineRoute(context);
+            homeState.setState(() {});
           },
         ),
       );

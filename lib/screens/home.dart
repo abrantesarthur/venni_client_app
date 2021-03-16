@@ -47,6 +47,41 @@ class HomeState extends State<Home> {
     rootBundle
         .loadString("assets/map_style.txt")
         .then((value) => {_mapStyle = value});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // get relevant models
+      RouteModel route = Provider.of<RouteModel>(context, listen: false);
+      FirebaseModel firebase =
+          Provider.of<FirebaseModel>(context, listen: false);
+      final screenHeight = MediaQuery.of(context).size.height;
+
+      // add listener to RouteModel so polyline is redrawn automatically
+      route.addListener(() async {
+        if (route.rideStatus == RideStatus.waitingForConfirmation) {
+          // draw directions on map
+          await drawPolyline(context);
+
+          setState(() {
+            // hide user's location details
+            myLocationEnabled = false;
+            myLocationButtonEnabled = false;
+
+            // reset paddings
+            googleMapsBottomPadding = screenHeight * 0.4;
+            googleMapsTopPadding = screenHeight * 0.06;
+          });
+        }
+      });
+
+      // add listener to FirebaseModel so user logs out
+      // TODO: check that this works add to all relevant screens
+      firebase.addListener(() {
+        if (!firebase.isRegistered) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, Start.routeName, (_) => false);
+        }
+      });
+    });
   }
 
   @override
@@ -142,7 +177,7 @@ class HomeState extends State<Home> {
       ));
     }
 
-    final _requestRide = await Navigator.pushNamed(
+    Navigator.pushNamed(
       context,
       DefineRoute.routeName,
       arguments: DefineRouteArguments(
@@ -151,22 +186,6 @@ class HomeState extends State<Home> {
         mode: DefineRouteMode.request,
       ),
     );
-
-    // if user tapped to request ride
-    if (_requestRide) {
-      // draw directions on map
-      await drawPolyline(context);
-
-      setState(() {
-        // hide user's location details
-        myLocationEnabled = false;
-        myLocationButtonEnabled = false;
-
-        // reset paddings
-        googleMapsBottomPadding = screenHeight * 0.4;
-        googleMapsTopPadding = screenHeight * 0.06;
-      });
-    }
   }
 
   @override
@@ -178,16 +197,6 @@ class HomeState extends State<Home> {
     final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // TODO: change this to a listener maybe and add it to all screens where user needs to be logged in
-    if (!firebaseModel.isRegistered) {
-      //  if user logs out, send user back to start screen
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushNamedAndRemoveUntil(
-            context, Start.routeName, (_) => false);
-      });
-      return Container();
-    }
 
     return Scaffold(
       body: Stack(

@@ -218,7 +218,7 @@ class DefineRouteState extends State<DefineRoute> {
       // TODO: handle errors or at least not return true
     }
 
-    Navigator.pop(context, true);
+    Navigator.pop(context);
   }
 
   @override
@@ -235,7 +235,7 @@ class DefineRouteState extends State<DefineRoute> {
             Row(
               children: [
                 ArrowBackButton(onTapCallback: () {
-                  Navigator.pop(context, false);
+                  Navigator.pop(context);
                 }),
                 Spacer(),
               ],

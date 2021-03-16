@@ -127,6 +127,7 @@ class HomeState extends State<Home> {
 
     // draw  markers
     await drawMarkers(context, polyline);
+    setState(() {});
   }
 
   void defineRoute(BuildContext context) async {

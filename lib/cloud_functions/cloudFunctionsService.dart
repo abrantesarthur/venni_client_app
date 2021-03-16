@@ -33,6 +33,18 @@ class CloudFunctionsWebService {
       body: body,
     );
   }
+
+  @protected
+  Future<http.Response> doPut({
+    String path,
+    dynamic body,
+  }) async {
+    return await http.put(
+      _baseURL + path,
+      headers: _headers,
+      body: body,
+    );
+  }
 }
 
 class CloudFunctionsResponse<T> extends CloudFunctionsResponseStatus {

@@ -191,15 +191,24 @@ class DefineRouteState extends State<DefineRoute> {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
-    // get user ID token from firebase
+    // get user ID token from firebase and instantiate Ride with it
     String userIdToken = await firebase.auth.currentUser.getIdToken();
-
-    // send ride request to retrieve fare price, ride distance, polyline, etc.
     Ride ride = Ride(userIdToken: userIdToken);
-    RideRequestResponse response = await ride.request(
-      originPlaceID: route.pickUpAddress.placeID,
-      destinationPlaceID: route.dropOffAddress.placeID,
-    );
+
+    RideRequestResponse response;
+    if (widget.mode == DefineRouteMode.request) {
+      // send ride request to retrieve fare price, ride distance, polyline, etc.
+      response = await ride.request(
+        originPlaceID: route.pickUpAddress.placeID,
+        destinationPlaceID: route.dropOffAddress.placeID,
+      );
+    } else if (widget.mode == DefineRouteMode.edit) {
+      // send request to edit ride
+      response = await ride.edit(
+        originPlaceID: route.pickUpAddress.placeID,
+        destinationPlaceID: route.dropOffAddress.placeID,
+      );
+    }
 
     if (response.isOkay) {
       // update route model

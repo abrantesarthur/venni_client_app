@@ -31,6 +31,21 @@ class Ride extends CloudFunctionsWebService {
     ));
   }
 
+  Future<RideRequestResponse> edit({
+    @required originPlaceID,
+    @required destinationPlaceID,
+  }) async {
+    Map<String, String> data = {
+      "origin_place_id": originPlaceID,
+      "destination_place_id": destinationPlaceID,
+    };
+
+    return _decode(await doPut(
+      path: "edit-request",
+      body: json.encode(data),
+    ));
+  }
+
   RideRequestResponse _decode(http.Response response) {
     if (response != null && response.statusCode < 300) {
       return RideRequestResponse.fromJson(jsonDecode(response.body));

@@ -4,6 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/vendors/cloudFunctionsService.dart';
 
+enum RideStatus {
+  finished,
+  canceledByDriver,
+  canceledByClient,
+  waitingForConfirmation,
+  waitingForRider,
+  inProgress,
+}
+
 class Ride extends CloudFunctionsWebService {
   Ride({@required String userIdToken}) : super(userIdToken: userIdToken);
 
@@ -23,9 +32,6 @@ class Ride extends CloudFunctionsWebService {
   }
 
   RideRequestResponse _decode(http.Response response) {
-    print("response code");
-    print(response.statusCode);
-    print(response.body);
     if (response != null && response.statusCode < 300) {
       return RideRequestResponse.fromJson(jsonDecode(response.body));
     } // TODO: log this somewhere
@@ -45,10 +51,6 @@ class RideRequestResponse extends CloudFunctionsResponse<RideRequestResult> {
         );
 
   factory RideRequestResponse.fromJson(Map<String, dynamic> json) {
-    print("RideRequestResponse");
-    print(json["status"]);
-    if (json["error_message"] != null) print(json["error_message"]);
-    if (json["result"] != null) print(json["result"]);
     return (json == null)
         ? null
         : RideRequestResponse(
@@ -61,7 +63,7 @@ class RideRequestResponse extends CloudFunctionsResponse<RideRequestResult> {
 
 class RideRequestResult {
   final String uid;
-  final String rideStatus;
+  final RideStatus rideStatus;
   final String originPlaceID;
   final String destinationPlaceID;
   final double farePrice;
@@ -99,5 +101,26 @@ class RideRequestResult {
             durationText: json["duration_text"],
             encodedPoints: json["encoded_points"],
           );
+  }
+}
+
+RideStatus getRideStatusFromString(String status) {
+  if (status == "waiting-confirmation") {
+    return RideStatus.waitingForConfirmation;
+  }
+  if (status == "waiting-rider") {
+    return RideStatus.waitingForRider;
+  }
+  if (status == "in-progress") {
+    return RideStatus.inProgress;
+  }
+  if (status == "finished") {
+    return RideStatus.finished;
+  }
+  if (status == "canceled-by-driver") {
+    return RideStatus.canceledByDriver;
+  }
+  if (status == "canceled-by-client") {
+    return RideStatus.canceledByClient;
   }
 }

@@ -13,6 +13,7 @@ import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/directions.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
+import 'package:rider_frontend/vendors/rideService.dart';
 import 'package:rider_frontend/vendors/svg.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
@@ -37,14 +38,13 @@ class HomeState extends State<Home> {
   double googleMapsTopPadding;
   double googleMapsBottomPadding;
 
-  var rideStatus;
+  RideStatus rideStatus;
 
   @override
   void initState() {
     super.initState();
     myLocationEnabled = true;
     myLocationButtonEnabled = true;
-    rideStatus = RideStatus.off;
 
     // load map style
     rootBundle
@@ -105,7 +105,6 @@ class HomeState extends State<Home> {
     BuildContext context,
     RouteModel routeModel,
   ) async {
-    // TODO: move this to defineRoute. Should probably extend the RouteModel. Maybe change name as well.
     DirectionsResponse dr = await Directions().searchByPlaceIDs(
         originPlaceID: routeModel.pickUpAddress.placeID,
         destinationPlaceID: routeModel.dropOffAddress.placeID);
@@ -195,40 +194,41 @@ class HomeState extends State<Home> {
     }
 
     return Scaffold(
-        body: Stack(
-      children: [
-        GoogleMap(
-          myLocationButtonEnabled: myLocationButtonEnabled,
-          myLocationEnabled: myLocationEnabled,
-          trafficEnabled: false,
-          zoomControlsEnabled: false,
-          mapType: MapType.normal,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(
-              userPos.geocoding.latitude,
-              userPos.geocoding.longitude,
+      body: Stack(
+        children: [
+          GoogleMap(
+            myLocationButtonEnabled: myLocationButtonEnabled,
+            myLocationEnabled: myLocationEnabled,
+            trafficEnabled: false,
+            zoomControlsEnabled: false,
+            mapType: MapType.normal,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(
+                userPos.geocoding.latitude,
+                userPos.geocoding.longitude,
+              ),
+              zoom: 16.5,
             ),
-            zoom: 16.5,
+            padding: EdgeInsets.only(
+              top: googleMapsTopPadding ?? screenHeight / 12,
+              bottom: googleMapsBottomPadding ?? screenHeight / 7,
+              left: screenWidth / 20,
+              right: screenWidth / 20,
+            ),
+            onMapCreated: (GoogleMapController c) {
+              onMapCreatedCallback(context, c);
+            },
+            polylines: Set<Polyline>.of(polylines.values),
+            markers: markers,
           ),
-          padding: EdgeInsets.only(
-            top: googleMapsTopPadding ?? screenHeight / 12,
-            bottom: googleMapsBottomPadding ?? screenHeight / 7,
-            left: screenWidth / 20,
-            right: screenWidth / 20,
+          _buildRideCard(
+            context: context,
+            homeState: this,
+            rideStatus: rideStatus,
           ),
-          onMapCreated: (GoogleMapController c) {
-            onMapCreatedCallback(context, c);
-          },
-          polylines: Set<Polyline>.of(polylines.values),
-          markers: markers,
-        ),
-        _buildRideCard(
-          context: context,
-          homeState: this,
-          rideStatus: rideStatus,
-        ),
-      ],
-    ));
+        ],
+      ),
+    );
   }
 }
 
@@ -237,23 +237,24 @@ Widget _buildRideCard({
   @required HomeState homeState,
   @required var rideStatus,
 }) {
+  if (rideStatus == null) {
+    return OverallPadding(
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        child: AppButton(
+          borderRadius: 10.0,
+          iconLeft: Icons.near_me,
+          textData: "Para onde vamos?",
+          onTapCallBack: () {
+            homeState.defineRoute(context);
+          },
+        ),
+      ),
+    );
+  }
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   switch (rideStatus) {
-    case RideStatus.off:
-      return OverallPadding(
-        child: Container(
-          alignment: Alignment.bottomCenter,
-          child: AppButton(
-            borderRadius: 10.0,
-            iconLeft: Icons.near_me,
-            textData: "Para onde vamos?",
-            onTapCallBack: () {
-              homeState.defineRoute(context);
-            },
-          ),
-        ),
-      );
     case RideStatus.waitingForConfirmation:
       return Column(
         children: [
@@ -285,12 +286,12 @@ Widget _buildRideCard({
           },
         ),
       );
-    case RideStatus.riding:
+    case RideStatus.inProgress:
       return Container(
         alignment: Alignment.bottomCenter,
         child: AppButton(
           borderRadius: 10.0,
-          textData: "riding.",
+          textData: "in Progress",
           onTapCallBack: () {
             homeState.defineRoute(context);
           },
@@ -411,11 +412,4 @@ Widget _buildWaitingForConfirmationWidget(BuildContext context) {
       SizedBox(height: screenHeight / 200),
     ],
   );
-}
-
-enum RideStatus {
-  off,
-  waitingForConfirmation,
-  waitingForRider,
-  riding,
 }

@@ -216,7 +216,7 @@ class DefineRouteState extends State<DefineRoute> {
     }
 
     if (response != null && response.isOkay) {
-      // update route model
+      // update route with response
       route.fromRideRequest(response.result);
     } else {
       // TODO: handle errors or at least not return true

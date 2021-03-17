@@ -65,7 +65,9 @@ class HomeState extends State<Home> {
         }
       };
 
-      // define _routeListener so we can remove listeenr later
+      // define _routeListener so we can remove listenr later
+      // whenever we change the route, _rideStatusListener is triggered
+      //
       _routeListener = () async {
         await _rideStatusListener(context, _route.rideStatus);
       };
@@ -87,6 +89,8 @@ class HomeState extends State<Home> {
     super.dispose();
   }
 
+  // _rideStatusListener is triggered whenever we change the route.
+  // it looks at the route status and updates the UI accordingly
   Future<void> _rideStatusListener(
     BuildContext context,
     RideStatus rideStatus,
@@ -107,6 +111,10 @@ class HomeState extends State<Home> {
         googleMapsBottomPadding = screenHeight * 0.4;
         googleMapsTopPadding = screenHeight * 0.06;
       });
+    } else {
+      // TODO: handle other ride status cases
+      // trigger widget rebuild
+      setState(() {});
     }
   }
 
@@ -194,7 +202,6 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     // get user position
-    // TODO: should this be listen: false?
     UserPositionModel userPos =
         Provider.of<UserPositionModel>(context, listen: false);
     final screenHeight = MediaQuery.of(context).size.height;
@@ -245,8 +252,6 @@ List<Widget> _buildRemainingStackChildren({
 }) {
   RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-
   if (route.rideStatus == null) {
     return [
       OverallPadding(
@@ -257,8 +262,7 @@ List<Widget> _buildRemainingStackChildren({
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
             onTapCallBack: () {
-              firebase.auth.signOut();
-              // homeState.defineRoute(context);
+              homeState.defineRoute(context);
             },
           ),
         ),

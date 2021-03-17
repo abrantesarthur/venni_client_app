@@ -41,7 +41,7 @@ class Ride extends CloudFunctionsWebService {
     };
 
     return _decode(await doPut(
-      path: "edit-request",
+      path: "ride-edit",
       body: json.encode(data),
     ));
   }

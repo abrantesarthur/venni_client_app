@@ -38,7 +38,7 @@ class RouteModel extends ChangeNotifier {
     _rideStatus = rideStatus;
     notifyListeners();
   }
-
+  // TODO: round fare price up if payment is in money
   void fromRideRequest(RideRequestResult rrr) {
     _rideStatus = rrr.rideStatus;
     _farePrice = rrr.farePrice;

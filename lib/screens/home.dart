@@ -177,7 +177,6 @@ class HomeState extends State<Home> {
     // TODO: should this be listen: false?
     UserPositionModel userPos =
         Provider.of<UserPositionModel>(context, listen: false);
-    final firebaseModel = Provider.of<FirebaseModel>(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -336,6 +335,8 @@ List<Widget> _buildRemainingStackChildren({
 Widget _buildRideSummaryFloatingCard(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
+  RouteModel route = Provider.of<RouteModel>(context, listen: false);
+
   return FloatingCard(
     bottom: 0,
     child: Column(
@@ -363,7 +364,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context) {
             ),
             Spacer(),
             Text(
-              "R\$ 5,60", // TODO: make dynamic
+              "R\$ " + route.farePrice.toString(),
               style: TextStyle(fontSize: 18),
             ),
           ],

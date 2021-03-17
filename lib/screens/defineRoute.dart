@@ -210,7 +210,7 @@ class DefineRouteState extends State<DefineRoute> {
       );
     }
 
-    if (response.isOkay) {
+    if (response != null && response.isOkay) {
       // update route model
       route.fromRideRequest(response.result);
     } else {

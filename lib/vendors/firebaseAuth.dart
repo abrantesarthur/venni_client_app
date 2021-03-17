@@ -6,14 +6,6 @@ import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 
-extension AppUserCredential on UserCredential {
-  // userIsRegistered returns true if the user has already created an account
-  Future<bool> userIsRegistered() async {
-    // if user already has a name, it means they went through the verification process.
-    return this.user.displayName != null;
-  }
-}
-
 // TODO: put this in the model
 Future<void> verificationCompletedCallback({
   @required BuildContext context,
@@ -29,11 +21,9 @@ Future<void> verificationCompletedCallback({
 
     // however, we only consider the user to be registered, if they have a displayName,
     // meaning, they went through the whole registration process
-    bool userIsRegistered = await userCredential.userIsRegistered();
-    if (userIsRegistered) {
-      // listen for changes in user status and redirect to Home screen
-      Provider.of<FirebaseModel>(context, listen: false)
-          .listenForStatusChanges();
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    if (firebase.isRegistered) {
+      // redirect to Home screen
       Navigator.pushNamed(context, Home.routeName);
     } else {
       Navigator.pushNamed(

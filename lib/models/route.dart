@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/cloud_functions/rideService.dart';
 
 class RouteModel extends ChangeNotifier {

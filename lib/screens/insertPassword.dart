@@ -246,11 +246,8 @@ class InsertPasswordState extends State<InsertPassword> {
       ) {
         // user has tapped to register, and registration has finished succesfully
         if (snapshot.hasData && snapshot.data == true) {
-          //  add listener to track user changes and send to Home screen
-          firebaseModel.listenForStatusChanges();
           // future builder must return Widget, but we want to push a route.
           // thus, schedule pushing for right afer returning a Container.
-          // TODO: there is a bug here. Fix it
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Navigator.pushNamed(context, Home.routeName);
           });

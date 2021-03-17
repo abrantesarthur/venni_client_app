@@ -50,6 +50,9 @@ class DefineRouteState extends State<DefineRoute> {
   Color buttonColor;
   bool activateCallback;
   Widget buttonChild;
+  UserPositionModel _userPos;
+  RouteModel _route;
+  var _routeListener;
 
   @override
   void initState() {
@@ -57,25 +60,24 @@ class DefineRouteState extends State<DefineRoute> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // get relevant models
-      RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      UserPositionModel userPos =
-          Provider.of<UserPositionModel>(context, listen: false);
+      _route = Provider.of<RouteModel>(context, listen: false);
+      _userPos = Provider.of<UserPositionModel>(context, listen: false);
 
       // pickUp location defaults to user's current address
-      if (route.pickUpAddress == null) {
-        route.updatePickUpAddres(Address.fromGeocodingResult(
-          geocodingResult: userPos.geocoding,
+      if (_route.pickUpAddress == null) {
+        _route.updatePickUpAddres(Address.fromGeocodingResult(
+          geocodingResult: _userPos.geocoding,
           dropOff: false,
         ));
       }
 
       // text field initial values
       dropOffController.text =
-          route.dropOffAddress != null ? route.dropOffAddress.mainText : "";
+          _route.dropOffAddress != null ? _route.dropOffAddress.mainText : "";
       pickUpController.text = "";
-      final pickUpAddress = route.pickUpAddress;
-      final userLatitude = userPos.geocoding.latitude;
-      final userLongitude = userPos.geocoding.longitude;
+      final pickUpAddress = _route.pickUpAddress;
+      final userLatitude = _userPos.geocoding.latitude;
+      final userLongitude = _userPos.geocoding.longitude;
       // change pick up text field only if it's different from user location
       if (userLatitude != pickUpAddress.latitude ||
           userLongitude != pickUpAddress.longitude) {
@@ -84,16 +86,18 @@ class DefineRouteState extends State<DefineRoute> {
 
       // set button state
       setButtonState(
-        pickUp: route.pickUpAddress,
-        dropOff: route.dropOffAddress,
+        pickUp: _route.pickUpAddress,
+        dropOff: _route.dropOffAddress,
       );
 
-      route.addListener(() {
+      _routeListener = () {
         setButtonState(
-          pickUp: route.pickUpAddress,
-          dropOff: route.dropOffAddress,
+          pickUp: _route.pickUpAddress,
+          dropOff: _route.dropOffAddress,
         );
-      });
+      };
+
+      _route.addListener(_routeListener);
     });
   }
 
@@ -110,6 +114,7 @@ class DefineRouteState extends State<DefineRoute> {
     pickUpController.dispose();
     dropOffFocusNode.dispose();
     pickUpFocusNode.dispose();
+    _route.removeListener(_routeListener);
     super.dispose();
   }
 

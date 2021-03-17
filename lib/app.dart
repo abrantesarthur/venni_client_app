@@ -127,10 +127,7 @@ class _AppState extends State<App> {
 
     // Show a loader until FlutterFire is initialized
     if (_initialized) {
-      // initialize firebaseModel. This will add a listener for user changes only
-      // if user is registered. Otherwise, we will go through the registration
-      // process and manually add listener for user status changes at the end
-      // of the registration.
+      // initialize firebaseModel. This will add a listener for user changes.
       firebaseModel = FirebaseModel(
         firebaseAuth: FirebaseAuth.instance,
         firebaseDatabase: FirebaseDatabase.instance,
@@ -156,11 +153,16 @@ class _AppState extends State<App> {
           )
         ], // pass user model down
         builder: (context, child) {
+          FirebaseModel firebase = Provider.of<FirebaseModel>(
+            context,
+            listen: false,
+          );
+
           return MaterialApp(
             theme: ThemeData(fontFamily: "OpenSans"),
             // start screen depends on whether user is registered
             initialRoute:
-                firebaseModel.isRegistered ? Home.routeName : Start.routeName,
+                firebase.isRegistered ? Home.routeName : Start.routeName,
             // pass appropriate arguments to routes
             onGenerateRoute: (RouteSettings settings) {
               if (settings.name == InsertPhone.routeName) {

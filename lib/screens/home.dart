@@ -35,6 +35,10 @@ class HomeState extends State<Home> {
   bool myLocationButtonEnabled;
   double googleMapsTopPadding;
   double googleMapsBottomPadding;
+  FirebaseModel _firebase;
+  RouteModel _route;
+  var _firebaseListener;
+  var _routeListener;
 
   @override
   void initState() {
@@ -49,23 +53,38 @@ class HomeState extends State<Home> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // get relevant models
-      RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      FirebaseModel firebase =
-          Provider.of<FirebaseModel>(context, listen: false);
+      _route = Provider.of<RouteModel>(context, listen: false);
+      _firebase = Provider.of<FirebaseModel>(context, listen: false);
 
-      // add listener to RouteModel so polyline is redrawn automatically
-      route.addListener(() async {
-        await _rideStatusListener(context, route.rideStatus);
-      });
-
-      // add listener to FirebaseModel so user logs out
-      firebase.addListener(() {
-        if (!firebase.isRegistered) {
+      // define _firebaseListener so we can remove listener later.
+      // this is how we make sign out work!
+      _firebaseListener = () {
+        if (!_firebase.isRegistered) {
           Navigator.pushNamedAndRemoveUntil(
               context, Start.routeName, (_) => false);
         }
-      });
+      };
+
+      // define _routeListener so we can remove listeenr later
+      _routeListener = () async {
+        await _rideStatusListener(context, _route.rideStatus);
+      };
+
+      // add listener to RouteModel so polyline is redrawn automatically
+      _route.addListener(_routeListener);
+      // add listener to FirebaseModel so user is redirected when logs out
+      _firebase.addListener(_firebaseListener);
     });
+  }
+
+  @override
+  void dispose() {
+    if (_googleMapController != null) {
+      _googleMapController.dispose();
+    }
+    _firebase.removeListener(_firebaseListener);
+    _route.removeListener(_routeListener);
+    super.dispose();
   }
 
   Future<void> _rideStatusListener(
@@ -89,14 +108,6 @@ class HomeState extends State<Home> {
         googleMapsTopPadding = screenHeight * 0.06;
       });
     }
-  }
-
-  @override
-  void dispose() {
-    if (_googleMapController != null) {
-      _googleMapController.dispose();
-    }
-    super.dispose();
   }
 
   void onMapCreatedCallback(BuildContext context, GoogleMapController c) async {
@@ -234,6 +245,8 @@ List<Widget> _buildRemainingStackChildren({
 }) {
   RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
   if (route.rideStatus == null) {
     return [
       OverallPadding(
@@ -244,7 +257,8 @@ List<Widget> _buildRemainingStackChildren({
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
             onTapCallBack: () {
-              homeState.defineRoute(context);
+              firebase.auth.signOut();
+              // homeState.defineRoute(context);
             },
           ),
         ),

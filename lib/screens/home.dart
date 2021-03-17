@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -51,28 +52,13 @@ class HomeState extends State<Home> {
       RouteModel route = Provider.of<RouteModel>(context, listen: false);
       FirebaseModel firebase =
           Provider.of<FirebaseModel>(context, listen: false);
-      final screenHeight = MediaQuery.of(context).size.height;
 
       // add listener to RouteModel so polyline is redrawn automatically
       route.addListener(() async {
-        if (route.rideStatus == RideStatus.waitingForConfirmation) {
-          // draw directions on map
-          await drawPolyline(context);
-
-          setState(() {
-            // hide user's location details
-            myLocationEnabled = false;
-            myLocationButtonEnabled = false;
-
-            // reset paddings
-            googleMapsBottomPadding = screenHeight * 0.4;
-            googleMapsTopPadding = screenHeight * 0.06;
-          });
-        }
+        await _rideStatusListener(context, route.rideStatus);
       });
 
       // add listener to FirebaseModel so user logs out
-      // TODO: check that this works add to all relevant screens
       firebase.addListener(() {
         if (!firebase.isRegistered) {
           Navigator.pushNamedAndRemoveUntil(
@@ -80,6 +66,29 @@ class HomeState extends State<Home> {
         }
       });
     });
+  }
+
+  Future<void> _rideStatusListener(
+    BuildContext context,
+    RideStatus rideStatus,
+  ) async {
+    if (rideStatus == null) return;
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    if (rideStatus == RideStatus.waitingForConfirmation) {
+      // draw directions on map
+      await drawPolyline(context);
+
+      setState(() {
+        // hide user's location details
+        myLocationEnabled = false;
+        myLocationButtonEnabled = false;
+
+        // reset paddings
+        googleMapsBottomPadding = screenHeight * 0.4;
+        googleMapsTopPadding = screenHeight * 0.06;
+      });
+    }
   }
 
   @override

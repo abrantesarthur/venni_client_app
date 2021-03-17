@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/app.dart';
 
+// TODO: store sensitive data safely https://medium.com/flutterdevs/secure-storage-in-flutter-660d7cb81bc
 void main() {
   AppConfig(
     flavor: Flavor.DEV,

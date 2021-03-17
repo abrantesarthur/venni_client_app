@@ -27,7 +27,7 @@ Future<void> verificationCompletedCallback({
     UserCredential userCredential =
         await firebaseAuth.signInWithCredential(credential);
 
-    // however, we only consider the user to be registered, if they hvae a displayName,
+    // however, we only consider the user to be registered, if they have a displayName,
     // meaning, they went through the whole registration process
     bool userIsRegistered = await userCredential.userIsRegistered();
     if (userIsRegistered) {

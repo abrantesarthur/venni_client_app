@@ -157,6 +157,9 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
 
     await _firebaseAuth.verifyPhoneNumber(
       phoneNumber: widget.phoneNumber,
+      // verificatoinCompleted fires only in Android phones that automatically
+      // create a credential with the SMS code that arrives without the user
+      // having to input it.
       verificationCompleted: (PhoneAuthCredential credential) {
         verificationCompletedCallback(
           context: context,

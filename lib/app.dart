@@ -47,6 +47,9 @@ class _AppState extends State<App> {
   }
 
   Future<void> initializeApp() async {
+    // TODO: load user info or think about how to store in device (like credit card, photo, ride-request etc)
+    // TODO: decide whether to set firebase.database.setPersistenceEnabled(true)
+
     await initializeUserPosition();
     await initializeFlutterFire();
   }

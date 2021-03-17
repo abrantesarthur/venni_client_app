@@ -350,7 +350,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context) {
             ),
             Spacer(),
             Text(
-              "14:27", // TODO: make dynamic
+              route.etaString,
               style: TextStyle(fontSize: 18),
             ),
           ],

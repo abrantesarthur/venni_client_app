@@ -13,6 +13,8 @@ class RouteModel extends ChangeNotifier {
   int _durationSeconds;
   String _durationText;
   String _encodedPoints;
+  DateTime _eta;
+  String _etaString;
 
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
@@ -23,6 +25,8 @@ class RouteModel extends ChangeNotifier {
   int get durationSeconds => _durationSeconds;
   String get durationText => _durationText;
   String get encodedPoints => _encodedPoints;
+  DateTime get eta => _eta;
+  String get etaString => _etaString;
 
   void updatePickUpAddres(Address address) {
     _currentPickUpAddress = address;
@@ -38,8 +42,17 @@ class RouteModel extends ChangeNotifier {
     _rideStatus = rideStatus;
     notifyListeners();
   }
+
   // TODO: round fare price up if payment is in money
   void fromRideRequest(RideRequestResult rrr) {
+    // TODO: improve estimates of driver arrival time
+    // estimate that pilot arrives in 5 seconds
+    int secondsForDriverArrival = 300;
+    DateTime eta = DateTime.now().add(Duration(
+      seconds: rrr.durationSeconds + secondsForDriverArrival,
+    ));
+    String etaString = eta.hour.toString() + ":" + eta.minute.toString();
+
     _rideStatus = rrr.rideStatus;
     _farePrice = rrr.farePrice;
     _distanceMeters = rrr.distanceMeters;
@@ -47,7 +60,8 @@ class RouteModel extends ChangeNotifier {
     _durationSeconds = rrr.durationSeconds;
     _durationText = rrr.durationText;
     _encodedPoints = rrr.encodedPoints;
-    print(_rideStatus.toString());
+    _eta = eta;
+    _etaString = etaString;
     notifyListeners();
   }
 }

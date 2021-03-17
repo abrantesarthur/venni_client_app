@@ -244,8 +244,6 @@ List<Widget> _buildRemainingStackChildren({
   }
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
-  UserPositionModel userPos =
-      Provider.of<UserPositionModel>(context, listen: false);
 
   switch (route.rideStatus) {
     case RideStatus.waitingForConfirmation:

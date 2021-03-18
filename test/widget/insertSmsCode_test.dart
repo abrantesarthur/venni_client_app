@@ -62,9 +62,9 @@ void main() {
     when(mockUserCredential.user).thenReturn(mockUser);
 
     if (userIsRegistered != null && userIsRegistered) {
-      when(mockUser.displayName).thenReturn("Fulano");
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
     } else {
-      when(mockUser.displayName).thenReturn(null);
+      when(mockFirebaseModel.isRegistered).thenReturn(false);
     }
 
     // mock FirebaseAuth's signInWithCredential to return mockUserCredential
@@ -336,17 +336,17 @@ void main() {
     });
 
     testWidgets(
-        "ends in Start screen if firebaseModle.isRegistered returns false",
+        "ends in InsertEmail screen if firebaseModel.isRegistered returns false",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
 
       verify(mockNavigatorObserver.didPush(any, any));
 
-      // code verification succeeds and user is registered
+      // code verification succeeds and user is not registered
       setupFirebaseMocks(
         tester: tester,
-        userIsRegistered: true,
+        userIsRegistered: false,
         signInSucceeds: true,
       );
 
@@ -358,11 +358,8 @@ void main() {
       stateIsEnabled(tester.state(find.byType(InsertSmsCode)), completeCode);
 
       // before tapping the button, there is no Start screen
-      expect(find.byType(Start), findsNothing);
+      expect(find.byType(InsertEmail), findsNothing);
       expect(find.byType(InsertSmsCode), findsOneWidget);
-
-      // firebaseModel.isRegistered returns false
-      when(mockFirebaseModel.isRegistered).thenReturn(false);
 
       // tap circular button
       await tester.tap(find.byType(CircularButton));
@@ -370,7 +367,7 @@ void main() {
 
       // after tapping button, Start screen is pushed
       verify(mockNavigatorObserver.didPush(any, any));
-      expect(find.byType(Start), findsOneWidget);
+      expect(find.byType(InsertEmail), findsOneWidget);
       expect(find.byType(Home), findsNothing);
       expect(find.byType(InsertSmsCode), findsNothing);
     });

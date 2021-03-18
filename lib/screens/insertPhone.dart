@@ -101,7 +101,6 @@ class InsertPhoneNumberState extends State<InsertPhone> {
       ),
     );
 
-    // allow users to type and set icon as normal
     setState(() {
       enabled = true;
       _circularButtonChild = Icon(
@@ -125,32 +124,31 @@ class InsertPhoneNumberState extends State<InsertPhone> {
         _circularButtonChild = CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
         );
-        circularButtonCallback = null;
       });
 
       await firebaseAuth.verifyPhoneNumber(
-        timeout: Duration(seconds: 60),
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) {
-          verificationCompletedCallback(
-              context: context,
-              credential: credential,
-              firebaseDatabase: firebaseDatabase,
-              firebaseAuth: firebaseAuth,
-              onExceptionCallback: (FirebaseAuthException e) {
-                setInactiveState(message: "Algo deu errado. Tente novamente.");
-              });
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          String errorMsg = verificationFailedCallback(e);
-          setInactiveState(message: errorMsg);
-        },
-        codeSent: (String verificatinId, int resendToken) {
-          codeSentCallback(context, verificatinId, resendToken);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-        forceResendingToken: _resendToken,
-      );
+          timeout: Duration(seconds: 60),
+          phoneNumber: phoneNumber,
+          verificationCompleted: (PhoneAuthCredential credential) {
+            verificationCompletedCallback(
+                context: context,
+                credential: credential,
+                firebaseDatabase: firebaseDatabase,
+                firebaseAuth: firebaseAuth,
+                onExceptionCallback: (FirebaseAuthException e) {
+                  setInactiveState(
+                      message: "Algo deu errado. Tente novamente.");
+                });
+          },
+          verificationFailed: (FirebaseAuthException e) {
+            String errorMsg = verificationFailedCallback(e);
+            setInactiveState(message: errorMsg);
+          },
+          codeSent: (String verificatinId, int resendToken) {
+            codeSentCallback(context, verificatinId, resendToken);
+          },
+          codeAutoRetrievalTimeout: (String verificationId) {},
+          forceResendingToken: _resendToken);
     }
   }
 

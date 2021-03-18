@@ -372,7 +372,7 @@ void main() {
       // tapping button triggers buttonCallback, calling mocked verifyPhoneNumber,
       // calling verificationCompletedCallback
       await tester.tap(find.byType(CircularButton));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // after tapping button, there is a Warning about failed sign in
       final warningFinder =
@@ -471,7 +471,7 @@ void main() {
         // tapping button triggers buttonCallback, calling mocked verifyPhoneNumber
         // calling verificationFailed
         await tester.tap(find.byType(CircularButton));
-        await tester.pumpAndSettle();
+        await tester.pump();
 
         // after tapping button, we receive a warnign about invalid phone number
         final warningFinder = find.byType(Warning);

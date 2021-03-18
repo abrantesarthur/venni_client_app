@@ -251,6 +251,7 @@ List<Widget> _buildRemainingStackChildren({
   @required HomeState homeState,
 }) {
   RouteModel route = Provider.of<RouteModel>(context, listen: false);
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
   if (route.rideStatus == null) {
     return [

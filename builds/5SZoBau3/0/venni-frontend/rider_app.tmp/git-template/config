@@ -1,4 +1,0 @@
-[fetch]
-	recurseSubmodules = false
-[http "https://gitlab.com"]
-	sslCAInfo = /Users/Arthur/rider_app/builds/5SZoBau3/0/venni-frontend/rider_app.tmp/CI_SERVER_TLS_CA_FILE

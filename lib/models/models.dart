@@ -19,14 +19,14 @@ class FirebaseModel extends ChangeNotifier {
     // set firebase instances
     _firebaseAuth = firebaseAuth;
     _firebaseDatabase = firebaseDatabase;
-
-    // check whether a user is logged in
-    _isRegistered = false;
-    if (this._userIsRegistered(firebaseAuth.currentUser)) {
-      // if so, add listener to track changes in user status
-      listenForStatusChanges();
+    if (_userIsRegistered(firebaseAuth.currentUser)) {
       _isRegistered = true;
+    } else {
+      _isRegistered = false;
     }
+
+    // add listener to track changes in user status
+    listenForStatusChanges();
     notifyListeners();
   }
 
@@ -35,12 +35,16 @@ class FirebaseModel extends ChangeNotifier {
   void listenForStatusChanges() {
     _firebaseAuth.authStateChanges().listen((User user) {
       if (this._userIsRegistered(user)) {
-        _isRegistered = true;
+        _updateIsRegistered(true);
       } else {
-        _isRegistered = false;
+        _updateIsRegistered(false);
       }
-      notifyListeners();
     });
+  }
+
+  void _updateIsRegistered(bool isRegistered) {
+    _isRegistered = isRegistered;
+    notifyListeners();
   }
 
   // returns true if user is logged in and has a displayName

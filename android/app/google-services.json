@@ -8,20 +8,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:393677487406:android:9b2b4c84b85bbbc4c34ebf",
+        "mobilesdk_app_id": "1:393677487406:android:1dcdd1bdd501d921c34ebf",
         "android_client_info": {
-          "package_name": "com.venni.staging.riderapp"
+          "package_name": "com.venni.rider"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "393677487406-qkvkv1qe1ioqcoh3obvtht0m49mcbebi.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.venni.staging.riderapp",
-            "certificate_hash": "a8b6911c6104d903cf8036030364fec7621755de"
-          }
-        },
         {
           "client_id": "393677487406-82j6fb7no3lu5h0vs9lcrq080kc4n2ck.apps.googleusercontent.com",
           "client_type": 3

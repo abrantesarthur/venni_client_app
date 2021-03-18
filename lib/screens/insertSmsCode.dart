@@ -157,6 +157,9 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
 
     await _firebaseAuth.verifyPhoneNumber(
       phoneNumber: widget.phoneNumber,
+      // verificatoinCompleted fires only in Android phones that automatically
+      // create a credential with the SMS code that arrives without the user
+      // having to input it.
       verificationCompleted: (PhoneAuthCredential credential) {
         verificationCompletedCallback(
           context: context,
@@ -245,7 +248,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
   Widget displayWarnings(BuildContext context, double padding) {
     Warning editPhoneWarning = Warning(
       message: "Editar o número do meu celular",
-      onTapCallback: () => Navigator.pop(context),
+      onTapCallback: Navigator.pop,
     );
     if (warningMessage != null && _resendCodeWarning != null) {
       return Expanded(
@@ -296,14 +299,13 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    _firebaseAuth = Provider.of<FirebaseModel>(context, listen: false).auth;
-    _firebaseDatabase =
-        Provider.of<FirebaseModel>(context, listen: false).database;
+    _firebaseAuth = Provider.of<FirebaseModel>(context).auth;
+    _firebaseDatabase = Provider.of<FirebaseModel>(context).database;
 
     if (remainingSeconds <= 0) {
       // if remainingSeconds reaches 0, allow user to resend sms code.
       _resendCodeWarning = Warning(
-        onTapCallback: () => resendCode(context),
+        onTapCallback: resendCode,
         message: "Reenviar o código para meu celular",
       );
     } else {
@@ -314,56 +316,74 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
     }
 
     return Scaffold(
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () => Navigator.pop(context)),
-                Spacer(),
-              ],
-            ),
-            SizedBox(height: screenHeight / 25),
-            RichText(
-              text: TextSpan(
-                text: 'Insira o código de 6 digitos enviado para ',
-                style: TextStyle(fontSize: 18, color: Colors.black),
-                children: <TextSpan>[
-                  TextSpan(
-                      text: widget.phoneNumber,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.black)),
-                ],
+      body: LayoutBuilder(
+        builder: (
+          BuildContext context,
+          BoxConstraints viewportConstraints,
+        ) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: OverallPadding(
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          ArrowBackButton(
+                              onTapCallback: () => Navigator.pop(context)),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: screenHeight / 25),
+                      RichText(
+                        text: TextSpan(
+                          text: 'Insira o código de 6 digitos enviado para ',
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          children: <TextSpan>[
+                            TextSpan(
+                                text: widget.phoneNumber,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      AppInputText(
+                        autoFocus: true,
+                        iconData: Icons.lock,
+                        controller: smsCodeTextEditingController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(6),
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      displayWarnings(context, screenHeight / 40),
+                      Row(
+                        children: [
+                          Spacer(),
+                          CircularButton(
+                            buttonColor: circularButtonColor,
+                            child: _circularButtonChild,
+                            onPressedCallback: circularButtonCallback == null
+                                ? () {}
+                                : () => circularButtonCallback(context),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: screenHeight / 40),
-            AppInputText(
-              autoFocus: true,
-              iconData: Icons.lock,
-              controller: smsCodeTextEditingController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(6),
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-            ),
-            SizedBox(height: screenHeight / 40),
-            displayWarnings(context, screenHeight / 40),
-            Row(
-              children: [
-                Spacer(),
-                CircularButton(
-                  buttonColor: circularButtonColor,
-                  child: _circularButtonChild,
-                  onPressedCallback: circularButtonCallback == null
-                      ? () {}
-                      : () => circularButtonCallback(context),
-                ),
-              ],
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

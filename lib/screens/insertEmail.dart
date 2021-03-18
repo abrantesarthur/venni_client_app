@@ -1,6 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -142,53 +140,70 @@ class InsertEmailState extends State<InsertEmail> {
     final screenHeight = MediaQuery.of(context).size.height;
     _firebaseAuth = Provider.of<FirebaseModel>(context, listen: false).auth;
 
+    // TODO: inserting in singlechildscroll view probably fixes overflow problem!
     return Scaffold(
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () => Navigator.pop(context)),
-                Spacer(),
-              ],
+      body: LayoutBuilder(builder: (
+        BuildContext context,
+        BoxConstraints viewportConstraints,
+      ) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: viewportConstraints.maxHeight,
             ),
-            SizedBox(height: screenHeight / 25),
-            Text(
-              "Insira o seu endereço de email",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            SizedBox(height: screenHeight / 40),
-            Warning(
-              color: AppColor.disabled,
-              message:
-                  "Usaremos o email para enviar os recibos das suas corridas",
-            ),
-            SizedBox(height: screenHeight / 40),
-            AppInputText(
-              autoFocus: true,
-              hintText: "exemplo@dominio.com",
-              controller: emailTextEditingController,
-              inputFormatters: [LengthLimitingTextInputFormatter(60)],
-            ),
-            SizedBox(height: screenHeight / 40),
-            warningMessage != null ? warningMessage : Container(),
-            Spacer(),
-            Row(
-              children: [
-                Spacer(),
-                CircularButton(
-                  buttonColor: circularButtonColor,
-                  child: _circularButtonChild,
-                  onPressedCallback: circularButtonCallback == null
-                      ? () {}
-                      : () => buttonCallback(context),
+            child: OverallPadding(
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        ArrowBackButton(
+                            onTapCallback: () => Navigator.pop(context)),
+                        Spacer(),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight / 25),
+                    Text(
+                      "Insira o seu endereço de email",
+                      style: TextStyle(color: Colors.black, fontSize: 18),
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    Warning(
+                      color: AppColor.disabled,
+                      message:
+                          "Usaremos o email para enviar os recibos das suas corridas",
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    AppInputText(
+                      autoFocus: true,
+                      hintText: "exemplo@dominio.com",
+                      controller: emailTextEditingController,
+                      inputFormatters: [LengthLimitingTextInputFormatter(60)],
+                    ),
+                    SizedBox(height: screenHeight / 40),
+                    warningMessage != null ? warningMessage : Container(),
+                    SizedBox(height: screenHeight / 40),
+                    Spacer(),
+                    Row(
+                      children: [
+                        Spacer(),
+                        CircularButton(
+                          buttonColor: circularButtonColor,
+                          child: _circularButtonChild,
+                          onPressedCallback: circularButtonCallback == null
+                              ? () {}
+                              : () => buttonCallback(context),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 }

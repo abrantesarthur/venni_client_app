@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/screens/home.dart';
+import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -136,10 +137,7 @@ class InsertPasswordState extends State<InsertPassword> {
     });
   }
 
-  Future<void> handleRegistrationFailure(
-    BuildContext context,
-    FirebaseAuthException e,
-  ) async {
+  Future<void> handleRegistrationFailure(FirebaseAuthException e) async {
     // disactivate CircularButton callback
     setState(() {
       circularButtonCallback = null;
@@ -148,20 +146,22 @@ class InsertPasswordState extends State<InsertPassword> {
 
     if (e.code == "weak-password") {
       // this should never happen
-      // remove password warning messages
-      displayPasswordWarnings = false;
+      setState(() {
+        // remove password warning messages
+        displayPasswordWarnings = false;
 
-      // display warning for user to try again
-      registrationErrorWarnings = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: screenHeight / 40),
-          Warning(
-            message: "Senha muito fraca. Tente outra.",
-          ),
-          SizedBox(height: screenHeight / 80),
-        ],
-      );
+        // display warning for user to try again
+        registrationErrorWarnings = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: screenHeight / 40),
+            Warning(
+              message: "Senha muito fraca. Tente outra.",
+            ),
+            SizedBox(height: screenHeight / 80),
+          ],
+        );
+      });
     } else {
       // rollback and delete user
       await widget.userCredential.user.delete();
@@ -198,7 +198,7 @@ class InsertPasswordState extends State<InsertPassword> {
             ),
             SizedBox(height: screenHeight / 80),
             Warning(
-              onTapCallback: () {
+              onTapCallback: (BuildContext context) {
                 Navigator.pushNamedAndRemoveUntil(
                     context, Start.routeName, (_) => false);
               },
@@ -211,9 +211,9 @@ class InsertPasswordState extends State<InsertPassword> {
     }
   }
 
-  Future<bool> registerUser(BuildContext context) async {
+  Future<bool> registerUser() async {
     try {
-      // update other userCredential information
+      //update other userCredential information
       await widget.userCredential.user.updateEmail(widget.userEmail);
       await widget.userCredential.user
           .updatePassword(passwordTextEditingController.text);
@@ -221,7 +221,7 @@ class InsertPasswordState extends State<InsertPassword> {
           .updateProfile(displayName: widget.name + " " + widget.surname);
       return true;
     } on FirebaseAuthException catch (e) {
-      await handleRegistrationFailure(context, e);
+      await handleRegistrationFailure(e);
       return false;
     }
   }
@@ -229,14 +229,14 @@ class InsertPasswordState extends State<InsertPassword> {
   // buttonCallback tries signing user up by adding remainig data to its credential
   void buttonCallback(BuildContext context) async {
     setState(() {
-      successfullyRegisteredUser = registerUser(context);
+      successfullyRegisteredUser = registerUser();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
-    final firebaseModel = Provider.of<FirebaseModel>(context, listen: false);
+    final firebaseModel = Provider.of<FirebaseModel>(context);
 
     return FutureBuilder(
       future: successfullyRegisteredUser,
@@ -246,8 +246,6 @@ class InsertPasswordState extends State<InsertPassword> {
       ) {
         // user has tapped to register, and registration has finished succesfully
         if (snapshot.hasData && snapshot.data == true) {
-          //  add listener to track user changes and send to Home screen
-          firebaseModel.listenForStatusChanges();
           // future builder must return Widget, but we want to push a route.
           // thus, schedule pushing for right afer returning a Container.
           SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -259,120 +257,110 @@ class InsertPasswordState extends State<InsertPassword> {
         // user has tapped to register, and we are waiting for registration to finish
         if (snapshot.connectionState == ConnectionState.waiting) {
           // show loading screen
-          return _RegistrationLoading();
+          return Splash(text: "Criando sua conta...");
         }
 
         // error cases and default: show password screen
         return Scaffold(
-          body: OverallPadding(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ArrowBackButton(
-                        onTapCallback: preventNavigateBack
-                            ? () {}
-                            : () => Navigator.pop(context)),
-                    Spacer(),
-                  ],
-                ),
-                SizedBox(height: screenHeight / 25),
-                Text(
-                  "Insira uma senha",
-                  style: TextStyle(color: Colors.black, fontSize: 18),
-                ),
-                SizedBox(height: screenHeight / 40),
-                AppInputText(
-                  enabled: passwordTextFieldEnabled,
-                  iconData: Icons.lock,
-                  endIcon: _endIconData,
-                  endIconOnTapCallback: toggleObscurePassword,
-                  hintText: "senha",
-                  controller: passwordTextEditingController,
-                  obscureText: obscurePassword,
-                  inputFormatters: [LengthLimitingTextInputFormatter(32)],
-                ),
-                displayPasswordWarnings
-                    ? Column(
+          body: LayoutBuilder(
+            builder: (
+              BuildContext context,
+              BoxConstraints viewportConstraints,
+            ) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: viewportConstraints.maxHeight,
+                  ),
+                  child: OverallPadding(
+                    child: IntrinsicHeight(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              ArrowBackButton(
+                                  onTapCallback: preventNavigateBack
+                                      ? () {}
+                                      : () => Navigator.pop(context)),
+                              Spacer(),
+                            ],
+                          ),
+                          SizedBox(height: screenHeight / 25),
+                          Text(
+                            "Insira uma senha",
+                            style: TextStyle(color: Colors.black, fontSize: 18),
+                          ),
                           SizedBox(height: screenHeight / 40),
-                          PasswordWarning(
-                            isValid: passwordChecks[0],
-                            message: "Precisa ter no mínimo 8 caracteres",
+                          AppInputText(
+                            enabled: passwordTextFieldEnabled,
+                            iconData: Icons.lock,
+                            endIcon: _endIconData,
+                            endIconOnTapCallback: toggleObscurePassword,
+                            hintText: "senha",
+                            controller: passwordTextEditingController,
+                            obscureText: obscurePassword,
+                            maxLines: 1,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(32)
+                            ],
                           ),
-                          SizedBox(height: screenHeight / 80),
-                          PasswordWarning(
-                            isValid: passwordChecks[1],
-                            message: "Precisa ter pelo menos uma letra",
+                          displayPasswordWarnings
+                              ? Column(
+                                  children: [
+                                    SizedBox(height: screenHeight / 40),
+                                    PasswordWarning(
+                                      isValid: passwordChecks[0],
+                                      message:
+                                          "Precisa ter no mínimo 8 caracteres",
+                                    ),
+                                    SizedBox(height: screenHeight / 80),
+                                    PasswordWarning(
+                                      isValid: passwordChecks[1],
+                                      message:
+                                          "Precisa ter pelo menos uma letra",
+                                    ),
+                                    SizedBox(height: screenHeight / 80),
+                                    PasswordWarning(
+                                      isValid: passwordChecks[2],
+                                      message:
+                                          "Precisa ter pelo menos um dígito",
+                                    ),
+                                    SizedBox(height: screenHeight / 80),
+                                  ],
+                                )
+                              : Container(),
+                          registrationErrorWarnings != null
+                              ? registrationErrorWarnings
+                              : Container(),
+                          Spacer(),
+                          Row(
+                            children: [
+                              Spacer(),
+                              CircularButton(
+                                buttonColor: circularButtonColor,
+                                child: Icon(
+                                  Icons.arrow_forward,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
+                                onPressedCallback:
+                                    circularButtonCallback == null
+                                        ? () {}
+                                        : () => buttonCallback(context),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: screenHeight / 80),
-                          PasswordWarning(
-                            isValid: passwordChecks[2],
-                            message: "Precisa ter pelo menos um dígito",
-                          ),
-                          SizedBox(height: screenHeight / 80),
                         ],
-                      )
-                    : Container(),
-                registrationErrorWarnings != null
-                    ? registrationErrorWarnings
-                    : Container(),
-                Spacer(),
-                Row(
-                  children: [
-                    Spacer(),
-                    CircularButton(
-                      buttonColor: circularButtonColor,
-                      child: Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 36,
                       ),
-                      onPressedCallback: circularButtonCallback == null
-                          ? () {}
-                          : () => buttonCallback(context),
                     ),
-                  ],
+                  ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
-    );
-  }
-}
-
-class _RegistrationLoading extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: AppColor.primaryPink,
-        child: Center(
-          child: Column(
-            children: [
-              Spacer(),
-              SizedBox(
-                height: 50,
-                width: 50,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 30),
-                child: Text(
-                  "Criando sua conta...",
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

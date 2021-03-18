@@ -11,7 +11,7 @@ class Warning extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTapCallback,
+      onTap: () => onTapCallback(context),
       child: Text(
         message,
         style: TextStyle(

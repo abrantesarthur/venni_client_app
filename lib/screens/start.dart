@@ -8,15 +8,19 @@ class Start extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Center(
         child: OverallPadding(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Spacer(flex: 2),
-              Image(image: AssetImage("images/logo.png")),
-              Spacer(),
+              Spacer(flex: 3),
+              Image(
+                image: AssetImage("images/horizontal-pink-logo.png"),
+                width: width * 0.8,
+              ),
+              Spacer(flex: 3),
               Text(
                 "Chame uma corrida",
                 style: TextStyle(
@@ -28,7 +32,7 @@ class Start extends StatelessWidget {
               Spacer(flex: 5),
               AppButton(
                 textData: "Começar",
-                iconData: Icons.arrow_forward,
+                iconRight: Icons.arrow_forward,
                 onTapCallBack: () {
                   Navigator.pushNamed(context, InsertPhone.routeName);
                 },

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/route.dart';
+import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
@@ -14,6 +16,7 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
+import 'insertPassword_test.dart';
 import 'insertPhone_test.dart';
 
 void main() {
@@ -23,6 +26,9 @@ void main() {
   MockNavigatorObserver mockNavigatorObserver;
   MockUserCredential mockUserCredential;
   MockUser mockUser;
+  MockUserPositionModel mockUserPositionModel;
+  MockRouteModel mockRouteModel;
+  MockGeocodingResult mockGeocodingResult;
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,10 +38,16 @@ void main() {
     mockNavigatorObserver = MockNavigatorObserver();
     mockUserCredential = MockUserCredential();
     mockUser = MockUser();
+    mockUserPositionModel = MockUserPositionModel();
+    mockRouteModel = MockRouteModel();
+    mockGeocodingResult = MockGeocodingResult();
 
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
     when(mockFirebaseModel.isRegistered).thenReturn(true);
+    when(mockUserPositionModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockGeocodingResult.latitude).thenReturn(0);
+    when(mockGeocodingResult.longitude).thenReturn(0);
   });
 
   void setupFirebaseMocks({
@@ -50,9 +62,9 @@ void main() {
     when(mockUserCredential.user).thenReturn(mockUser);
 
     if (userIsRegistered != null && userIsRegistered) {
-      when(mockUser.displayName).thenReturn("Fulano");
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
     } else {
-      when(mockUser.displayName).thenReturn(null);
+      when(mockFirebaseModel.isRegistered).thenReturn(false);
     }
 
     // mock FirebaseAuth's signInWithCredential to return mockUserCredential
@@ -220,7 +232,11 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
-              create: (context) => mockFirebaseModel)
+              create: (context) => mockFirebaseModel),
+          ChangeNotifierProvider<UserPositionModel>(
+              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<RouteModel>(
+              create: (context) => mockRouteModel)
         ],
         child: MaterialApp(
           home: InsertSmsCode(
@@ -320,17 +336,17 @@ void main() {
     });
 
     testWidgets(
-        "ends in Start screen if firebaseModle.isRegistered returns false",
+        "ends in InsertEmail screen if firebaseModel.isRegistered returns false",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
 
       verify(mockNavigatorObserver.didPush(any, any));
 
-      // code verification succeeds and user is registered
+      // code verification succeeds and user is not registered
       setupFirebaseMocks(
         tester: tester,
-        userIsRegistered: true,
+        userIsRegistered: false,
         signInSucceeds: true,
       );
 
@@ -342,11 +358,8 @@ void main() {
       stateIsEnabled(tester.state(find.byType(InsertSmsCode)), completeCode);
 
       // before tapping the button, there is no Start screen
-      expect(find.byType(Start), findsNothing);
+      expect(find.byType(InsertEmail), findsNothing);
       expect(find.byType(InsertSmsCode), findsOneWidget);
-
-      // firebaseModel.isRegistered returns false
-      when(mockFirebaseModel.isRegistered).thenReturn(false);
 
       // tap circular button
       await tester.tap(find.byType(CircularButton));
@@ -354,7 +367,7 @@ void main() {
 
       // after tapping button, Start screen is pushed
       verify(mockNavigatorObserver.didPush(any, any));
-      expect(find.byType(Start), findsOneWidget);
+      expect(find.byType(InsertEmail), findsOneWidget);
       expect(find.byType(Home), findsNothing);
       expect(find.byType(InsertSmsCode), findsNothing);
     });
@@ -496,7 +509,11 @@ void main() {
         MultiProvider(
           providers: [
             ChangeNotifierProvider<FirebaseModel>(
-                create: (context) => mockFirebaseModel)
+                create: (context) => mockFirebaseModel),
+            ChangeNotifierProvider<UserPositionModel>(
+                create: (context) => mockUserPositionModel),
+            ChangeNotifierProvider<RouteModel>(
+                create: (context) => mockRouteModel)
           ],
           child: MaterialApp(
             home: InsertSmsCode(

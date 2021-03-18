@@ -31,12 +31,18 @@ class InsertPhoneNumberState extends State<InsertPhone> {
   bool enabled;
   final TextEditingController phoneTextEditingController =
       TextEditingController();
+  Widget _circularButtonChild;
 
   @override
   void initState() {
     super.initState();
     enabled = true;
     _circularButtonColor = AppColor.disabled;
+    _circularButtonChild = Icon(
+      Icons.arrow_forward,
+      color: Colors.white,
+      size: 36,
+    );
     circularButtonCallback = null;
     // as user inputs phone, check for its validity and update UI accordingly
     phoneTextEditingController.addListener(() {
@@ -80,12 +86,12 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     BuildContext context,
     String verificationId,
     int resendToken,
-  ) {
+  ) async {
     setState(() {
       _resendToken = resendToken;
     });
     // update the UI for the user to enter the SMS code
-    Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       InsertSmsCode.routeName,
       arguments: InsertSmsCodeArguments(
@@ -97,6 +103,11 @@ class InsertPhoneNumberState extends State<InsertPhone> {
 
     setState(() {
       enabled = true;
+      _circularButtonChild = Icon(
+        Icons.arrow_forward,
+        color: Colors.white,
+        size: 36,
+      );
     });
   }
 
@@ -107,9 +118,12 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     FirebaseDatabase firebaseDatabase,
   ) async {
     if (phoneNumber != null) {
-      // prevent users from editing phone number
+      // prevent users from editing phone number and show loading icon
       setState(() {
         enabled = false;
+        _circularButtonChild = CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        );
       });
 
       await firebaseAuth.verifyPhoneNumber(
@@ -117,14 +131,14 @@ class InsertPhoneNumberState extends State<InsertPhone> {
           phoneNumber: phoneNumber,
           verificationCompleted: (PhoneAuthCredential credential) {
             verificationCompletedCallback(
-              context: context,
-              credential: credential,
-              firebaseDatabase: firebaseDatabase,
-              firebaseAuth: firebaseAuth,
-              onExceptionCallback: (FirebaseAuthException e) =>
+                context: context,
+                credential: credential,
+                firebaseDatabase: firebaseDatabase,
+                firebaseAuth: firebaseAuth,
+                onExceptionCallback: (FirebaseAuthException e) {
                   setInactiveState(
-                      message: "Algo deu errado. Tente novamente."),
-            );
+                      message: "Algo deu errado. Tente novamente.");
+                });
           },
           verificationFailed: (FirebaseAuthException e) {
             String errorMsg = verificationFailedCallback(e);
@@ -144,55 +158,68 @@ class InsertPhoneNumberState extends State<InsertPhone> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final firebaseModel = Provider.of<FirebaseModel>(context, listen: false);
+    final firebaseModel = Provider.of<FirebaseModel>(context);
 
     return Scaffold(
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () => Navigator.pop(context)),
-                Spacer(),
-              ],
-            ),
-            SizedBox(height: screenHeight / 25),
-            Text(
-              "Insira seu nº de celular",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            SizedBox(height: screenHeight / 40),
-            InputPhone(
-              enabled: enabled,
-              controller: phoneTextEditingController,
-            ),
-            SizedBox(height: screenHeight / 40),
-            _warningMessage == null
-                ? Spacer(flex: 18)
-                : Expanded(flex: 18, child: _warningMessage),
-            Row(
-              children: [
-                Spacer(),
-                CircularButton(
-                  buttonColor: _circularButtonColor,
-                  child: Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                  onPressedCallback: circularButtonCallback == null
-                      ? () {}
-                      : () => circularButtonCallback(
-                            context,
-                            firebaseModel.auth,
-                            firebaseModel.database,
+      body: LayoutBuilder(
+        builder: (
+          BuildContext context,
+          BoxConstraints viewportConstraints,
+        ) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: OverallPadding(
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          ArrowBackButton(
+                              onTapCallback: () => Navigator.pop(context)),
+                          Spacer(),
+                        ],
+                      ),
+                      SizedBox(height: screenHeight / 25),
+                      Text(
+                        "Insira seu nº de celular",
+                        style: TextStyle(color: Colors.black, fontSize: 18),
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      InputPhone(
+                        enabled: enabled,
+                        controller: phoneTextEditingController,
+                      ),
+                      SizedBox(height: screenHeight / 40),
+                      _warningMessage == null
+                          ? Spacer(flex: 18)
+                          : Expanded(flex: 18, child: _warningMessage),
+                      Row(
+                        children: [
+                          Spacer(),
+                          CircularButton(
+                            buttonColor: _circularButtonColor,
+                            child: _circularButtonChild,
+                            onPressedCallback: circularButtonCallback == null
+                                ? () {}
+                                : () => circularButtonCallback(
+                                      context,
+                                      firebaseModel.auth,
+                                      firebaseModel.database,
+                                    ),
                           ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

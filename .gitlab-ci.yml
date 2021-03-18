@@ -13,7 +13,7 @@ widget_tests:
   script:
     - flutter test test/widget/*
   tags:
-    - docker
+    - flutter
 
 # integration_tests:
 #   stage: test

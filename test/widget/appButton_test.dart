@@ -69,19 +69,4 @@ void main() {
     expect(gestureDetectorWidget,
         isA<GestureDetector>().having((g) => g.onTap, "onTap", isNull));
   });
-
-  testWidgets("appButton has correct height", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: AppButton(textData: "T", onTapCallBack: null),
-      ),
-    ));
-
-    final containerFinder = find
-        .descendant(
-            of: find.byType(GestureDetector), matching: find.byType(Container))
-        .first;
-    final containerSize = tester.getSize(containerFinder);
-    expect(containerSize.height, 80);
-  });
 }

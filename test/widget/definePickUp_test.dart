@@ -3,6 +3,7 @@ import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
@@ -78,21 +79,35 @@ void main() {
         ),
       ]);
     });
-  });
-
-  Future<void> pumpWidget(
-    WidgetTester tester, {
-    bool nullPickUpAddress = false,
-  }) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: DefinePickUp(
-          userGeocoding: mockUserGeocoding,
-          chosenPickUpAddress: nullPickUpAddress ? null : mockAddress,
-          places: mockPlaces,
-        ),
+    AppConfig(
+      flavor: Flavor.DEV,
+      values: ConfigValues(
+        directionsBaseURL: "",
+        geocodingBaseURL: "",
+        autocompleteBaseURL: "",
+        cloudFunctionsBaseURL: "",
+        googleApiKey: "",
       ),
     );
+  });
+
+  Future<void> pumpWidget(WidgetTester tester) async {
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserPositionModel>(
+          create: (context) => mockUserPositionModel,
+        ),
+        ChangeNotifierProvider<RouteModel>(
+          create: (context) => mockRouteModel,
+        ),
+      ],
+      builder: (context, child) {
+        return MaterialApp(
+          home: DefinePickUp(places: mockPlaces),
+          navigatorObservers: [mockNavigatorObserver],
+        );
+      },
+    ));
   }
 
   group("pickUpTextEditingController", () {
@@ -178,8 +193,11 @@ void main() {
     testWidgets(
         "starts as enabled if chosenPickUpAddress is not null and PlacePicker is displayed",
         (WidgetTester tester) async {
+      // this results in googleMapsEnabled equal true
+      when(mockRouteModel.pickUpAddress).thenReturn(mockAddress);
       // add widget to the UI
-      await pumpWidget(tester, nullPickUpAddress: false);
+      await pumpWidget(tester);
+      // await tester.pumpAndSettle();
 
       // get DefinePickUpState
       final definePickUpFinder = find.byType(DefinePickUp);
@@ -199,8 +217,11 @@ void main() {
     testWidgets(
         "starts as disabled if chosenPickUpAddress is null and a PlacePicker is not displayed",
         (WidgetTester tester) async {
+      // this results in googleMapsEnabled equal false
+      when(mockRouteModel.pickUpAddress).thenReturn(null);
       // add widget to the UI
-      await pumpWidget(tester, nullPickUpAddress: true);
+      await pumpWidget(tester);
+      await tester.pumpAndSettle();
 
       // get DefinePickUpState
       final definePickUpFinder = find.byType(DefinePickUp);
@@ -220,8 +241,11 @@ void main() {
     testWidgets(
         "is enabled if we tap 'Definir destino no mapa' and disable if we tap 'Para Onde'",
         (WidgetTester tester) async {
+      // this results in googleMapsEnabled equal false
+      when(mockRouteModel.pickUpAddress).thenReturn(null);
       // add widget to the UI
-      await pumpWidget(tester, nullPickUpAddress: true);
+      await pumpWidget(tester);
+      await tester.pumpAndSettle();
 
       // get DefinePickUpState
       final definePickUpFinder = find.byType(DefinePickUp);
@@ -277,18 +301,10 @@ void main() {
         ],
         builder: (context, child) {
           return MaterialApp(
-            home: DefineRoute(
-              routeModel: mockRouteModel,
-              userGeocoding: mockUserGeocoding,
-            ),
+            home: DefineRoute(mode: DefineRouteMode.request),
             onGenerateRoute: (RouteSettings settings) {
-              DefinePickUpArguments args = settings.arguments;
               return MaterialPageRoute(builder: (context) {
-                return DefinePickUp(
-                  userGeocoding: args.userGeocoding,
-                  chosenPickUpAddress: null,
-                  places: mockPlaces,
-                );
+                return DefinePickUp(places: mockPlaces);
               });
             },
             navigatorObservers: [mockNavigatorObserver],
@@ -302,17 +318,18 @@ void main() {
 
       // tap on 'Localização atual' AppInputText
       await tester.tap(find.widgetWithText(AppInputText, "Localização atual"));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // verify that DefinePickUp was pushed
       verify(mockNavigatorObserver.didPush(any, any));
+      await tester.pump();
       expect(find.byType(DefinePickUp), findsOneWidget);
 
       // tap "Para onde?" AppInputText and insert text
       final whereToFinder = find.byType(AppInputText);
-      expect(whereToFinder, findsOneWidget);
-      await tester.tap(whereToFinder);
-      await tester.enterText(whereToFinder, "Rua Presb");
+      expect(whereToFinder.last, findsOneWidget);
+      await tester.tap(whereToFinder.last);
+      await tester.enterText(whereToFinder.last, "Rua Presb");
       await tester.pumpAndSettle();
 
       // expect to find address prediction

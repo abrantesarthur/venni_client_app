@@ -193,52 +193,6 @@ void main() {
 
   group("googleMapsEnabled", () {
     testWidgets(
-        "is enabled if we tap 'Definir destino no mapa' and disable if we tap 'Para Onde'",
-        (WidgetTester tester) async {
-      // this causes googleMapsEnabled to be false
-      when(mockRouteModel.dropOffAddress).thenReturn(null);
-      // add widget to the UI
-      await pumpWidget(tester);
-      await tester.pumpAndSettle();
-
-      // get DefineDropOffState
-      final defineDropOffFinder = find.byType(DefineDropOff);
-      final defineDropOffState =
-          tester.state(defineDropOffFinder) as DefineDropOffState;
-
-      final defineDestinationFinder = find.widgetWithText(
-        BorderlessButton,
-        "Definir destino no mapa",
-      );
-
-      /// expect disabled PlacePicker and enabled 'Definir destino no mapa'
-      expect(defineDropOffState.googleMapsEnabled, false);
-      expect(find.byType(PlacePicker), findsNothing);
-      expect(defineDestinationFinder, findsOneWidget);
-
-      // tap 'Definir destino no Mapa'
-      await tester.tap(defineDestinationFinder);
-      await tester.pump();
-
-      // expect enabled PlacePicker and disabled 'Definir destino no mapa'
-      expect(defineDropOffState.googleMapsEnabled, true);
-      expect(find.byType(PlacePicker), findsOneWidget);
-      expect(defineDestinationFinder, findsNothing);
-
-      // tap 'Para Onde'
-      await tester.tap(find.widgetWithText(
-        AppInputText,
-        "Para onde?",
-      ));
-      await tester.pump();
-
-      // expect disabled PlacePicker and enabled 'Definir destino no mapa'
-      expect(defineDropOffState.googleMapsEnabled, false);
-      expect(find.byType(PlacePicker), findsNothing);
-      expect(defineDestinationFinder, findsOneWidget);
-    });
-
-    testWidgets(
         "starts as enabled if chosenDropOffAddress is not null and PlacePicker is displayed",
         (WidgetTester tester) async {
       // this causes googleMapsEnabled to be true
@@ -282,6 +236,52 @@ void main() {
         BorderlessButton,
         "Definir destino no mapa",
       );
+      expect(defineDestinationFinder, findsOneWidget);
+    });
+
+    testWidgets(
+        "is enabled if we tap 'Definir destino no mapa' and disable if we tap 'Para Onde'",
+        (WidgetTester tester) async {
+      // this causes googleMapsEnabled to be false
+      when(mockRouteModel.dropOffAddress).thenReturn(null);
+      // add widget to the UI
+      await pumpWidget(tester);
+      await tester.pumpAndSettle();
+
+      // get DefineDropOffState
+      final defineDropOffFinder = find.byType(DefineDropOff);
+      final defineDropOffState =
+          tester.state(defineDropOffFinder) as DefineDropOffState;
+
+      final defineDestinationFinder = find.widgetWithText(
+        BorderlessButton,
+        "Definir destino no mapa",
+      );
+
+      /// expect disabled PlacePicker and enabled 'Definir destino no mapa'
+      expect(defineDropOffState.googleMapsEnabled, false);
+      expect(find.byType(PlacePicker), findsNothing);
+      expect(defineDestinationFinder, findsOneWidget);
+
+      // tap 'Definir destino no Mapa'
+      await tester.tap(defineDestinationFinder);
+      await tester.pump();
+
+      // expect enabled PlacePicker and disabled 'Definir destino no mapa'
+      expect(defineDropOffState.googleMapsEnabled, true);
+      expect(find.byType(PlacePicker), findsOneWidget);
+      expect(defineDestinationFinder, findsNothing);
+
+      // tap 'Para Onde'
+      await tester.tap(find.widgetWithText(
+        AppInputText,
+        "Para onde?",
+      ));
+      await tester.pump();
+
+      // expect disabled PlacePicker and enabled 'Definir destino no mapa'
+      expect(defineDropOffState.googleMapsEnabled, false);
+      expect(find.byType(PlacePicker), findsNothing);
       expect(defineDestinationFinder, findsOneWidget);
     });
   });

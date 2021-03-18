@@ -168,7 +168,7 @@ class DefineRouteState extends State<DefineRoute> {
     focusNode.unfocus();
 
     // push screen to allow user to select an address
-    await Navigator.pushNamed(context, routeName) as Address;
+    await Navigator.pushNamed(context, routeName);
 
     // add selected address to text field
     if (isDropOff && route.dropOffAddress != null) {

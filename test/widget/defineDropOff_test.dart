@@ -3,6 +3,7 @@ import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
@@ -77,21 +78,38 @@ void main() {
         ),
       ]);
     });
-  });
 
-  Future<void> pumpWidget(
-    WidgetTester tester, {
-    bool nullDropOffAddress = false,
-  }) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: DefineDropOff(
-          userGeocoding: mockUserGeocoding,
-          chosenDropOffAddress: nullDropOffAddress ? null : mockAddress,
-          places: mockPlaces,
-        ),
+    AppConfig(
+      flavor: Flavor.DEV,
+      values: ConfigValues(
+        directionsBaseURL: "",
+        geocodingBaseURL: "",
+        autocompleteBaseURL: "",
+        cloudFunctionsBaseURL: "",
+        googleApiKey: "",
       ),
     );
+  });
+
+  Future<void> pumpWidget(WidgetTester tester) async {
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserPositionModel>(
+          create: (context) => mockUserPositionModel,
+        ),
+        ChangeNotifierProvider<RouteModel>(
+          create: (context) => mockRouteModel,
+        ),
+      ],
+      builder: (context, child) {
+        return MaterialApp(
+          home: DefineDropOff(
+            places: mockPlaces,
+          ),
+          navigatorObservers: [mockNavigatorObserver],
+        );
+      },
+    ));
   }
 
   group("dropOffTestEditingController", () {
@@ -175,52 +193,13 @@ void main() {
 
   group("googleMapsEnabled", () {
     testWidgets(
-        "starts as enabled if chosenDropOffAddress is not null and PlacePicker is displayed",
-        (WidgetTester tester) async {
-      // add widget to the UI
-      await pumpWidget(tester, nullDropOffAddress: false);
-
-      // get DefineDropOffState
-      final defineDropOffFinder = find.byType(DefineDropOff);
-      final defineDropOffState =
-          tester.state(defineDropOffFinder) as DefineDropOffState;
-
-      // expect enabled PlacePicker and disabled 'Definir destino no mapa'
-      final defineDestinationFinder = find.widgetWithText(
-        BorderlessButton,
-        "Definir destino no mapa",
-      );
-      expect(defineDropOffState.googleMapsEnabled, true);
-      expect(find.byType(PlacePicker), findsOneWidget);
-      expect(defineDestinationFinder, findsNothing);
-    });
-
-    testWidgets(
-        "starts as disabled if chosenDropOffAddress is null and a PlacePicker is not displayed",
-        (WidgetTester tester) async {
-      // add widget to the UI
-      await pumpWidget(tester, nullDropOffAddress: true);
-
-      // get DefineDropOffState
-      final defineDropOffFinder = find.byType(DefineDropOff);
-      final defineDropOffState =
-          tester.state(defineDropOffFinder) as DefineDropOffState;
-
-      // expect disabled PlacePicker and enabled 'Definir destino no mapa'
-      expect(defineDropOffState.googleMapsEnabled, false);
-      expect(find.byType(PlacePicker), findsNothing);
-      final defineDestinationFinder = find.widgetWithText(
-        BorderlessButton,
-        "Definir destino no mapa",
-      );
-      expect(defineDestinationFinder, findsOneWidget);
-    });
-
-    testWidgets(
         "is enabled if we tap 'Definir destino no mapa' and disable if we tap 'Para Onde'",
         (WidgetTester tester) async {
+      // this causes googleMapsEnabled to be false
+      when(mockRouteModel.dropOffAddress).thenReturn(null);
       // add widget to the UI
-      await pumpWidget(tester, nullDropOffAddress: true);
+      await pumpWidget(tester);
+      await tester.pumpAndSettle();
 
       // get DefineDropOffState
       final defineDropOffFinder = find.byType(DefineDropOff);
@@ -258,6 +237,53 @@ void main() {
       expect(find.byType(PlacePicker), findsNothing);
       expect(defineDestinationFinder, findsOneWidget);
     });
+
+    testWidgets(
+        "starts as enabled if chosenDropOffAddress is not null and PlacePicker is displayed",
+        (WidgetTester tester) async {
+      // this causes googleMapsEnabled to be true
+      when(mockRouteModel.dropOffAddress).thenReturn(mockAddress);
+      // add widget to the UI
+      await pumpWidget(tester);
+
+      // get DefineDropOffState
+      final defineDropOffFinder = find.byType(DefineDropOff);
+      final defineDropOffState =
+          tester.state(defineDropOffFinder) as DefineDropOffState;
+
+      // expect enabled PlacePicker and disabled 'Definir destino no mapa'
+      final defineDestinationFinder = find.widgetWithText(
+        BorderlessButton,
+        "Definir destino no mapa",
+      );
+      expect(defineDropOffState.googleMapsEnabled, true);
+      expect(find.byType(PlacePicker), findsOneWidget);
+      expect(defineDestinationFinder, findsNothing);
+    });
+
+    testWidgets(
+        "starts as disabled if chosenDropOffAddress is null and a PlacePicker is not displayed",
+        (WidgetTester tester) async {
+      // this causes googleMapsEnabled to be false
+      when(mockRouteModel.dropOffAddress).thenReturn(null);
+      // add widget to the UI
+      await pumpWidget(tester);
+      await tester.pumpAndSettle();
+
+      // get DefineDropOffState
+      final defineDropOffFinder = find.byType(DefineDropOff);
+      final defineDropOffState =
+          tester.state(defineDropOffFinder) as DefineDropOffState;
+
+      // expect disabled PlacePicker and enabled 'Definir destino no mapa'
+      expect(defineDropOffState.googleMapsEnabled, false);
+      expect(find.byType(PlacePicker), findsNothing);
+      final defineDestinationFinder = find.widgetWithText(
+        BorderlessButton,
+        "Definir destino no mapa",
+      );
+      expect(defineDestinationFinder, findsOneWidget);
+    });
   });
 
   group("addressPredictions", () {
@@ -265,34 +291,31 @@ void main() {
         "updates routeModel and returns to previous screen if pick an address from predictions",
         (WidgetTester tester) async {
       // add DefineRoute to the UI
-      await tester.pumpWidget(MultiProvider(
-        providers: [
-          ChangeNotifierProvider<UserPositionModel>(
-            create: (context) => mockUserPositionModel,
-          ),
-          ChangeNotifierProvider<RouteModel>(
-            create: (context) => mockRouteModel,
-          ),
-        ],
-        builder: (context, child) {
-          return MaterialApp(
-            home: DefineRoute(
-              routeModel: mockRouteModel,
-              userGeocoding: mockUserGeocoding,
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<UserPositionModel>(
+              create: (context) => mockUserPositionModel,
             ),
-            onGenerateRoute: (RouteSettings settings) {
-              DefineDropOffArguments args = settings.arguments;
-              return MaterialPageRoute(builder: (context) {
-                return DefineDropOff(
-                  userGeocoding: args.userGeocoding,
-                  places: mockPlaces,
-                );
-              });
-            },
-            navigatorObservers: [mockNavigatorObserver],
-          );
-        },
-      ));
+            ChangeNotifierProvider<RouteModel>(
+              create: (context) => mockRouteModel,
+            ),
+          ],
+          builder: (context, child) {
+            return MaterialApp(
+              home: DefineRoute(mode: DefineRouteMode.request),
+              onGenerateRoute: (RouteSettings settings) {
+                return MaterialPageRoute(builder: (context) {
+                  return DefineDropOff(
+                    places: mockPlaces,
+                  );
+                });
+              },
+              navigatorObservers: [mockNavigatorObserver],
+            );
+          },
+        ),
+      );
 
       // assert that DefineRoute was added to the UI
       verify(mockNavigatorObserver.didPush(any, any));
@@ -300,17 +323,17 @@ void main() {
 
       // tap on 'Para onde?' AppInputText
       await tester.tap(find.widgetWithText(AppInputText, "Para onde?"));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       // verify that DefineDropOff was pushed
       verify(mockNavigatorObserver.didPush(any, any));
+      await tester.pump();
       expect(find.byType(DefineDropOff), findsOneWidget);
 
-      // tap "Para onde?" AppInputText and insert text
-      final whereToFinder = find.byType(AppInputText);
-      expect(whereToFinder, findsOneWidget);
-      await tester.tap(whereToFinder);
-      await tester.enterText(whereToFinder, "Rua Presb");
+      // // tap "Para onde?" AppInputText and insert text
+      final whereToFinder = find.widgetWithText(AppInputText, "Para onde?");
+      await tester.tap(whereToFinder.last);
+      await tester.enterText(whereToFinder.last, "Rua Presb");
       await tester.pumpAndSettle();
 
       // expect to find address prediction

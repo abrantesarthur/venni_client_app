@@ -163,11 +163,12 @@ class DefineDropOffState extends State<DefineDropOff> {
                 )
               : Expanded(
                   child: buildPlacePicker(
-                  context: context,
-                  userGeocoding: userPos.geocoding,
-                  isDropOff: true,
-                  initialAddress: route.dropOffAddress,
-                ))
+                    context: context,
+                    userGeocoding: userPos.geocoding,
+                    isDropOff: true,
+                    initialAddress: route.dropOffAddress,
+                  ),
+                )
         ],
       ),
     );

@@ -295,15 +295,9 @@ void main() {
       // before tapping, expect successfullyRegisteredUser to be null
       expect(insertPasswordState.successfullyRegisteredUser, isNull);
 
-      // before tapping button, we are not listening for changes in user status
-      verifyNever(mockFirebaseModel.listenForStatusChanges());
-
       // tap button
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
-
-      // after tapping button, we start listening for changes in user status
-      verify(mockFirebaseModel.listenForStatusChanges()).called(1);
 
       // expect successfullyRegisteredUser to be a future  bool
       expect(

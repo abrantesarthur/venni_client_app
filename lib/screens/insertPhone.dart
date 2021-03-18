@@ -31,12 +31,18 @@ class InsertPhoneNumberState extends State<InsertPhone> {
   bool enabled;
   final TextEditingController phoneTextEditingController =
       TextEditingController();
+  Widget _circularButtonChild;
 
   @override
   void initState() {
     super.initState();
     enabled = true;
     _circularButtonColor = AppColor.disabled;
+    _circularButtonChild = Icon(
+      Icons.arrow_forward,
+      color: Colors.white,
+      size: 36,
+    );
     circularButtonCallback = null;
     // as user inputs phone, check for its validity and update UI accordingly
     phoneTextEditingController.addListener(() {
@@ -80,12 +86,12 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     BuildContext context,
     String verificationId,
     int resendToken,
-  ) {
+  ) async {
     setState(() {
       _resendToken = resendToken;
     });
     // update the UI for the user to enter the SMS code
-    Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       InsertSmsCode.routeName,
       arguments: InsertSmsCodeArguments(
@@ -95,8 +101,14 @@ class InsertPhoneNumberState extends State<InsertPhone> {
       ),
     );
 
+    // allow users to type and set icon as normal
     setState(() {
       enabled = true;
+      _circularButtonChild = Icon(
+        Icons.arrow_forward,
+        color: Colors.white,
+        size: 36,
+      );
     });
   }
 
@@ -107,34 +119,38 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     FirebaseDatabase firebaseDatabase,
   ) async {
     if (phoneNumber != null) {
-      // prevent users from editing phone number
+      // prevent users from editing phone number and show loading icon
       setState(() {
         enabled = false;
+        _circularButtonChild = CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        );
+        circularButtonCallback = null;
       });
 
       await firebaseAuth.verifyPhoneNumber(
-          timeout: Duration(seconds: 60),
-          phoneNumber: phoneNumber,
-          verificationCompleted: (PhoneAuthCredential credential) {
-            verificationCompletedCallback(
-                context: context,
-                credential: credential,
-                firebaseDatabase: firebaseDatabase,
-                firebaseAuth: firebaseAuth,
-                onExceptionCallback: (FirebaseAuthException e) {
-                  setInactiveState(
-                      message: "Algo deu errado. Tente novamente.");
-                });
-          },
-          verificationFailed: (FirebaseAuthException e) {
-            String errorMsg = verificationFailedCallback(e);
-            setInactiveState(message: errorMsg);
-          },
-          codeSent: (String verificatinId, int resendToken) {
-            codeSentCallback(context, verificatinId, resendToken);
-          },
-          codeAutoRetrievalTimeout: (String verificationId) {},
-          forceResendingToken: _resendToken);
+        timeout: Duration(seconds: 60),
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) {
+          verificationCompletedCallback(
+              context: context,
+              credential: credential,
+              firebaseDatabase: firebaseDatabase,
+              firebaseAuth: firebaseAuth,
+              onExceptionCallback: (FirebaseAuthException e) {
+                setInactiveState(message: "Algo deu errado. Tente novamente.");
+              });
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          String errorMsg = verificationFailedCallback(e);
+          setInactiveState(message: errorMsg);
+        },
+        codeSent: (String verificatinId, int resendToken) {
+          codeSentCallback(context, verificatinId, resendToken);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+        forceResendingToken: _resendToken,
+      );
     }
   }
 
@@ -188,11 +204,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
                           Spacer(),
                           CircularButton(
                             buttonColor: _circularButtonColor,
-                            child: Icon(
-                              Icons.arrow_forward,
-                              color: Colors.white,
-                              size: 36,
-                            ),
+                            child: _circularButtonChild,
                             onPressedCallback: circularButtonCallback == null
                                 ? () {}
                                 : () => circularButtonCallback(

@@ -78,9 +78,9 @@ void main() {
     when(mockUserCredential.user).thenReturn(mockUser);
 
     if (userIsRegistered != null && userIsRegistered) {
-      when(mockUser.displayName).thenReturn("Fulano");
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
     } else {
-      when(mockUser.displayName).thenReturn(null);
+      when(mockFirebaseModel.isRegistered).thenReturn(false);
     }
 
     // mock FirebaseAuth's signInWithCredential to return mockUserCredential
@@ -402,7 +402,7 @@ void main() {
       // pushObserver method on the mockNavigatorObserver once.
       verify(mockNavigatorObserver.didPush(any, any));
 
-      // verifyPhoneNumber calls verificationCompleted; userIsRegisteredreturns true
+      // verifyPhoneNumber calls verificationCompleted; userIsRegistered is false
       setupFirebaseMocks(
         tester: tester,
         verifyPhoneNumberCallbackName: "verificationCompleted",

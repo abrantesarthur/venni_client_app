@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:ui';
-
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -9,13 +7,16 @@ import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
 import 'package:rider_frontend/models/userPosition.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/cloud_functions/rideService.dart';
 import 'package:rider_frontend/vendors/svg.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:rider_frontend/widgets/cancelButton.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
+import 'package:rider_frontend/widgets/menuButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -37,6 +38,7 @@ class HomeState extends State<Home> {
   double googleMapsBottomPadding;
   FirebaseModel _firebase;
   RouteModel _route;
+  GlobalKey<ScaffoldState> _scaffoldKey;
   var _firebaseListener;
   var _routeListener;
 
@@ -45,6 +47,7 @@ class HomeState extends State<Home> {
     super.initState();
     myLocationEnabled = true;
     myLocationButtonEnabled = true;
+    _scaffoldKey = GlobalKey<ScaffoldState>();
 
     // load map style
     rootBundle
@@ -67,9 +70,8 @@ class HomeState extends State<Home> {
 
       // define _routeListener so we can remove listenr later
       // whenever we change the route, _rideStatusListener is triggered
-      //
       _routeListener = () async {
-        await _rideStatusListener(context, _route.rideStatus);
+        await _rideStatusListener(context);
       };
 
       // add listener to RouteModel so polyline is redrawn automatically
@@ -91,14 +93,12 @@ class HomeState extends State<Home> {
 
   // _rideStatusListener is triggered whenever we change the route.
   // it looks at the route status and updates the UI accordingly
-  Future<void> _rideStatusListener(
-    BuildContext context,
-    RideStatus rideStatus,
-  ) async {
-    if (rideStatus == null) return;
+  Future<void> _rideStatusListener(BuildContext context) async {
+    RouteModel route = Provider.of<RouteModel>(context, listen: false);
+    if (route.rideStatus == null || route.rideStatus == RideStatus.off) return;
 
     final screenHeight = MediaQuery.of(context).size.height;
-    if (rideStatus == RideStatus.waitingForConfirmation) {
+    if (route.rideStatus == RideStatus.waitingForConfirmation) {
       // draw directions on map
       await drawPolyline(context);
 
@@ -189,12 +189,12 @@ class HomeState extends State<Home> {
     await drawMarkers(context, polyline);
   }
 
-  void defineRoute(BuildContext context) async {
+  Future<void> defineRoute(BuildContext context, DefineRouteMode mode) async {
     Navigator.pushNamed(
       context,
       DefineRoute.routeName,
       arguments: DefineRouteArguments(
-        mode: DefineRouteMode.request,
+        mode: mode,
       ),
     );
   }
@@ -208,6 +208,8 @@ class HomeState extends State<Home> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: Menu(),
       body: Stack(
         children: [
           GoogleMap(
@@ -238,6 +240,7 @@ class HomeState extends State<Home> {
           for (var widget in _buildRemainingStackChildren(
             context: context,
             homeState: this,
+            scaffoldKey: _scaffoldKey,
           ))
             widget,
         ],
@@ -249,11 +252,11 @@ class HomeState extends State<Home> {
 List<Widget> _buildRemainingStackChildren({
   @required BuildContext context,
   @required HomeState homeState,
+  @required GlobalKey<ScaffoldState> scaffoldKey,
 }) {
   RouteModel route = Provider.of<RouteModel>(context, listen: false);
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
-  if (route.rideStatus == null) {
+  if (route.rideStatus == null || route.rideStatus == RideStatus.off) {
     return [
       OverallPadding(
         child: Container(
@@ -263,9 +266,16 @@ List<Widget> _buildRemainingStackChildren({
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
             onTapCallBack: () {
-              homeState.defineRoute(context);
+              homeState.defineRoute(context, DefineRouteMode.request);
             },
           ),
+        ),
+      ),
+      Positioned(
+        child: OverallPadding(
+          child: MenuButton(onPressed: () {
+            scaffoldKey.currentState.openDrawer();
+          }),
         ),
       )
     ];
@@ -276,6 +286,44 @@ List<Widget> _buildRemainingStackChildren({
   switch (route.rideStatus) {
     case RideStatus.waitingForConfirmation:
       return [
+        Positioned(
+          right: screenWidth / 100,
+          child: OverallPadding(
+            child: CancelButton(onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Cancelar Pedido"),
+                      actions: [
+                        TextButton(
+                          child: Text(
+                            "não",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        TextButton(
+                          child: Text(
+                            "sim",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 18,
+                            ),
+                          ),
+                          onPressed: () {
+                            // TODO: send cancel request
+                          },
+                        ),
+                      ],
+                    );
+                  });
+              // TODO: display cancel alert and
+            }),
+          ),
+        ),
         Column(
           children: [
             Spacer(),
@@ -298,13 +346,8 @@ List<Widget> _buildRemainingStackChildren({
                       fontWeight: FontWeight.bold,
                     ),
                     onTapCallBack: () async {
-                      await Navigator.pushNamed(
-                        context,
-                        DefineRoute.routeName,
-                        arguments: DefineRouteArguments(
-                          mode: DefineRouteMode.edit,
-                        ),
-                      );
+                      await homeState.defineRoute(
+                          context, DefineRouteMode.edit);
                     },
                   ),
                   AppButton(

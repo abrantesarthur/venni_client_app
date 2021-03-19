@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:rider_frontend/styles.dart';
 
 class BorderlessButton extends StatelessWidget {
-  final VoidCallback onTapCallback;
+  final VoidCallback onTap;
   final String primaryText;
   final String secondaryText;
   final IconData iconLeft;
   final IconData iconRight;
+  final double primaryTextSize;
 
   BorderlessButton({
+    this.primaryTextSize,
     this.primaryText,
-    this.onTapCallback,
+    this.onTap,
     this.secondaryText,
     this.iconLeft,
     this.iconRight,
@@ -20,7 +22,7 @@ class BorderlessButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
-      onTap: onTapCallback,
+      onTap: onTap,
       behavior: HitTestBehavior.translucent,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -35,7 +37,7 @@ class BorderlessButton extends StatelessWidget {
                   primaryText,
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 16,
+                    fontSize: primaryTextSize ?? 16,
                   ),
                 ),
                 secondaryText != null
@@ -53,7 +55,7 @@ class BorderlessButton extends StatelessWidget {
           ),
           Icon(
             iconRight,
-            color: Colors.black,
+            color: AppColor.disabled,
             size: 16,
           )
         ],

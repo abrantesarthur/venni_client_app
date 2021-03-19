@@ -148,7 +148,7 @@ class DefinePickUpState extends State<DefinePickUp> {
                         iconLeft: Icons.add_location,
                         iconRight: Icons.keyboard_arrow_right,
                         primaryText: "Definir destino no mapa",
-                        onTapCallback: () async {
+                        onTap: () async {
                           setState(() {
                             // display map
                             googleMapsEnabled = true;
@@ -198,7 +198,7 @@ Widget _buildAddressPredictionList(
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return BorderlessButton(
-                    onTapCallback: () {
+                    onTap: () {
                       updatePickUpAndPop(context, addressPredictions[index]);
                     },
                     iconLeft: Icons.add_location,

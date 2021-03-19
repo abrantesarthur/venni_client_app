@@ -11,6 +11,7 @@ enum RideStatus {
   waitingForConfirmation,
   waitingForRider,
   inProgress,
+  off,
 }
 
 class Ride extends CloudFunctionsWebService {

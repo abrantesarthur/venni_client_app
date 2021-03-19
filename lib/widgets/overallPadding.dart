@@ -16,7 +16,7 @@ class OverallPadding extends StatelessWidget {
       padding: EdgeInsets.only(
         left: width / 15,
         right: width / 15,
-        top: top ?? height / 12,
+        top: top ?? height / 15,
         bottom: bottom ?? height / 12,
       ),
       child: child,

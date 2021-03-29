@@ -6,36 +6,21 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
-import 'package:rider_frontend/screens/definePickUp.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
-import 'package:rider_frontend/vendors/places.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
-
-import 'insertPassword_test.dart';
-import 'insertPhone_test.dart';
-
-class MockAddress extends Mock implements Address {}
-
-class MockPlaces extends Mock implements Places {}
+import 'mocks.dart';
 
 void main() {
-  MockGeocodingResult mockUserGeocoding;
-  MockAddress mockAddress;
-  MockPlaces mockPlaces;
-  MockRouteModel mockRouteModel;
-  MockNavigatorObserver mockNavigatorObserver;
-  MockUserPositionModel mockUserPositionModel;
-
   setUp(() {
     mockUserGeocoding = MockGeocodingResult();
     mockAddress = MockAddress();
     mockPlaces = MockPlaces();
     mockRouteModel = MockRouteModel();
     mockNavigatorObserver = MockNavigatorObserver();
-    mockUserPositionModel = MockUserPositionModel();
+    mockUserDataModel = MockUserDataModel();
 
     when(mockUserGeocoding.latitude).thenReturn(-43.0);
     when(mockUserGeocoding.longitude).thenReturn(-17.0);
@@ -43,7 +28,7 @@ void main() {
     when(mockRouteModel.pickUpAddress).thenReturn(mockAddress);
     when(mockAddress.latitude).thenReturn(-17);
     when(mockAddress.longitude).thenReturn(-42);
-    when(mockUserPositionModel.geocoding).thenReturn(mockUserGeocoding);
+    when(mockUserDataModel.geocoding).thenReturn(mockUserGeocoding);
     when(mockPlaces.findAddressPredictions(
       placeName: anyNamed("placeName"),
       latitude: anyNamed("latitude"),
@@ -94,8 +79,8 @@ void main() {
   Future<void> pumpWidget(WidgetTester tester) async {
     await tester.pumpWidget(MultiProvider(
       providers: [
-        ChangeNotifierProvider<UserPositionModel>(
-          create: (context) => mockUserPositionModel,
+        ChangeNotifierProvider<UserDataModel>(
+          create: (context) => mockUserDataModel,
         ),
         ChangeNotifierProvider<RouteModel>(
           create: (context) => mockRouteModel,
@@ -292,8 +277,8 @@ void main() {
       // add DefineRoute to the UI
       await tester.pumpWidget(MultiProvider(
         providers: [
-          ChangeNotifierProvider<UserPositionModel>(
-            create: (context) => mockUserPositionModel,
+          ChangeNotifierProvider<UserDataModel>(
+            create: (context) => mockUserDataModel,
           ),
           ChangeNotifierProvider<RouteModel>(
             create: (context) => mockRouteModel,

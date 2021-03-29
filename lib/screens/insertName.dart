@@ -143,13 +143,19 @@ class InsertNameState extends State<InsertName> {
                       },
                       hintText: "nome",
                       controller: nameTextEditingController,
-                      inputFormatters: [LengthLimitingTextInputFormatter(32)],
+                      maxLines: 1,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(32),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r"[a-zA-Z|\s]"))
+                      ],
                     ),
                     SizedBox(height: screenHeight / 40),
                     AppInputText(
                       focusNode: surnameFocusNode,
                       hintText: "sobrenome",
                       controller: surnameTextEditingController,
+                      maxLines: 1,
                       inputFormatters: [LengthLimitingTextInputFormatter(32)],
                     ),
                     SizedBox(height: screenHeight / 40),

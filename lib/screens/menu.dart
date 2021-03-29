@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
@@ -7,6 +11,8 @@ class Menu extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+    final UserDataModel userData = Provider.of<UserDataModel>(context);
+    final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
 
     return Drawer(
       child: ListView(
@@ -18,33 +24,43 @@ class Menu extends StatelessWidget {
               child: Column(
                 children: [
                   Spacer(flex: 2),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Image.asset(
-                      "images/user_icon.png", // TODO: download from backend
-                      height: 100.0,
-                      width: 100.0,
+                  Container(
+                    width: screenHeight / 7,
+                    height: screenHeight / 7,
+                    decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                        fit: BoxFit.cover,
+                        image: userData.profileImage == null
+                            ? AssetImage("images/user_icon.png")
+                            : userData.profileImage.file,
+                      ),
                     ),
                   ),
                   Spacer(),
                   Text(
-                    "Ana da Silva",
+                    firebase.auth.currentUser != null
+                        ? firebase.auth.currentUser.displayName
+                        : "",
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "4.96", // TODO: make dynamic
-                        style: TextStyle(fontSize: 15.0),
-                      ),
-                      SizedBox(width: screenWidth / 80),
-                      Icon(Icons.star_rate, size: 18, color: Colors.black87),
-                    ],
-                  ),
+                  userData.rating != null
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              userData.rating.toString(),
+                              style: TextStyle(fontSize: 15.0),
+                            ),
+                            SizedBox(width: screenWidth / 80),
+                            Icon(Icons.star_rate,
+                                size: 18, color: Colors.black87),
+                          ],
+                        )
+                      : Container(),
                   Spacer(flex: 2),
                 ],
               ),
@@ -60,20 +76,28 @@ class Menu extends StatelessWidget {
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Minhas Viagens",
                   primaryTextSize: 18,
+                  paddingBottom: screenHeight / 80,
                 ),
-                _buildDivider(screenHeight, screenWidth),
+                Divider(thickness: 0.1, color: Colors.black),
                 BorderlessButton(
                   iconLeft: Icons.payment_rounded,
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Pagamento",
                   primaryTextSize: 18,
+                  paddingTop: screenHeight / 80,
+                  paddingBottom: screenHeight / 80,
                 ),
-                _buildDivider(screenHeight, screenWidth),
+                Divider(thickness: 0.1, color: Colors.black),
                 BorderlessButton(
+                  onTap: () {
+                    Navigator.pushNamed(context, Settings.routeName);
+                  },
                   iconLeft: Icons.settings,
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Configurações",
                   primaryTextSize: 18,
+                  paddingTop: screenHeight / 80,
+                  paddingBottom: screenHeight / 80,
                 ),
               ],
             ),
@@ -82,16 +106,4 @@ class Menu extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _buildDivider(double screenHeight, double screenWidth) {
-  return Column(children: [
-    SizedBox(height: screenHeight / 50),
-    Divider(
-      height: 0,
-      color: Colors.black,
-      thickness: 0.1,
-    ),
-    SizedBox(height: screenHeight / 50),
-  ]);
 }

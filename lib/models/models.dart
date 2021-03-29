@@ -1,24 +1,28 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class FirebaseModel extends ChangeNotifier {
   FirebaseAuth _firebaseAuth;
   FirebaseDatabase _firebaseDatabase;
+  FirebaseStorage _firebaseStorage;
   bool _isRegistered = false;
 
   FirebaseAuth get auth => _firebaseAuth;
   FirebaseDatabase get database => _firebaseDatabase;
+  FirebaseStorage get storage => _firebaseStorage;
   bool get isRegistered => _isRegistered;
 
   FirebaseModel({
     @required FirebaseAuth firebaseAuth,
     @required FirebaseDatabase firebaseDatabase,
-  })  : assert(firebaseAuth != null),
-        assert(firebaseDatabase != null) {
+    @required FirebaseStorage firebaseStorage,
+  }) {
     // set firebase instances
     _firebaseAuth = firebaseAuth;
     _firebaseDatabase = firebaseDatabase;
+    _firebaseStorage = firebaseStorage;
     if (_userIsRegistered(firebaseAuth.currentUser)) {
       _isRegistered = true;
     } else {

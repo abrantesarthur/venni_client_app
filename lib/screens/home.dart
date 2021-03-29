@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/start.dart';
@@ -19,6 +19,7 @@ import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/menuButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
 class Home extends StatefulWidget {
   static const routeName = "home";
@@ -202,8 +203,7 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     // get user position
-    UserPositionModel userPos =
-        Provider.of<UserPositionModel>(context, listen: false);
+    UserDataModel userData = Provider.of<UserDataModel>(context, listen: false);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -220,8 +220,8 @@ class HomeState extends State<Home> {
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(
               target: LatLng(
-                userPos.geocoding.latitude,
-                userPos.geocoding.longitude,
+                userData.geocoding.latitude,
+                userData.geocoding.longitude,
               ),
               zoom: 16.5,
             ),
@@ -287,38 +287,17 @@ List<Widget> _buildRemainingStackChildren({
     case RideStatus.waitingForConfirmation:
       return [
         Positioned(
-          right: screenWidth / 100,
+          right: 0,
           child: OverallPadding(
             child: CancelButton(onPressed: () {
               showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text("Cancelar Pedido"),
-                      actions: [
-                        TextButton(
-                          child: Text(
-                            "não",
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        TextButton(
-                          child: Text(
-                            "sim",
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 18,
-                            ),
-                          ),
-                          onPressed: () {
-                            // TODO: send cancel request
-                          },
-                        ),
-                      ],
-                    );
+                    return YesNoDialog(
+                        title: "Cancelar Pedido",
+                        onPressedYes: () {
+                          // TODO: send cancelRide request
+                        });
                   });
               // TODO: display cancel alert and
             }),

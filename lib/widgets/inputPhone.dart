@@ -2,26 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
+// TODO: write tests
 class InputPhone extends StatelessWidget {
   final Function onSubmittedCallback;
   final TextEditingController controller;
   final bool enabled;
+  final FocusNode focusNode;
+  final int maxLines;
 
   InputPhone({
     this.onSubmittedCallback,
     this.controller,
     this.enabled,
+    this.focusNode,
+    this.maxLines,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppInputText(
+      maxLines: maxLines,
       enabled: enabled,
       autoFocus: true,
       hintText: "(##) #####-####",
       iconData: Icons.phone,
       onSubmittedCallback: onSubmittedCallback,
       controller: controller,
+      focusNode: focusNode,
       keyboardType: TextInputType.number,
       inputFormatters: [
         LengthLimitingTextInputFormatter(15),

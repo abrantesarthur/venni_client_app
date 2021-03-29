@@ -8,23 +8,11 @@ import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
-
-import 'insertPhone_test.dart';
+import 'mocks.dart';
 
 void main() {
-  MockFirebaseModel mockFirebaseModel;
-  MockFirebaseAuth mockFirebaseAuth;
-  MockFirebaseDatabase mockFirebaseDatabase;
-  MockNavigatorObserver mockNavigatorObserver;
-  MockUserCredential mockUserCredential;
-
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    mockFirebaseModel = MockFirebaseModel();
-    mockNavigatorObserver = MockNavigatorObserver();
-    mockFirebaseAuth = MockFirebaseAuth();
-    mockFirebaseDatabase = MockFirebaseDatabase();
-
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
   });

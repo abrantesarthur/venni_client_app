@@ -6,7 +6,7 @@ import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebase.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
@@ -14,6 +14,7 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
 // TODO: when user clicks the button, he no longer can edit the phone number!!!
+// TODO: allow user to sign in with email, specially if limit of phone verifications was reached
 
 class InsertPhone extends StatefulWidget {
   static const String routeName = "insertPhone";
@@ -29,14 +30,15 @@ class InsertPhoneNumberState extends State<InsertPhone> {
   String phoneNumber;
   int _resendToken;
   bool enabled;
-  final TextEditingController phoneTextEditingController =
-      TextEditingController();
+  TextEditingController phoneTextEditingController;
   Widget _circularButtonChild;
+  var _controllerListener;
 
   @override
   void initState() {
     super.initState();
     enabled = true;
+    phoneTextEditingController = TextEditingController();
     _circularButtonColor = AppColor.disabled;
     _circularButtonChild = Icon(
       Icons.arrow_forward,
@@ -44,8 +46,9 @@ class InsertPhoneNumberState extends State<InsertPhone> {
       size: 36,
     );
     circularButtonCallback = null;
+
     // as user inputs phone, check for its validity and update UI accordingly
-    phoneTextEditingController.addListener(() {
+    _controllerListener = () {
       if (phoneNumberIsValid(phoneTextEditingController.text)) {
         setActiveState(
           message: "O seu navegador pode se abrir para efetuar verificações :)",
@@ -54,11 +57,13 @@ class InsertPhoneNumberState extends State<InsertPhone> {
       } else {
         setInactiveState();
       }
-    });
+    };
+    phoneTextEditingController.addListener(_controllerListener);
   }
 
   @override
   void dispose() {
+    phoneTextEditingController.removeListener(_controllerListener);
     phoneTextEditingController.dispose();
     super.dispose();
   }
@@ -67,6 +72,11 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     setState(() {
       _circularButtonColor = AppColor.disabled;
       circularButtonCallback = null;
+      _circularButtonChild = Icon(
+        Icons.arrow_forward,
+        color: Colors.white,
+        size: 36,
+      );
       enabled = true;
       _warningMessage = message != null ? Warning(message: message) : null;
       phoneNumber = null;
@@ -98,6 +108,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
         phoneNumber: phoneNumber,
         verificationId: verificationId,
         resendToken: resendToken,
+        mode: InsertSmsCodeMode.pushNewRoute,
       ),
     );
 
@@ -130,18 +141,19 @@ class InsertPhoneNumberState extends State<InsertPhone> {
           timeout: Duration(seconds: 60),
           phoneNumber: phoneNumber,
           verificationCompleted: (PhoneAuthCredential credential) {
-            verificationCompletedCallback(
+            firebaseAuth.verificationCompletedCallback(
                 context: context,
                 credential: credential,
                 firebaseDatabase: firebaseDatabase,
                 firebaseAuth: firebaseAuth,
                 onExceptionCallback: (FirebaseAuthException e) {
                   setInactiveState(
-                      message: "Algo deu errado. Tente novamente.");
+                    message: "Algo deu errado. Tente novamente.",
+                  );
                 });
           },
           verificationFailed: (FirebaseAuthException e) {
-            String errorMsg = verificationFailedCallback(e);
+            String errorMsg = firebaseAuth.verificationFailedCallback(e);
             setInactiveState(message: errorMsg);
           },
           codeSent: (String verificatinId, int resendToken) {
@@ -190,6 +202,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
                       ),
                       SizedBox(height: screenHeight / 40),
                       InputPhone(
+                        maxLines: 1,
                         enabled: enabled,
                         controller: phoneTextEditingController,
                       ),

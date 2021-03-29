@@ -17,7 +17,7 @@ class OverallPadding extends StatelessWidget {
         left: width / 15,
         right: width / 15,
         top: top ?? height / 15,
-        bottom: bottom ?? height / 12,
+        bottom: bottom ?? height / 15,
       ),
       child: child,
     );

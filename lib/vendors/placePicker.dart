@@ -7,7 +7,6 @@ import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
-import 'package:rider_frontend/vendors/places.dart';
 
 Widget buildPlacePicker({
   @required BuildContext context,

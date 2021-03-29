@@ -1,69 +1,31 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebase.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/warning.dart';
-
-import 'insertPassword_test.dart';
-
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
-class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
-
-class MockFirebaseModel extends Mock implements FirebaseModel {}
-
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-
-class MockDataSnapshot extends Mock implements DataSnapshot {}
-
-class MockNavigatorObserver extends Mock implements NavigatorObserver {}
-
-class MockUserCredential extends Mock implements UserCredential {}
-
-class MockUser extends Mock implements User {}
+import 'mocks.dart';
 
 void main() {
-  MockFirebaseModel mockFirebaseModel;
-  MockFirebaseAuth mockFirebaseAuth;
-  MockFirebaseDatabase mockFirebaseDatabase;
-  MockNavigatorObserver mockNavigatorObserver;
-  MockUserCredential mockUserCredential;
-  MockUser mockUser;
-  MockUserPositionModel mockUserPositionModel;
-  MockRouteModel mockRouteModel;
-  MockGeocodingResult mockGeocodingResult;
-
-  // define mockers
+  // define mockers behaviors
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    mockFirebaseModel = MockFirebaseModel();
-    mockFirebaseAuth = MockFirebaseAuth();
-    mockFirebaseDatabase = MockFirebaseDatabase();
-    mockNavigatorObserver = MockNavigatorObserver();
-    mockUserCredential = MockUserCredential();
-    mockUser = MockUser();
-    mockUserPositionModel = MockUserPositionModel();
-    mockRouteModel = MockRouteModel();
-    mockGeocodingResult = MockGeocodingResult();
-
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
     when(mockFirebaseModel.isRegistered).thenReturn(true);
-    when(mockUserPositionModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockUserDataModel.geocoding).thenReturn(mockGeocodingResult);
     when(mockGeocodingResult.latitude).thenReturn(0);
     when(mockGeocodingResult.longitude).thenReturn(0);
   });
@@ -117,7 +79,7 @@ void main() {
         case "verificationCompleted":
           {
             PhoneAuthCredential credential;
-            verificationCompletedCallback(
+            mockFirebaseAuth.verificationCompletedCallback(
               context: insertPhoneState.context,
               credential: credential,
               firebaseDatabase: mockFirebaseDatabase,
@@ -130,7 +92,8 @@ void main() {
           break;
         case "verificationFailed":
           {
-            String errorMsg = verificationFailedCallback(firebaseAuthException);
+            String errorMsg = mockFirebaseAuth
+                .verificationFailedCallback(firebaseAuthException);
             insertPhoneState.setInactiveState(message: errorMsg);
           }
           break;
@@ -146,7 +109,7 @@ void main() {
         case "codeAutoRetrievalTimeout":
         default:
           PhoneAuthCredential credential;
-          verificationCompletedCallback(
+          mockFirebaseAuth.verificationCompletedCallback(
             context: insertPhoneState.context,
             credential: credential,
             firebaseDatabase: mockFirebaseDatabase,
@@ -165,8 +128,8 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserPositionModel>(
-              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<UserDataModel>(
+              create: (context) => mockUserDataModel),
           ChangeNotifierProvider<RouteModel>(
             create: (context) => mockRouteModel,
           )
@@ -294,8 +257,8 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserPositionModel>(
-              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<UserDataModel>(
+              create: (context) => mockUserDataModel),
           ChangeNotifierProvider<RouteModel>(
               create: (context) => mockRouteModel)
         ],
@@ -442,18 +405,9 @@ void main() {
           ],
           builder: (context, child) => MaterialApp(
             home: InsertPhone(),
-            routes: {
-              Home.routeName: (context) => Home(),
-              InsertEmail.routeName: (context) => InsertEmail(
-                    userCredential: mockUserCredential,
-                  ),
-            },
-            // mockNavigatorObserver will receive all navigation events
-            navigatorObservers: [mockNavigatorObserver],
           ),
         ));
-        // verifyPhoneNumber calls verificationFailed with "invalid-phone-number"
-        // exception
+        // verifyPhoneNumber calls verificationFailed with exception
         final e = FirebaseAuthException(
           message: "m",
           code: errorCode,
@@ -502,8 +456,8 @@ void main() {
     );
   });
 
-  group("redirects to InsertSmsCode screen", () {
-    testWidgets("called with ", (
+  group("codeSent", () {
+    testWidgets("redirects to InsertSmsCode screen", (
       WidgetTester tester,
     ) async {
       // add InsertPhone to the UI
@@ -523,6 +477,7 @@ void main() {
                     verificationId: args.verificationId,
                     resendToken: args.resendToken,
                     phoneNumber: args.phoneNumber,
+                    mode: args.mode,
                   );
                 });
               }

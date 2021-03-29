@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -41,15 +41,15 @@ class DefinePickUpState extends State<DefinePickUp> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       // get relevant models
       RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      UserPositionModel userPos =
-          Provider.of<UserPositionModel>(context, listen: false);
+      UserDataModel userData =
+          Provider.of<UserDataModel>(context, listen: false);
 
 // google maps is enabled if a pickUpAddress is already chosen
       googleMapsEnabled = route.pickUpAddress != null;
 
       // suggest locations as user searches locations
       pickUpTextEditingController.addListener(() async {
-        await textFieldListener(false, userPos.geocoding);
+        await textFieldListener(false, userData.geocoding);
       });
     });
   }
@@ -87,8 +87,7 @@ class DefinePickUpState extends State<DefinePickUp> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     RouteModel route = Provider.of<RouteModel>(context, listen: false);
-    UserPositionModel userPos =
-        Provider.of<UserPositionModel>(context, listen: false);
+    UserDataModel userData = Provider.of<UserDataModel>(context, listen: false);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -165,7 +164,7 @@ class DefinePickUpState extends State<DefinePickUp> {
               : Expanded(
                   child: buildPlacePicker(
                   context: context,
-                  userGeocoding: userPos.geocoding,
+                  userGeocoding: userData.geocoding,
                   isDropOff: false,
                   initialAddress: route.pickUpAddress,
                 ))

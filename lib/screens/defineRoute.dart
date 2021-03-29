@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
@@ -12,6 +12,7 @@ import 'package:rider_frontend/cloud_functions/rideService.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
+import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
@@ -41,7 +42,6 @@ class DefineRoute extends StatefulWidget {
 }
 
 class DefineRouteState extends State<DefineRoute> {
-  List<Address> addressPredictions;
   FocusNode dropOffFocusNode = FocusNode();
   FocusNode pickUpFocusNode = FocusNode();
   TextEditingController dropOffController = TextEditingController();
@@ -50,7 +50,7 @@ class DefineRouteState extends State<DefineRoute> {
   Color buttonColor;
   bool activateCallback;
   Widget buttonChild;
-  UserPositionModel _userPos;
+  UserDataModel _userData;
   RouteModel _route;
   var _routeListener;
 
@@ -61,12 +61,12 @@ class DefineRouteState extends State<DefineRoute> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // get relevant models
       _route = Provider.of<RouteModel>(context, listen: false);
-      _userPos = Provider.of<UserPositionModel>(context, listen: false);
+      _userData = Provider.of<UserDataModel>(context, listen: false);
 
       // pickUp location defaults to user's current address
       if (_route.pickUpAddress == null) {
         _route.updatePickUpAddres(Address.fromGeocodingResult(
-          geocodingResult: _userPos.geocoding,
+          geocodingResult: _userData.geocoding,
           dropOff: false,
         ));
       }
@@ -76,8 +76,8 @@ class DefineRouteState extends State<DefineRoute> {
           _route.dropOffAddress != null ? _route.dropOffAddress.mainText : "";
       pickUpController.text = "";
       final pickUpAddress = _route.pickUpAddress;
-      final userLatitude = _userPos.geocoding.latitude;
-      final userLongitude = _userPos.geocoding.longitude;
+      final userLatitude = _userData.geocoding.latitude;
+      final userLongitude = _userData.geocoding.longitude;
       // change pick up text field only if it's different from user location
       if (userLatitude != pickUpAddress.latitude ||
           userLongitude != pickUpAddress.longitude) {
@@ -151,7 +151,7 @@ class DefineRouteState extends State<DefineRoute> {
     @required BuildContext context,
     @required bool isDropOff,
   }) async {
-    UserPositionModel userPos = Provider.of<UserPositionModel>(
+    UserDataModel userPos = Provider.of<UserDataModel>(
       context,
       listen: false,
     );
@@ -215,8 +215,6 @@ class DefineRouteState extends State<DefineRoute> {
       );
     }
 
-    print(response.status);
-
     if (response != null && response.isOkay) {
       // update route with response
       route.fromRideRequest(response.result);
@@ -232,87 +230,73 @@ class DefineRouteState extends State<DefineRoute> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
+    return GoBackScaffold(
       resizeToAvoidBottomInset: false,
-      body: OverallPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Escolha o ponto de partida e o destino.",
+          style: TextStyle(color: Colors.black, fontSize: 18),
+        ),
+        SizedBox(height: screenHeight / 40),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                ArrowBackButton(onTapCallback: () {
-                  Navigator.pop(context);
-                }),
-                Spacer(),
-              ],
+            // TODO: render icon with higher definition
+            SvgPicture.asset(
+              "images/dropOffToPickUpIcon.svg",
+              width: screenWidth / 36,
             ),
-            SizedBox(height: screenHeight / 25),
-            Text(
-              "Escolha o ponto de partida e o destino.",
-              style: TextStyle(color: Colors.black, fontSize: 18),
-            ),
-            SizedBox(height: screenHeight / 40),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
               children: [
-                // TODO: render icon with higher definition
-                SvgPicture.asset(
-                  "images/dropOffToPickUpIcon.svg",
-                  width: screenWidth / 36,
+                AppInputText(
+                    fontSize: 16,
+                    width: screenWidth / 1.3,
+                    hintText: "Localização atual",
+                    focusNode: pickUpFocusNode,
+                    controller: pickUpController,
+                    maxLines: null,
+                    onTapCallback: () async {
+                      await textFieldCallback(
+                        context: context,
+                        isDropOff: false,
+                      );
+                    }),
+                SizedBox(height: screenHeight / 100),
+                // output to a builder function
+                AppInputText(
+                  fontSize: 16,
+                  width: screenWidth / 1.3,
+                  hintText: "Para onde?",
+                  focusNode: dropOffFocusNode,
+                  controller: dropOffController,
+                  maxLines: null,
+                  onTapCallback: () async {
+                    await textFieldCallback(
+                      context: context,
+                      isDropOff: true,
+                    );
+                  },
+                  hintColor: AppColor.disabled,
                 ),
-                Column(
-                  children: [
-                    AppInputText(
-                        fontSize: 16,
-                        width: screenWidth / 1.3,
-                        hintText: "Localização atual",
-                        focusNode: pickUpFocusNode,
-                        controller: pickUpController,
-                        maxLines: null,
-                        onTapCallback: () async {
-                          await textFieldCallback(
-                            context: context,
-                            isDropOff: false,
-                          );
-                        }),
-                    SizedBox(height: screenHeight / 100),
-                    // output to a builder function
-                    AppInputText(
-                      fontSize: 16,
-                      width: screenWidth / 1.3,
-                      hintText: "Para onde?",
-                      focusNode: dropOffFocusNode,
-                      controller: dropOffController,
-                      maxLines: null,
-                      onTapCallback: () async {
-                        await textFieldCallback(
-                          context: context,
-                          isDropOff: true,
-                        );
-                      },
-                      hintColor: AppColor.disabled,
-                    ),
-                  ],
-                )
               ],
-            ),
-            SizedBox(height: screenWidth / 20),
-            warning != null ? Warning(message: warning) : Container(),
-            Spacer(),
-            AppButton(
-              child: buttonChild,
-              buttonColor: buttonColor,
-              textData: "Pronto",
-              onTapCallBack: () async {
-                if (activateCallback == true) {
-                  buttonCallback(context);
-                }
-              },
-            ),
+            )
           ],
         ),
-      ),
+        SizedBox(height: screenWidth / 20),
+        warning != null ? Warning(message: warning) : Container(),
+        Spacer(),
+        AppButton(
+          child: buttonChild,
+          buttonColor: buttonColor,
+          textData: "Pronto",
+          onTapCallBack: () async {
+            if (activateCallback == true) {
+              buttonCallback(context);
+            }
+          },
+        ),
+      ],
     );
   }
 }

@@ -8,13 +8,28 @@ class CancelButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        Icons.cancel_rounded,
-        color: AppColor.primaryPink,
-        size: 48,
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColor.primaryPink,
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              offset: Offset(3, 3),
+              spreadRadius: 1,
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.clear,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
-      onPressed: onPressed,
     );
   }
 }

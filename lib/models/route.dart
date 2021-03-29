@@ -48,7 +48,6 @@ class RouteModel extends ChangeNotifier {
 
   // TODO: round fare price up if payment is in money
   void fromRideRequest(RideRequestResult rrr) {
-    print("fromRideRequest");
     // TODO: improve estimates of driver arrival time
     // estimate that pilot arrives in 5 seconds
     int secondsForDriverArrival = 300;

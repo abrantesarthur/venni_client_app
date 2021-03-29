@@ -5,8 +5,10 @@ class Warning extends StatelessWidget {
   final String message;
   final Function onTapCallback;
   final Color color;
+  final double fontSize;
 
-  Warning({@required this.message, this.onTapCallback, this.color});
+  Warning(
+      {@required this.message, this.onTapCallback, this.color, this.fontSize});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class Warning extends StatelessWidget {
               (onTapCallback != null
                   ? AppColor.secondaryPurple
                   : AppColor.secondaryYellow),
-          fontSize: 14,
+          fontSize: fontSize ?? 14,
         ),
       ),
     );

@@ -37,16 +37,18 @@ class AppButton extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius ?? 100.0),
           color: buttonColor ?? AppColor.primaryPink,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.4),
-              offset: Offset(4, 4),
-              spreadRadius: 1,
-              blurRadius: 8,
-            ),
-          ],
+          boxShadow: buttonColor != AppColor.disabled
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    offset: Offset(4, 4),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                  ),
+                ]
+              : [],
         ),
-        height: height ?? screenHeight / 10,
+        height: height ?? screenHeight / 12,
         width: width,
         child: Padding(
           padding:
@@ -57,9 +59,10 @@ class AppButton extends StatelessWidget {
                   ? Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
-                        padding: EdgeInsets.only(left: 20),
+                        padding: EdgeInsets.only(left: screenWidth / 50),
                         child: Icon(iconLeft, color: Colors.white, size: 24),
-                      ))
+                      ),
+                    )
                   : Container(),
               Center(
                 child: child != null
@@ -77,7 +80,7 @@ class AppButton extends StatelessWidget {
                   ? Align(
                       alignment: Alignment.centerRight,
                       child: Padding(
-                          padding: EdgeInsets.only(right: 20),
+                          padding: EdgeInsets.only(right: screenWidth / 50),
                           child:
                               Icon(iconRight, color: Colors.white, size: 24)))
                   : Container()

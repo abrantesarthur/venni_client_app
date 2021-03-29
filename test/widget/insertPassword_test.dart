@@ -5,50 +5,23 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
-
-import 'insertPhone_test.dart';
-
-class MockUserPositionModel extends Mock implements UserPositionModel {}
-
-class MockRouteModel extends Mock implements RouteModel {}
-
-class MockGeocodingResult extends Mock implements GeocodingResult {}
+import 'mocks.dart';
 
 void main() {
-  MockFirebaseModel mockFirebaseModel;
-  MockFirebaseAuth mockFirebaseAuth;
-  MockFirebaseDatabase mockFirebaseDatabase;
-  MockNavigatorObserver mockNavigatorObserver;
-  MockUserCredential mockUserCredential;
-  MockUser mockUser;
-  MockUserPositionModel mockUserPositionModel;
-  MockRouteModel mockRouteModel;
-  MockGeocodingResult mockGeocodingResult;
-
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    mockFirebaseModel = MockFirebaseModel();
-    mockFirebaseAuth = MockFirebaseAuth();
-    mockFirebaseDatabase = MockFirebaseDatabase();
-    mockNavigatorObserver = MockNavigatorObserver();
-    mockUserCredential = MockUserCredential();
-    mockUser = MockUser();
-    mockUserPositionModel = MockUserPositionModel();
-    mockRouteModel = MockRouteModel();
-    mockGeocodingResult = MockGeocodingResult();
 
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
-    when(mockUserPositionModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockUserDataModel.geocoding).thenReturn(mockGeocodingResult);
     when(mockGeocodingResult.latitude).thenReturn(0);
     when(mockGeocodingResult.longitude).thenReturn(0);
   });
@@ -59,8 +32,8 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserPositionModel>(
-              create: (context) => mockUserPositionModel),
+          ChangeNotifierProvider<UserDataModel>(
+              create: (context) => mockUserDataModel),
           ChangeNotifierProvider<RouteModel>(
               create: (context) => mockRouteModel)
         ],
@@ -309,78 +282,6 @@ void main() {
       expect(find.byType(Home), findsOneWidget);
     });
 
-    testWidgets("correctly handles 'weak-password' error",
-        (WidgetTester tester) async {
-      // add widget to the UI
-      await pumpWidget(tester);
-
-      verify(mockNavigatorObserver.didPush(any, any));
-
-      // insert valid password to activate circular button
-      final appInputTextFinder = find.byType(AppInputText);
-      await tester.enterText(appInputTextFinder, "avalidpassword123");
-      await tester.pumpAndSettle();
-
-      // expect callback to be activated state
-      final InsertPasswordState insertPasswordState =
-          tester.state(find.byType(InsertPassword));
-      expect(insertPasswordState.circularButtonCallback, isNotNull);
-
-      // set mocks to throw 'weak-password' error
-      FirebaseAuthException e =
-          FirebaseAuthException(message: "message", code: "weak-password");
-      when(mockFirebaseModel.isRegistered).thenReturn(true);
-      when(mockUserCredential.user).thenReturn(mockUser);
-      when(mockUser.updateEmail(any)).thenAnswer((_) async => Future.value());
-      when(mockUser.updatePassword(any)).thenAnswer((_) async => throw e);
-      when(mockUser.updateProfile(displayName: anyNamed("displayName")))
-          .thenAnswer((_) async => Future.value());
-
-      // before tapping, expect successfullyRegisteredUser to be null
-      expect(insertPasswordState.successfullyRegisteredUser, isNull);
-
-      // simulate tapping button to register the user
-      await tester.tap(find.byType(CircularButton));
-      await tester.pumpAndSettle();
-
-      // verify that user was not deleted
-      verifyNever(mockUser.delete());
-
-      // expect successfullyRegisteredUser to be a future bool
-      expect(
-          insertPasswordState.successfullyRegisteredUser, isA<Future<bool>>());
-      await tester.pumpAndSettle();
-
-      // expect displayPasswordWarnings to be false
-      expect(insertPasswordState.displayPasswordWarnings, isFalse);
-
-      // expect registrationErrorWarnings not to be null
-      expect(insertPasswordState.registrationErrorWarnings, isNotNull);
-
-      // expect passwordTextFieldEnabled to still be true
-      expect(insertPasswordState.passwordTextFieldEnabled, isTrue);
-
-      // expect preventNavigateBack to still be false
-      expect(insertPasswordState.preventNavigateBack, isFalse);
-
-      // registration error warnings are displayed
-      final weakPasswordwarning = find.widgetWithText(
-        Warning,
-        "Senha muito fraca. Tente outra.",
-      );
-      expect(weakPasswordwarning, findsOneWidget);
-
-      // tap to insert a new password
-      await tester.tap(find.byType(AppInputText));
-      await tester.pumpAndSettle();
-
-      // expect displayPasswordWarnings to be true
-      expect(insertPasswordState.displayPasswordWarnings, isTrue);
-
-      // expect registrationErrorWarnings to be null
-      expect(insertPasswordState.registrationErrorWarnings, isNull);
-    });
-
     testWidgets("correctly handles 'requires-recent-login' error",
         (WidgetTester tester) async {
       // add widget to the UI
@@ -398,7 +299,7 @@ void main() {
           tester.state(find.byType(InsertPassword));
       expect(insertPasswordState.circularButtonCallback, isNotNull);
 
-      // set mocks to throw 'weak-password' error
+      // set mocks to throw 'requires-recent-login' error
       FirebaseAuthException e = FirebaseAuthException(
           message: "message", code: "requires-recent-login");
       when(mockFirebaseModel.isRegistered).thenReturn(true);

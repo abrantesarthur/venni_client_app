@@ -7,22 +7,29 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebase.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
+enum InsertSmsCodeMode {
+  pushNewRoute,
+  popBack,
+}
+
 class InsertSmsCodeArguments {
   final String verificationId;
   final int resendToken;
   final String phoneNumber;
+  final InsertSmsCodeMode mode;
 
   InsertSmsCodeArguments({
     @required this.verificationId,
     @required this.resendToken,
     @required this.phoneNumber,
+    @required this.mode,
   });
 }
 
@@ -32,11 +39,13 @@ class InsertSmsCode extends StatefulWidget {
   final String verificationId;
   final String phoneNumber;
   final int resendToken;
+  final InsertSmsCodeMode mode;
 
   InsertSmsCode({
     @required this.verificationId,
     @required this.resendToken,
     @required this.phoneNumber,
+    @required this.mode,
   });
 
   @override
@@ -138,7 +147,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
   }
 
   void resendCodeVerificationFailedCallback(FirebaseAuthException e) {
-    String errorMsg = verificationFailedCallback(e);
+    String errorMsg = _firebaseAuth.verificationFailedCallback(e);
     setState(() {
       // reset timer and resendCodeWarning
       remainingSeconds = 15;
@@ -161,7 +170,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
       // create a credential with the SMS code that arrives without the user
       // having to input it.
       verificationCompleted: (PhoneAuthCredential credential) {
-        verificationCompletedCallback(
+        _firebaseAuth.verificationCompletedCallback(
           context: context,
           credential: credential,
           firebaseDatabase: _firebaseDatabase,
@@ -226,7 +235,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
     PhoneAuthCredential phoneCredential = PhoneAuthProvider.credential(
         verificationId: _verificationId, smsCode: smsCode);
 
-    await verificationCompletedCallback(
+    await _firebaseAuth.verificationCompletedCallback(
       context: context,
       credential: phoneCredential,
       firebaseDatabase: _firebaseDatabase,
@@ -243,6 +252,10 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
         size: 36,
       );
     });
+
+    if (widget.mode == InsertSmsCodeMode.popBack) {
+      Navigator.pop(context);
+    }
   }
 
   Widget displayWarnings(BuildContext context, double padding) {

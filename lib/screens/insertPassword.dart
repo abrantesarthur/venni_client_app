@@ -1,20 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/widgets/appInputText.dart';
+import 'package:rider_frontend/widgets/appInputPassword.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/passwordWarning.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
+// TODO: fix napshotting a view (0x10847deb0, _UIReplicantView) that has not been rendered at least once requires afterScreenUpdates:YES.
 class InsertPasswordArguments {
   final UserCredential userCredential;
   final String name;
@@ -51,7 +50,6 @@ class InsertPasswordState extends State<InsertPassword> {
   double screenHeight;
   Color circularButtonColor;
   Function circularButtonCallback;
-  IconData _endIconData;
   bool obscurePassword;
   TextEditingController passwordTextEditingController = TextEditingController();
   List<bool> passwordChecks = [false, false, false];
@@ -64,7 +62,6 @@ class InsertPasswordState extends State<InsertPassword> {
   void initState() {
     super.initState();
     circularButtonColor = AppColor.disabled;
-    _endIconData = Icons.remove_red_eye_outlined;
     passwordTextFieldEnabled = true;
     preventNavigateBack = false;
     obscurePassword = true;
@@ -123,18 +120,6 @@ class InsertPasswordState extends State<InsertPassword> {
   void dispose() {
     passwordTextEditingController.dispose();
     super.dispose();
-  }
-
-  void toggleObscurePassword() {
-    setState(() {
-      if (obscurePassword) {
-        _endIconData = Icons.remove_red_eye;
-        obscurePassword = false;
-      } else {
-        _endIconData = Icons.remove_red_eye_outlined;
-        obscurePassword = true;
-      }
-    });
   }
 
   Future<void> handleRegistrationFailure(FirebaseAuthException e) async {
@@ -219,6 +204,10 @@ class InsertPasswordState extends State<InsertPassword> {
           .updatePassword(passwordTextEditingController.text);
       await widget.userCredential.user
           .updateProfile(displayName: widget.name + " " + widget.surname);
+
+      // send email verification
+      await widget.userCredential.user.sendEmailVerification();
+
       return true;
     } on FirebaseAuthException catch (e) {
       await handleRegistrationFailure(e);
@@ -236,8 +225,6 @@ class InsertPasswordState extends State<InsertPassword> {
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
-    final firebaseModel = Provider.of<FirebaseModel>(context);
-
     return FutureBuilder(
       future: successfullyRegisteredUser,
       builder: (
@@ -292,18 +279,9 @@ class InsertPasswordState extends State<InsertPassword> {
                             style: TextStyle(color: Colors.black, fontSize: 18),
                           ),
                           SizedBox(height: screenHeight / 40),
-                          AppInputText(
-                            enabled: passwordTextFieldEnabled,
-                            iconData: Icons.lock,
-                            endIcon: _endIconData,
-                            endIconOnTapCallback: toggleObscurePassword,
-                            hintText: "senha",
+                          AppInputPassword(
                             controller: passwordTextEditingController,
-                            obscureText: obscurePassword,
-                            maxLines: 1,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(32)
-                            ],
+                            autoFocus: true,
                           ),
                           displayPasswordWarnings
                               ? Column(
@@ -347,7 +325,7 @@ class InsertPasswordState extends State<InsertPassword> {
                                 onPressedCallback:
                                     circularButtonCallback == null
                                         ? () {}
-                                        : () => buttonCallback(context),
+                                        : () => circularButtonCallback(context),
                               ),
                             ],
                           ),
@@ -362,15 +340,5 @@ class InsertPasswordState extends State<InsertPassword> {
         );
       },
     );
-  }
-}
-
-extension on String {
-  bool containsLetter() {
-    return RegExp(r'[a-zA-Z]+').hasMatch(this);
-  }
-
-  bool containsDigit() {
-    return RegExp(r'\d+').hasMatch(this);
   }
 }

@@ -1,21 +1,33 @@
+import 'dart:io' as dartIo;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:rider_frontend/vendors/firebase.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/models.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
+import 'package:rider_frontend/screens/deleteAccount.dart';
+import 'package:rider_frontend/screens/editEmail.dart';
+import 'package:rider_frontend/screens/editPhone.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertName.dart';
+import 'package:rider_frontend/screens/insertNewEmail.dart';
+import 'package:rider_frontend/screens/insertNewPassword.dart';
+import 'package:rider_frontend/screens/insertNewPhone.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/screens/privacy.dart';
+import 'package:rider_frontend/screens/profile.dart';
+import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
@@ -38,7 +50,7 @@ class _AppState extends State<App> {
   bool _error = false;
   FirebaseModel firebaseModel;
   RouteModel routeModel;
-  UserPositionModel userPositionModel;
+  UserDataModel userDataModel;
 
   @override
   void initState() {
@@ -64,7 +76,7 @@ class _AppState extends State<App> {
     GeocodingResult geocodingResult = geocoding.results[0];
 
     // set usertPositionModel
-    userPositionModel = UserPositionModel(geocoding: geocodingResult);
+    userDataModel = UserDataModel(geocoding: geocodingResult);
   }
 
   // Define an async function to initialize FlutterFire
@@ -74,11 +86,19 @@ class _AppState extends State<App> {
       await Firebase.initializeApp();
       // set default language as brazilian portuguese
       await FirebaseAuth.instance.setLanguageCode("pt_br");
+
+      // if user is logged in
+      if (FirebaseAuth.instance.currentUser != null) {
+        // download user data
+        _downloadUserData(FirebaseAuth.instance.currentUser.uid);
+      }
+
       setState(() {
         _initialized = true;
         _error = false;
       });
     } catch (e) {
+      print(e);
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
@@ -86,6 +106,26 @@ class _AppState extends State<App> {
     }
   }
 
+  Future<void> _downloadUserData(String uid) async {
+    // download user image file
+    ProfileImage profileImage =
+        await FirebaseStorage.instance.getProfileImage(uid: uid);
+
+    if (profileImage != null) {
+      userDataModel.setProfileImage(
+        file: profileImage.file,
+        name: profileImage.name,
+      );
+    }
+
+    // get user rating
+    double rating = await FirebaseDatabase.instance.getUserRating(uid);
+    if (rating != null) {
+      userDataModel.setUserRating(rating);
+    }
+  }
+
+  // TODO: add lockScreen variable to all relevant screens
   // TODO: get google api key from the environment in AppDelegate.swift
   // TODO: if user taps never when phone first launhes and asks to share location, it remains in venni screen forever
   // TODO: think about callign directions API only in backend
@@ -131,6 +171,7 @@ class _AppState extends State<App> {
       firebaseModel = FirebaseModel(
         firebaseAuth: FirebaseAuth.instance,
         firebaseDatabase: FirebaseDatabase.instance,
+        firebaseStorage: FirebaseStorage.instance,
       );
 
       routeModel = RouteModel();
@@ -148,8 +189,8 @@ class _AppState extends State<App> {
           ChangeNotifierProvider<RouteModel>(
             create: (context) => routeModel,
           ),
-          ChangeNotifierProvider<UserPositionModel>(
-            create: (context) => userPositionModel,
+          ChangeNotifierProvider<UserDataModel>(
+            create: (context) => userDataModel,
           )
         ], // pass user model down
         builder: (context, child) {
@@ -178,6 +219,7 @@ class _AppState extends State<App> {
                     verificationId: args.verificationId,
                     resendToken: args.resendToken,
                     phoneNumber: args.phoneNumber,
+                    mode: args.mode,
                   );
                 });
               }
@@ -252,6 +294,15 @@ class _AppState extends State<App> {
             routes: {
               Start.routeName: (context) => Start(),
               Home.routeName: (context) => Home(),
+              Settings.routeName: (context) => Settings(),
+              Profile.routeName: (context) => Profile(),
+              Privacy.routeName: (context) => Privacy(),
+              DeleteAccount.routeName: (context) => DeleteAccount(),
+              EditEmail.routeName: (context) => EditEmail(),
+              EditPhone.routeName: (context) => EditPhone(),
+              InsertNewPhone.routeName: (context) => InsertNewPhone(),
+              InsertNewEmail.routeName: (context) => InsertNewEmail(),
+              InsertNewPassword.routeName: (context) => InsertNewPassword(),
             },
           );
         });

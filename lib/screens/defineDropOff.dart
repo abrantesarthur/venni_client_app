@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userPosition.dart';
+import 'package:rider_frontend/models/userData.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -40,8 +40,8 @@ class DefineDropOffState extends State<DefineDropOff> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       // get relevant models
       RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      UserPositionModel userPos =
-          Provider.of<UserPositionModel>(context, listen: false);
+      UserDataModel userData =
+          Provider.of<UserDataModel>(context, listen: false);
 
       // if there is an initial address show google maps.
       // it is configured to show that address too
@@ -49,7 +49,8 @@ class DefineDropOffState extends State<DefineDropOff> {
 
       // suggest locations as user searches locations
       dropOffTextEditingController.addListener(() async {
-        await textFieldListener(true, userPos.geocoding);
+        // TODO: FIX BUG
+        await textFieldListener(true, userData.geocoding);
       });
     });
   }
@@ -86,7 +87,7 @@ class DefineDropOffState extends State<DefineDropOff> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    UserPositionModel userPos = Provider.of<UserPositionModel>(context);
+    UserDataModel userData = Provider.of<UserDataModel>(context);
     RouteModel route = Provider.of<RouteModel>(context);
 
     return Scaffold(
@@ -164,7 +165,7 @@ class DefineDropOffState extends State<DefineDropOff> {
               : Expanded(
                   child: buildPlacePicker(
                     context: context,
-                    userGeocoding: userPos.geocoding,
+                    userGeocoding: userData.geocoding,
                     isDropOff: true,
                     initialAddress: route.dropOffAddress,
                   ),

@@ -10,6 +10,9 @@ import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
+import 'package:rider_frontend/utils/utils.dart';
+
+import '../vendors/firebase.dart';
 
 class InsertEmailArguments {
   final UserCredential userCredential;
@@ -31,33 +34,37 @@ class InsertEmailState extends State<InsertEmail> {
   Color circularButtonColor;
   Function circularButtonCallback;
   Widget _circularButtonChild;
-  TextEditingController emailTextEditingController = TextEditingController();
+  TextEditingController emailTextEditingController;
   FirebaseAuth _firebaseAuth;
 
   @override
   void initState() {
     super.initState();
+    emailTextEditingController = TextEditingController();
     circularButtonColor = AppColor.disabled;
     _circularButtonChild = Icon(
       Icons.arrow_forward,
       color: Colors.white,
       size: 36,
     );
-    emailTextEditingController.addListener(() {
-      String email = emailTextEditingController.text ?? "";
-      if (email != null && email.isValidEmail()) {
-        setState(() {
-          warningMessage = null;
-          circularButtonCallback = buttonCallback;
-          circularButtonColor = AppColor.primaryPink;
-        });
-      } else {
-        setState(() {
-          circularButtonCallback = null;
-          circularButtonColor = AppColor.disabled;
-        });
-      }
-    });
+
+    emailTextEditingController.addListener(
+      () {
+        String email = emailTextEditingController.text ?? "";
+        if (email != null && email.isValid()) {
+          setState(() {
+            warningMessage = null;
+            circularButtonCallback = buttonCallback;
+            circularButtonColor = AppColor.primaryPink;
+          });
+        } else {
+          setState(() {
+            circularButtonCallback = null;
+            circularButtonColor = AppColor.disabled;
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -77,36 +84,8 @@ class InsertEmailState extends State<InsertEmail> {
       );
     });
 
-    bool validEmail;
-    String warning;
-    try {
-      // try to sign in with provided email
-      await _firebaseAuth.signInWithEmailAndPassword(
-        email: emailTextEditingController.text,
-        password: "WronggndoisngPassword!135",
-      );
-      // in the unlikely case sign in succeeds, sign back out
-      _firebaseAuth.signOut();
-      // return false because there is already an account with the email;
-      warning = "O email já está sendo usado. Tente outro.";
-      validEmail = false;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "user-not-found") {
-        // user not found means there is no account with the email
-        validEmail = true;
-      } else if (e.code == "wrong-password") {
-        // wrong password means the email is already registered
-        warning = "O email já está sendo usado. Tente outro.";
-        validEmail = false;
-      } else if (e.code == "invalid-email") {
-        // display appropriate message
-        warning = "Email inválido. Tente outro.";
-        validEmail = false;
-      } else {
-        warning = "O email não pode ser usado. Tente outro.";
-        validEmail = false;
-      }
-    }
+    CreateEmailResponse response =
+        await _firebaseAuth.createEmail(emailTextEditingController.text);
 
     // stop progress
     setState(() {
@@ -117,14 +96,14 @@ class InsertEmailState extends State<InsertEmail> {
       );
     });
 
-    if (warning != null) {
+    if (response.message != null) {
       setState(() {
-        warningMessage = Warning(message: warning);
+        warningMessage = Warning(message: response.message);
         circularButtonCallback = null;
         circularButtonColor = AppColor.disabled;
       });
     }
-    if (validEmail) {
+    if (response.successful) {
       Navigator.pushNamed(
         context,
         InsertName.routeName,
@@ -140,7 +119,6 @@ class InsertEmailState extends State<InsertEmail> {
     final screenHeight = MediaQuery.of(context).size.height;
     _firebaseAuth = Provider.of<FirebaseModel>(context, listen: false).auth;
 
-    // TODO: inserting in singlechildscroll view probably fixes overflow problem!
     return Scaffold(
       body: LayoutBuilder(builder: (
         BuildContext context,
@@ -176,6 +154,7 @@ class InsertEmailState extends State<InsertEmail> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     AppInputText(
+                      maxLines: 1,
                       autoFocus: true,
                       hintText: "exemplo@dominio.com",
                       controller: emailTextEditingController,
@@ -205,13 +184,5 @@ class InsertEmailState extends State<InsertEmail> {
         );
       }),
     );
-  }
-}
-
-extension on String {
-  bool isValidEmail() {
-    return RegExp(
-            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
-        .hasMatch(this);
   }
 }

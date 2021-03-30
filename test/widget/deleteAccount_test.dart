@@ -15,7 +15,7 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
-import 'mocks.dart';
+import '../../lib/mocks.dart';
 
 void main() {
   // define mockers behaviors

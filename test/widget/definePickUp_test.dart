@@ -11,7 +11,7 @@ import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
-import 'mocks.dart';
+import '../../lib/mocks.dart';
 
 void main() {
   setUp(() {

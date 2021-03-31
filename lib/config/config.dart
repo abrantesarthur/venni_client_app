@@ -10,21 +10,19 @@ class ConfigValues {
   final String directionsBaseURL;
   final String geocodingBaseURL;
   final String autocompleteBaseURL;
-  final String cloudFunctionsBaseURL;
   final String googleApiKey;
+  final String cloudFunctionsBaseURL;
   final String authPort;
   final String databasePort;
-  final String functionsPort;
 
   ConfigValues({
     @required this.directionsBaseURL,
     @required this.geocodingBaseURL,
     @required this.autocompleteBaseURL,
-    @required this.cloudFunctionsBaseURL,
     @required this.googleApiKey,
+    @required this.cloudFunctionsBaseURL,
     this.authPort,
     this.databasePort,
-    this.functionsPort,
   });
 }
 

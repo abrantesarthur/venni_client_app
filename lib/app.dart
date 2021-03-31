@@ -134,7 +134,7 @@ class _AppState extends State<App> {
               : 'http://localhost:' + AppConfig.env.values.databasePort,
         );
 
-        // instantiate storage
+        // instantiate storage (the only resource not running locally)
         firebaseStorage = FirebaseStorage.instanceFor(app: app);
       }
 

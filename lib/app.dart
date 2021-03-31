@@ -1,8 +1,11 @@
+import 'dart:html';
 import 'dart:io' as dartIo;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/vendors/firebase.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -51,6 +54,9 @@ class _AppState extends State<App> {
   FirebaseModel firebaseModel;
   RouteModel routeModel;
   UserDataModel userDataModel;
+  FirebaseAuth firebaseAuth;
+  FirebaseDatabase firebaseDatabase;
+  FirebaseStorage firebaseStorage;
 
   @override
   void initState() {
@@ -82,15 +88,63 @@ class _AppState extends State<App> {
   // Define an async function to initialize FlutterFire
   Future<void> initializeFlutterFire() async {
     try {
-      // Wait for Firebase to initialize and set `_initialized` state to true
-      await Firebase.initializeApp();
-      // set default language as brazilian portuguese
-      await FirebaseAuth.instance.setLanguageCode("pt_br");
+      // if running in production mode
+      if (AppConfig.env.flavor == Flavor.PROD) {
+        /*
+        By default, initializeApp references the FirebaseOptions object that
+        read the configuration from GoogleService-Info.plist on iOS and
+        google-services.json on Android. In our case, these files target the
+        venni-rider-staging project.
+        reference: https://firebase.google.com/docs/projects/multiprojects */
+        await Firebase.initializeApp();
+
+        // insantiate authentication, database, and storage
+        firebaseAuth = FirebaseAuth.instance;
+        firebaseDatabase = FirebaseDatabase.instance;
+        firebaseStorage = FirebaseStorage.instance;
+      } else {
+        /* If running on Dev mode, we manually instantiate the FirebaesOptions to
+        target the venni-rider-development project instead of donwnloading 
+        configuration files. It's also worth noting that, in this case, the 
+        RealtimeDatabase, Cloud Functions and Database are accessed locally 
+        through the Firebase Emulator Suite.
+        reference: https://firebase.flutter.dev/docs/core/usage/ */
+        FirebaseApp app = await Firebase.initializeApp(
+          name: "venni-rider-development",
+          options: FirebaseOptions(
+            appId: "1:528515096365:ios:2f4ce7c826e3fde52bbda4",
+            apiKey: "AIzaSyB3XWRvzLTbSOiXOEocSh646slpxk0sh_4",
+            messagingSenderId: "528515096365",
+            projectId: "venni-rider-development",
+            storageBucket: "venni-rider-development.appspot.com",
+          ),
+        );
+
+        // instantiate authentication
+        firebaseAuth = FirebaseAuth.instanceFor(app: app);
+        // authentication targets emulator
+        await firebaseAuth
+            .useEmulator("http://localhost:" + AppConfig.env.values.authPort);
+
+        // instantiate database targetting emulator
+        firebaseDatabase = FirebaseDatabase(
+          app: Firebase.app(),
+          databaseURL: dartIo.Platform.isAndroid
+              ? 'http://10.0.2.2:' + AppConfig.env.values.databasePort
+              : 'http://localhost:' + AppConfig.env.values.databasePort,
+        );
+
+        // instantiate storage
+        firebaseStorage = FirebaseStorage.instanceFor(app: app);
+      }
+
+      // set default authentication language as brazilian portuguese
+      await firebaseAuth.setLanguageCode("pt_br");
 
       // if user is logged in
-      if (FirebaseAuth.instance.currentUser != null) {
+      if (firebaseAuth.currentUser != null) {
         // download user data
-        _downloadUserData(FirebaseAuth.instance.currentUser.uid);
+        _downloadUserData(firebaseAuth.currentUser.uid);
       }
 
       setState(() {
@@ -108,8 +162,7 @@ class _AppState extends State<App> {
 
   Future<void> _downloadUserData(String uid) async {
     // download user image file
-    ProfileImage profileImage =
-        await FirebaseStorage.instance.getProfileImage(uid: uid);
+    ProfileImage profileImage = await firebaseStorage.getProfileImage(uid: uid);
 
     if (profileImage != null) {
       userDataModel.setProfileImage(
@@ -119,7 +172,7 @@ class _AppState extends State<App> {
     }
 
     // get user rating
-    double rating = await FirebaseDatabase.instance.getUserRating(uid);
+    double rating = await firebaseDatabase.getUserRating(uid);
     if (rating != null) {
       userDataModel.setUserRating(rating);
     }
@@ -170,7 +223,7 @@ class _AppState extends State<App> {
       // initialize firebaseModel. This will add a listener for user changes.
       firebaseModel = FirebaseModel(
         firebaseAuth: FirebaseAuth.instance,
-        firebaseDatabase: FirebaseDatabase.instance,
+        firebaseDatabase: firebaseDatabase,
         firebaseStorage: FirebaseStorage.instance,
       );
 

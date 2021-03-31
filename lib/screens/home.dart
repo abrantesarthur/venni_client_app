@@ -191,13 +191,16 @@ class HomeState extends State<Home> {
   }
 
   Future<void> defineRoute(BuildContext context, DefineRouteMode mode) async {
-    Navigator.pushNamed(
-      context,
-      DefineRoute.routeName,
-      arguments: DefineRouteArguments(
-        mode: mode,
-      ),
-    );
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    String userIdToken = await firebase.auth.currentUser.getIdToken();
+    print(userIdToken);
+    // Navigator.pushNamed(
+    //   context,
+    //   DefineRoute.routeName,
+    //   arguments: DefineRouteArguments(
+    //     mode: mode,
+    //   ),
+    // );
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/config/config.dart';
 
+// must respect https://firebase.google.com/docs/functions/callable-reference
 class CloudFunctionsWebService {
   String _baseURL;
   String _userIdToken;
@@ -14,7 +15,9 @@ class CloudFunctionsWebService {
     _userIdToken = userIdToken;
     _headers = {
       "Content-Type": "application/json",
+      // TODO: according to the specification, should add Bearer. Check this
       "Authorization": _userIdToken,
+      // TODO: add Firebase-Instance-ID-Token: <iid> to enable FCM
     };
   }
 

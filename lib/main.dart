@@ -13,7 +13,11 @@ void main() {
           "https://maps.googleapis.com/maps/api/place/autocomplete/json?",
       cloudFunctionsBaseURL:
           "https://us-central1-venni-rider-staging.cloudfunctions.net/",
+      // TODO: get the following either from environment or secure storage
       googleApiKey: "AIzaSyDHUnoB6uGH-8OoW4SIBnJRVpzRVD8fNVw",
+      authPort: "9099",
+      databasePort: "9000",
+      functionsPort: "5001",
     ),
   );
 

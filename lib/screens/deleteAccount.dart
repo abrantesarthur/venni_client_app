@@ -12,6 +12,7 @@ import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
 import '../models/models.dart';
 
+// TODO: move wipeout logic to backend (https://github.com/FirebaseExtended/user-data-protection)
 class DeleteAccount extends StatefulWidget {
   static const String routeName = "DeleteAccount";
 

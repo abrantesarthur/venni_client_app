@@ -14,7 +14,6 @@ void main() {
       // TODO: get the following either from environment or secure storage
       googleApiKey: "AIzaSyDHUnoB6uGH-8OoW4SIBnJRVpzRVD8fNVw",
       cloudFunctionsBaseURL: "http://localhost:5001/",
-      authPort: "9099",
       databasePort: "9000",
     ),
   );

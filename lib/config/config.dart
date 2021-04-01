@@ -12,7 +12,6 @@ class ConfigValues {
   final String autocompleteBaseURL;
   final String googleApiKey;
   final String cloudFunctionsBaseURL;
-  final String authPort;
   final String databasePort;
 
   ConfigValues({
@@ -21,7 +20,6 @@ class ConfigValues {
     @required this.autocompleteBaseURL,
     @required this.googleApiKey,
     @required this.cloudFunctionsBaseURL,
-    this.authPort,
     this.databasePort,
   });
 }

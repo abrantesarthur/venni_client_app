@@ -1,4 +1,3 @@
-import 'dart:html';
 import 'dart:io' as dartIo;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -96,7 +95,9 @@ class _AppState extends State<App> {
         google-services.json on Android. In our case, these files target the
         venni-rider-staging project.
         reference: https://firebase.google.com/docs/projects/multiprojects */
-        await Firebase.initializeApp();
+        if (Firebase.apps.length == 0) {
+          await Firebase.initializeApp();
+        }
 
         // insantiate authentication, database, and storage
         firebaseAuth = FirebaseAuth.instance;
@@ -109,26 +110,40 @@ class _AppState extends State<App> {
         RealtimeDatabase, Cloud Functions and Database are accessed locally 
         through the Firebase Emulator Suite.
         reference: https://firebase.flutter.dev/docs/core/usage/ */
-        FirebaseApp app = await Firebase.initializeApp(
-          name: "venni-rider-development",
-          options: FirebaseOptions(
-            appId: "1:528515096365:ios:2f4ce7c826e3fde52bbda4",
-            apiKey: "AIzaSyB3XWRvzLTbSOiXOEocSh646slpxk0sh_4",
-            messagingSenderId: "528515096365",
-            projectId: "venni-rider-development",
-            storageBucket: "venni-rider-development.appspot.com",
-          ),
-        );
+        FirebaseApp app;
+
+        if (Firebase.apps.length == 0) {
+          try {
+            // TODO: may have to initialize androidClientID as well
+            app = await Firebase.initializeApp(
+              name: "development-app",
+              options: FirebaseOptions(
+                appId: dartIo.Platform.isAndroid
+                    ? "1:528515096365:android:fe236235a67557462bbda4"
+                    : "1:528515096365:ios:2f4ce7c826e3fde52bbda4",
+                iosClientId:
+                    "528515096365-1dd5okam06mgdptu9hp3nldmse7fjpfu.apps.googleusercontent.com",
+                iosBundleId: "com.venni.development.rider",
+                apiKey: "AIzaSyB3XWRvzLTbSOiXOEocSh646slpxk0sh_4",
+                messagingSenderId: "528515096365",
+                projectId: "venni-rider-development",
+                storageBucket: "venni-rider-development.appspot.com",
+              ),
+            );
+          } catch (e) {
+            print(e);
+            app = Firebase.app("development-app");
+          }
+        } else {
+          app = Firebase.app("development-app");
+        }
 
         // instantiate authentication
         firebaseAuth = FirebaseAuth.instanceFor(app: app);
-        // authentication targets emulator
-        await firebaseAuth
-            .useEmulator("http://localhost:" + AppConfig.env.values.authPort);
 
         // instantiate database targetting emulator
         firebaseDatabase = FirebaseDatabase(
-          app: Firebase.app(),
+          app: app,
           databaseURL: dartIo.Platform.isAndroid
               ? 'http://10.0.2.2:' + AppConfig.env.values.databasePort
               : 'http://localhost:' + AppConfig.env.values.databasePort,
@@ -178,6 +193,9 @@ class _AppState extends State<App> {
     }
   }
 
+  // TODO: README How to test locally taking DEV flavor into account. Explain that need to run emulator locally.
+  // TODO: Find a way of using xcode flavors so that it's not necessary to manually switch bundle id in xcode when running in dev or prod.
+  // TODO: make sure that phone authentication works in android in both development and production mode
   // TODO: add lockScreen variable to all relevant screens
   // TODO: get google api key from the environment in AppDelegate.swift
   // TODO: if user taps never when phone first launhes and asks to share location, it remains in venni screen forever
@@ -222,9 +240,9 @@ class _AppState extends State<App> {
     if (_initialized) {
       // initialize firebaseModel. This will add a listener for user changes.
       firebaseModel = FirebaseModel(
-        firebaseAuth: FirebaseAuth.instance,
+        firebaseAuth: firebaseAuth,
         firebaseDatabase: firebaseDatabase,
-        firebaseStorage: FirebaseStorage.instance,
+        firebaseStorage: firebaseStorage,
       );
 
       routeModel = RouteModel();

@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:rider_frontend/config/config.dart';
 
 // must respect https://firebase.google.com/docs/functions/callable-reference
+
+// TODO: migrate to using cloud_functions plugin instead
 class CloudFunctionsWebService {
   String _baseURL;
   String _userIdToken;

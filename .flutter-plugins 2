@@ -1,0 +1,20 @@
+# This is a generated file; do not edit or check into version control.
+firebase_auth=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.20.1/
+firebase_auth_web=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-0.3.3/
+firebase_core=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.7.0/
+firebase_core_web=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-0.2.1+3/
+firebase_database=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_database-6.0.0/
+firebase_storage=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_storage-7.0.0/
+firebase_storage_web=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/firebase_storage_web-0.1.1+3/
+flutter_plugin_android_lifecycle=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/flutter_plugin_android_lifecycle-1.0.11/
+geolocator=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/geolocator-6.2.1/
+geolocator_web=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/geolocator_web-1.0.1/
+google_api_headers=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/google_api_headers-0.1.1+2/
+google_maps_flutter=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter-1.2.0/
+image_picker=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/image_picker-0.6.7+22/
+package_info=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/package_info-0.4.3+4/
+path_provider=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/path_provider-2.0.1/
+path_provider_linux=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/path_provider_linux-2.0.0/
+path_provider_macos=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/path_provider_macos-2.0.0/
+path_provider_windows=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/path_provider_windows-2.0.0/
+permission_handler=/Users/Arthur/.pub-cache/hosted/pub.dartlang.org/permission_handler-5.0.1+2/

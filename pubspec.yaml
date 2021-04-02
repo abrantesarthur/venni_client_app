@@ -42,6 +42,8 @@ flutter:
   assets:
     - images/
     - assets/map_style.txt
+    - assets/dev.env
+    - assets/prod.env
 
   fonts:
     - family: OpenSans

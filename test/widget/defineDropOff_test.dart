@@ -65,12 +65,6 @@ void main() {
 
     AppConfig(
       flavor: Flavor.DEV,
-      values: ConfigValues(
-        geocodingBaseURL: "",
-        autocompleteBaseURL: "",
-        cloudFunctionsBaseURL: "",
-        googleApiKey: "",
-      ),
     );
   });
 

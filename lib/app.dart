@@ -144,9 +144,7 @@ class _AppState extends State<App> {
         // instantiate database targetting emulator
         firebaseDatabase = FirebaseDatabase(
           app: app,
-          databaseURL: dartIo.Platform.isAndroid
-              ? 'http://10.0.2.2:' + AppConfig.env.values.databasePort
-              : 'http://localhost:' + AppConfig.env.values.databasePort,
+          databaseURL: AppConfig.env.values.realtimeDatabaseURL,
         );
 
         // instantiate storage (the only resource not running locally)

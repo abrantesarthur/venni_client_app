@@ -7,7 +7,6 @@ void main() {
   AppConfig(
     flavor: Flavor.DEV,
     values: ConfigValues(
-      directionsBaseURL: "https://maps.googleapis.com/maps/api/directions",
       geocodingBaseURL: "https://maps.googleapis.com/maps/api/geocode",
       autocompleteBaseURL:
           "https://maps.googleapis.com/maps/api/place/autocomplete/json?",

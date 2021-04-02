@@ -7,7 +7,6 @@ enum Flavor { DEV, PROD }
 // TODO: initialize firebase according to environment
 // TODO: get android and iOS maps keys from the environment (AppDelegate.swift, main AndroidManifest.xml)
 class ConfigValues {
-  final String directionsBaseURL;
   final String geocodingBaseURL;
   final String autocompleteBaseURL;
   final String googleApiKey;
@@ -15,7 +14,6 @@ class ConfigValues {
   final String databasePort;
 
   ConfigValues({
-    @required this.directionsBaseURL,
     @required this.geocodingBaseURL,
     @required this.autocompleteBaseURL,
     @required this.googleApiKey,

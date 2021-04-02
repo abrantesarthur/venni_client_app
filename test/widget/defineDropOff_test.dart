@@ -66,7 +66,6 @@ void main() {
     AppConfig(
       flavor: Flavor.DEV,
       values: ConfigValues(
-        directionsBaseURL: "",
         geocodingBaseURL: "",
         autocompleteBaseURL: "",
         cloudFunctionsBaseURL: "",

@@ -1,33 +1,40 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/mocks.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/warning.dart';
-import '../../lib/mocks.dart';
 
 void main() {
   // define mockers behaviors
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
+    when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+    when(mockUser.displayName).thenReturn("Fulano");
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
     when(mockFirebaseModel.isRegistered).thenReturn(true);
-    when(mockUserDataModel.geocoding).thenReturn(mockGeocodingResult);
+    when(mockUserModel.geocoding).thenReturn(mockGeocodingResult);
     when(mockGeocodingResult.latitude).thenReturn(0);
     when(mockGeocodingResult.longitude).thenReturn(0);
+    when(mockGoogleMapsModel.initialCameraLatLng).thenReturn(LatLng(10, 10));
+    when(mockGoogleMapsModel.initialZoom).thenReturn(30);
+    when(mockGoogleMapsModel.polylines).thenReturn({});
   });
 
   void setupFirebaseMocks({
@@ -128,10 +135,9 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserDataModel>(
-              create: (context) => mockUserDataModel),
-          ChangeNotifierProvider<RouteModel>(
-            create: (context) => mockRouteModel,
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
+          ChangeNotifierProvider<TripModel>(
+            create: (context) => mockTripModel,
           )
         ],
         builder: (context, child) => MaterialApp(home: InsertPhone()),
@@ -257,15 +263,20 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserDataModel>(
-              create: (context) => mockUserDataModel),
-          ChangeNotifierProvider<RouteModel>(
-              create: (context) => mockRouteModel)
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
+          ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
+          ChangeNotifierProvider<GoogleMapsModel>(
+              create: (context) => mockGoogleMapsModel)
         ],
         builder: (context, child) => MaterialApp(
           home: InsertPhone(),
           routes: {
-            Home.routeName: (context) => Home(),
+            Home.routeName: (context) => Home(
+                  firebase: mockFirebaseModel,
+                  user: mockUserModel,
+                  trip: mockTripModel,
+                  googleMaps: mockGoogleMapsModel,
+                ),
             InsertEmail.routeName: (context) => InsertEmail(
                   userCredential: mockUserCredential,
                 ),

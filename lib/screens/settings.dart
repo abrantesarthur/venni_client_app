@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
 import 'package:rider_frontend/styles.dart';

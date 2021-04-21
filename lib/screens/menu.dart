@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
@@ -11,7 +11,7 @@ class Menu extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final UserDataModel userData = Provider.of<UserDataModel>(context);
+    final UserModel user = Provider.of<UserModel>(context);
     final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
 
     return Drawer(
@@ -31,9 +31,9 @@ class Menu extends StatelessWidget {
                       shape: BoxShape.circle,
                       image: new DecorationImage(
                         fit: BoxFit.cover,
-                        image: userData.profileImage == null
+                        image: user.profileImage == null
                             ? AssetImage("images/user_icon.png")
-                            : userData.profileImage.file,
+                            : user.profileImage.file,
                       ),
                     ),
                   ),
@@ -47,12 +47,12 @@ class Menu extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  userData.rating != null
+                  user.rating != null
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              userData.rating.toString(),
+                              user.rating.toString(),
                               style: TextStyle(fontSize: 15.0),
                             ),
                             SizedBox(width: screenWidth / 80),

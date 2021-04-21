@@ -1,19 +1,18 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/cloud_functions/rideService.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
-import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
-import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
 enum DefineRouteMode {
@@ -50,34 +49,37 @@ class DefineRouteState extends State<DefineRoute> {
   Color buttonColor;
   bool activateCallback;
   Widget buttonChild;
-  UserDataModel _userData;
-  RouteModel _route;
-  var _routeListener;
+  UserModel _user;
+  TripModel _trip;
+  bool lockScreen;
+  var _tripListener;
 
   @override
   void initState() {
     super.initState();
 
+    lockScreen = false;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // get relevant models
-      _route = Provider.of<RouteModel>(context, listen: false);
-      _userData = Provider.of<UserDataModel>(context, listen: false);
+      _trip = Provider.of<TripModel>(context, listen: false);
+      _user = Provider.of<UserModel>(context, listen: false);
 
       // pickUp location defaults to user's current address
-      if (_route.pickUpAddress == null) {
-        _route.updatePickUpAddres(Address.fromGeocodingResult(
-          geocodingResult: _userData.geocoding,
+      if (_trip.pickUpAddress == null) {
+        _trip.updatePickUpAddres(Address.fromGeocodingResult(
+          geocodingResult: _user.geocoding,
           dropOff: false,
         ));
       }
 
       // text field initial values
       dropOffController.text =
-          _route.dropOffAddress != null ? _route.dropOffAddress.mainText : "";
+          _trip.dropOffAddress != null ? _trip.dropOffAddress.mainText : "";
       pickUpController.text = "";
-      final pickUpAddress = _route.pickUpAddress;
-      final userLatitude = _userData.geocoding.latitude;
-      final userLongitude = _userData.geocoding.longitude;
+      final pickUpAddress = _trip.pickUpAddress;
+      final userLatitude = _user.geocoding?.latitude;
+      final userLongitude = _user.geocoding?.longitude;
       // change pick up text field only if it's different from user location
       if (userLatitude != pickUpAddress.latitude ||
           userLongitude != pickUpAddress.longitude) {
@@ -86,18 +88,18 @@ class DefineRouteState extends State<DefineRoute> {
 
       // set button state
       setButtonState(
-        pickUp: _route.pickUpAddress,
-        dropOff: _route.dropOffAddress,
+        pickUp: _trip.pickUpAddress,
+        dropOff: _trip.dropOffAddress,
       );
 
-      _routeListener = () {
+      _tripListener = () {
         setButtonState(
-          pickUp: _route.pickUpAddress,
-          dropOff: _route.dropOffAddress,
+          pickUp: _trip.pickUpAddress,
+          dropOff: _trip.dropOffAddress,
         );
       };
 
-      _route.addListener(_routeListener);
+      _trip.addListener(_tripListener);
     });
   }
 
@@ -114,7 +116,7 @@ class DefineRouteState extends State<DefineRoute> {
     pickUpController.dispose();
     dropOffFocusNode.dispose();
     pickUpFocusNode.dispose();
-    _route.removeListener(_routeListener);
+    _trip.removeListener(_tripListener);
     super.dispose();
   }
 
@@ -151,11 +153,11 @@ class DefineRouteState extends State<DefineRoute> {
     @required BuildContext context,
     @required bool isDropOff,
   }) async {
-    UserDataModel userPos = Provider.of<UserDataModel>(
+    UserModel userPos = Provider.of<UserModel>(
       context,
       listen: false,
     );
-    RouteModel route = Provider.of<RouteModel>(context, listen: false);
+    TripModel route = Provider.of<TripModel>(context, listen: false);
 
     // define variables based on whether we're choosing dropOff or not
     FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
@@ -186,41 +188,44 @@ class DefineRouteState extends State<DefineRoute> {
   // buttonCallback enriches pickUp and dropOff addresses with coordinates before
   // returning to previous screen
   void buttonCallback(BuildContext context) async {
-    // show loading icon
+    // show loading icon and lock screen
     setState(() {
       buttonChild = CircularProgressIndicator(
         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
       );
+      lockScreen = true;
     });
 
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    RouteModel route = Provider.of<RouteModel>(context, listen: false);
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
 
-    // get user ID token from firebase and instantiate Ride with it
-    String userIdToken = await firebase.auth.currentUser.getIdToken();
-    Ride ride = Ride(userIdToken: userIdToken);
-
-    RideRequestResponse response;
+    // RideRequestResult result;
+    RequestTripResult result;
     if (widget.mode == DefineRouteMode.request) {
-      // send ride request to retrieve fare price, ride distance, polyline, etc.
-      response = await ride.request(
-        originPlaceID: route.pickUpAddress.placeID,
-        destinationPlaceID: route.dropOffAddress.placeID,
-      );
+      try {
+        result = await firebase.functions.requestTrip(RequestTripArguments(
+          originPlaceID: trip.pickUpAddress.placeID,
+          destinationPlaceID: trip.dropOffAddress.placeID,
+        ));
+      } on FirebaseFunctionsException catch (e) {
+        // TODO: handle by updating the UI;
+        lockScreen = false;
+      }
     } else if (widget.mode == DefineRouteMode.edit) {
-      // send request to edit ride
-      response = await ride.edit(
-        originPlaceID: route.pickUpAddress.placeID,
-        destinationPlaceID: route.dropOffAddress.placeID,
-      );
+      try {
+        // send ride request to retrieve fare price, ride distance, polyline, etc.
+        result = await firebase.functions.editTrip(EditTripArguments(
+          originPlaceID: trip.pickUpAddress.placeID,
+          destinationPlaceID: trip.dropOffAddress.placeID,
+        ));
+      } on FirebaseFunctionsException catch (e) {
+        // TODO: handle by updating the UI;
+        lockScreen = false;
+      }
     }
 
-    if (response != null && response.isOkay) {
-      // update route with response
-      route.fromRideRequest(response.result);
-    } else {
-      // TODO: handle errors or at least not return true
-    }
+    // update trip with response
+    trip.fromRequestTripResult(result);
 
     Navigator.pop(context);
   }
@@ -232,6 +237,7 @@ class DefineRouteState extends State<DefineRoute> {
 
     return GoBackScaffold(
       resizeToAvoidBottomInset: false,
+      lockScreen: lockScreen,
       children: [
         Text(
           "Escolha o ponto de partida e o destino.",
@@ -252,15 +258,17 @@ class DefineRouteState extends State<DefineRoute> {
                 AppInputText(
                     fontSize: 16,
                     width: screenWidth / 1.3,
-                    hintText: "Localização atual",
+                    hintText: "Localização atual selecionada",
                     focusNode: pickUpFocusNode,
                     controller: pickUpController,
                     maxLines: null,
                     onTapCallback: () async {
-                      await textFieldCallback(
-                        context: context,
-                        isDropOff: false,
-                      );
+                      if (!lockScreen) {
+                        await textFieldCallback(
+                          context: context,
+                          isDropOff: false,
+                        );
+                      }
                     }),
                 SizedBox(height: screenHeight / 100),
                 // output to a builder function
@@ -272,10 +280,12 @@ class DefineRouteState extends State<DefineRoute> {
                   controller: dropOffController,
                   maxLines: null,
                   onTapCallback: () async {
-                    await textFieldCallback(
-                      context: context,
-                      isDropOff: true,
-                    );
+                    if (!lockScreen) {
+                      await textFieldCallback(
+                        context: context,
+                        isDropOff: true,
+                      );
+                    }
                   },
                   hintColor: AppColor.disabled,
                 ),
@@ -291,7 +301,7 @@ class DefineRouteState extends State<DefineRoute> {
           buttonColor: buttonColor,
           textData: "Pronto",
           onTapCallBack: () async {
-            if (activateCallback == true) {
+            if (activateCallback == true && !lockScreen) {
               buttonCallback(context);
             }
           },

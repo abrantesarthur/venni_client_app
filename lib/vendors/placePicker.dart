@@ -18,7 +18,7 @@ Widget buildPlacePicker({
     onMapCreated: (GoogleMapController c) async {
       await _moveCameraToAddress(c, initialAddress);
     },
-    apiKey: AppConfig.env.values.googleApiKey,
+    apiKey: AppConfig.env.values.googleMapsApiKey,
     initialPosition: LatLng(userGeocoding.latitude, userGeocoding.longitude),
     useCurrentLocation: false,
     enableMyLocationButton: false,

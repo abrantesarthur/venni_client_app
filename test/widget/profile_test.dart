@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/editEmail.dart';
 import 'package:rider_frontend/screens/editPhone.dart';
 import 'package:rider_frontend/screens/insertNewPassword.dart';
@@ -29,10 +29,9 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<UserDataModel>(
-              create: (context) => mockUserDataModel),
-          ChangeNotifierProvider<RouteModel>(
-            create: (context) => mockRouteModel,
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
+          ChangeNotifierProvider<TripModel>(
+            create: (context) => mockTripModel,
           )
         ],
         builder: (context, child) => MaterialApp(

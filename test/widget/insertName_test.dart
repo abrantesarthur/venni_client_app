@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/styles.dart';
@@ -145,6 +148,10 @@ void main() {
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
+          ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
+          ChangeNotifierProvider<GoogleMapsModel>(
+              create: (context) => mockGoogleMapsModel),
         ],
         child: MaterialApp(
           home: InsertName(

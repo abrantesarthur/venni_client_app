@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:rider_frontend/widgets/overallPadding.dart';
 
 class Splash extends StatelessWidget {
   final String text;
+  final Widget button;
+  final VoidCallback onTap;
 
-  Splash({this.text});
+  Splash({this.text, this.button, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -17,29 +21,34 @@ class Splash extends StatelessWidget {
             return Container(
               color: AppColor.primaryPink,
               alignment: Alignment.center,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image(
-                    image: AssetImage("images/vertical-white-logo.png"),
-                    width: 0.8 * width,
-                  ),
-                  text != null
-                      ? Column(
-                          children: [
-                            SizedBox(height: height / 40),
-                            Text(text,
-                                style: TextStyle(
-                                  fontSize: 26,
-                                  fontFamily: "OpenSans",
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ))
-                          ],
-                        )
-                      : Container()
-                ],
+              child: OverallPadding(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image(
+                      image: AssetImage("images/icon-white.png"),
+                      width: 0.25 * width,
+                    ),
+                    text != null
+                        ? Column(
+                            children: [
+                              SizedBox(height: height / 40),
+                              Text(text,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 25,
+                                    fontFamily: "OpenSans",
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ))
+                            ],
+                          )
+                        : Container(),
+                    SizedBox(height: height / 20),
+                    button != null ? button : Container(),
+                  ],
+                ),
               ),
             );
           },

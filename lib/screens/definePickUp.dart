@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -40,16 +40,15 @@ class DefinePickUpState extends State<DefinePickUp> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       // get relevant models
-      RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      UserDataModel userData =
-          Provider.of<UserDataModel>(context, listen: false);
+      TripModel trip = Provider.of<TripModel>(context, listen: false);
+      UserModel user = Provider.of<UserModel>(context, listen: false);
 
 // google maps is enabled if a pickUpAddress is already chosen
-      googleMapsEnabled = route.pickUpAddress != null;
+      googleMapsEnabled = trip.pickUpAddress != null;
 
       // suggest locations as user searches locations
       pickUpTextEditingController.addListener(() async {
-        await textFieldListener(false, userData.geocoding);
+        await textFieldListener(false, user.geocoding);
       });
     });
   }
@@ -64,9 +63,11 @@ class DefinePickUpState extends State<DefinePickUp> {
       bool isDropOff, GeocodingResult userGeocoding) async {
     String location = pickUpTextEditingController.text ?? "";
     if (location.length == 0) {
-      setState(() {
-        addressPredictions = null;
-      });
+      if (this.mounted) {
+        setState(() {
+          addressPredictions = null;
+        });
+      }
     } else {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
@@ -76,9 +77,11 @@ class DefinePickUpState extends State<DefinePickUp> {
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
-      setState(() {
-        addressPredictions = predictions;
-      });
+      if (this.mounted) {
+        setState(() {
+          addressPredictions = predictions;
+        });
+      }
     }
   }
 
@@ -86,8 +89,8 @@ class DefinePickUpState extends State<DefinePickUp> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    RouteModel route = Provider.of<RouteModel>(context, listen: false);
-    UserDataModel userData = Provider.of<UserDataModel>(context, listen: false);
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -124,10 +127,10 @@ class DefinePickUpState extends State<DefinePickUp> {
                       },
                       fontSize: 16,
                       width: screenWidth / 1.3,
-                      hintText: "De onde?",
+                      hintText: "Insira endereço de partida.",
                       hintColor: AppColor.disabled,
                       controller: pickUpTextEditingController,
-                      autoFocus: route.pickUpAddress == null,
+                      autoFocus: trip.pickUpAddress == null,
                     ),
                   ],
                 ),
@@ -146,7 +149,7 @@ class DefinePickUpState extends State<DefinePickUp> {
                       BorderlessButton(
                         iconLeft: Icons.add_location,
                         iconRight: Icons.keyboard_arrow_right,
-                        primaryText: "Definir destino no mapa",
+                        primaryText: "Definir origem no mapa",
                         onTap: () async {
                           setState(() {
                             // display map
@@ -164,9 +167,9 @@ class DefinePickUpState extends State<DefinePickUp> {
               : Expanded(
                   child: buildPlacePicker(
                   context: context,
-                  userGeocoding: userData.geocoding,
+                  userGeocoding: user.geocoding,
                   isDropOff: false,
-                  initialAddress: route.pickUpAddress,
+                  initialAddress: trip.pickUpAddress,
                 ))
         ],
       ),
@@ -216,15 +219,15 @@ Widget _buildAddressPredictionList(
       : Container();
 }
 
-// updateRoute updates the drop off and pick up locations of the RouteModel
+// updateRoute updates the drop off and pick up locations of the TripModel
 void updatePickUpAndPop(
   BuildContext context,
   Address address,
 ) {
-  RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
+  TripModel tripModel = Provider.of<TripModel>(context, listen: false);
 
-  // set location as drop off point
-  routeModel.updatePickUpAddres(address);
+  // set location as pick up point
+  tripModel.updatePickUpAddres(address);
 
   // go back to DefineRoute screen
   Navigator.pop(context);

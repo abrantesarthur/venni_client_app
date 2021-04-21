@@ -2,18 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-import '../models/models.dart';
+import '../models/firebase.dart';
 import '../widgets/warning.dart';
 
 class InsertNewPhone extends StatefulWidget {
@@ -113,16 +113,16 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
       resendToken = token;
     });
     // update the UI for the user to enter the SMS code
-    await Navigator.pushNamed(
+    final exception = await Navigator.pushNamed(
       context,
       InsertSmsCode.routeName,
       arguments: InsertSmsCodeArguments(
         phoneNumber: phoneNumber,
         verificationId: verificationId,
         resendToken: token,
-        mode: InsertSmsCodeMode.popBack,
+        mode: InsertSmsCodeMode.editPhone,
       ),
-    );
+    ) as FirebaseAuthException;
 
     // only display success message if phone was altered
     if (firebase.auth.currentUser.phoneNumber ==
@@ -131,6 +131,8 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
         message: "Número alterado com sucesso para " +
             firebase.auth.currentUser.phoneNumber.withoutCountryCode(),
       );
+    } else if (exception != null) {
+      handleException(exception);
     } else {
       setInactiveState();
     }
@@ -141,16 +143,13 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
     @required PhoneAuthCredential credential,
   }) async {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    await firebase.auth.verificationCompletedCallback(
-        context: context,
-        credential: credential,
-        firebaseDatabase: firebase.database,
-        firebaseAuth: firebase.auth,
-        onExceptionCallback: (FirebaseAuthException e) {
-          setInactiveState(
-            message: "Algo deu errado. Tente novamente.",
-          );
-        });
+
+    try {
+      await firebase.auth.currentUser.updatePhoneNumber(credential);
+    } catch (e) {
+      handleException(e);
+    }
+
     // only display success message if phone was altered
     if (firebase.auth.currentUser.phoneNumber ==
         phoneNumber.withCountryCode()) {
@@ -158,6 +157,16 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
         message: "Número alterado com sucesso para " +
             firebase.auth.currentUser.phoneNumber.withoutCountryCode(),
       );
+    }
+  }
+
+  // handleException displays warning message depending on received exception
+  void handleException(FirebaseAuthException e) {
+    // displayErrorMessage displays warning message depending on received exception
+    if (e.code == "invalid-verification-code") {
+      setInactiveState(message: "Código inválido. Tente novamente.");
+    } else {
+      setInactiveState(message: "Algo deu errado. Tente novamente mais tarde.");
     }
   }
 

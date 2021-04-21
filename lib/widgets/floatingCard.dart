@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:rider_frontend/styles.dart';
 
 class FloatingCard extends StatelessWidget {
-  final double top;
-  final double bottom;
   final Widget child;
   final double width;
 
   FloatingCard({
     this.width,
-    this.bottom,
-    this.top,
     @required this.child,
   });
 
@@ -18,7 +13,7 @@ class FloatingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      width: width,
+      width: width ?? screenWidth,
       padding: EdgeInsets.only(
         left: screenWidth / 15,
         right: screenWidth / 15,

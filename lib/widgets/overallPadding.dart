@@ -4,8 +4,16 @@ class OverallPadding extends StatelessWidget {
   final Widget child;
   final double bottom;
   final double top;
+  final double left;
+  final double right;
 
-  OverallPadding({@required this.child, this.bottom, this.top});
+  OverallPadding({
+    @required this.child,
+    this.bottom,
+    this.top,
+    this.left,
+    this.right,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +22,8 @@ class OverallPadding extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: width / 15,
-        right: width / 15,
+        left: left ?? width / 15,
+        right: right ?? width / 15,
         top: top ?? height / 15,
         bottom: bottom ?? height / 15,
       ),

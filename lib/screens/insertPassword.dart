@@ -1,6 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -225,6 +230,12 @@ class InsertPasswordState extends State<InsertPassword> {
   @override
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
+    GoogleMapsModel googleMaps =
+        Provider.of<GoogleMapsModel>(context, listen: false);
+
     return FutureBuilder(
       future: successfullyRegisteredUser,
       builder: (
@@ -236,7 +247,16 @@ class InsertPasswordState extends State<InsertPassword> {
           // future builder must return Widget, but we want to push a route.
           // thus, schedule pushing for right afer returning a Container.
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushNamed(context, Home.routeName);
+            Navigator.pushNamed(
+              context,
+              Home.routeName,
+              arguments: HomeArguments(
+                firebase: firebase,
+                trip: trip,
+                user: user,
+                googleMaps: googleMaps,
+              ),
+            );
           });
           return Container();
         }
@@ -244,7 +264,7 @@ class InsertPasswordState extends State<InsertPassword> {
         // user has tapped to register, and we are waiting for registration to finish
         if (snapshot.connectionState == ConnectionState.waiting) {
           // show loading screen
-          return Splash(text: "Criando sua conta...");
+          return Splash(text: "Criando conta");
         }
 
         // error cases and default: show password screen

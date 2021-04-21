@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:rider_frontend/config/config.dart';
-import 'package:rider_frontend/vendors/places.dart';
 
 class GoogleWebService {
   String _baseUrl;
@@ -12,7 +9,7 @@ class GoogleWebService {
   GoogleWebService({@required String baseUrl})
       : assert(baseUrl != null && baseUrl.length > 0) {
     _baseUrl = baseUrl;
-    _googleApiKey = AppConfig.env.values.googleApiKey;
+    _googleApiKey = AppConfig.env.values.googleMapsApiKey;
   }
 
   @protected

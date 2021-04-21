@@ -6,7 +6,7 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
-import '../models/models.dart';
+import '../models/firebase.dart';
 
 class Privacy extends StatefulWidget {
   static const String routeName = "Privacy";

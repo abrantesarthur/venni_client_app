@@ -5,28 +5,31 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
 import '../../lib/mocks.dart';
 
 void main() {
-  setUp(() {
-    mockRouteModel = MockRouteModel();
+  setUp(() async {
+    await DotEnv.load(fileName: ".env");
+
+    mockTripModel = MockTripModel();
     mockNavigatorObserver = MockNavigatorObserver();
-    mockUserDataModel = MockUserDataModel();
+    mockUserModel = MockUserModel();
 
     when(mockUserGeocoding.latitude).thenReturn(-43.0);
     when(mockUserGeocoding.longitude).thenReturn(-17.0);
-    when(mockRouteModel.pickUpAddress).thenReturn(mockAddress);
-    when(mockRouteModel.dropOffAddress).thenReturn(mockAddress);
+    when(mockTripModel.pickUpAddress).thenReturn(mockAddress);
+    when(mockTripModel.dropOffAddress).thenReturn(mockAddress);
     when(mockAddress.latitude).thenReturn(-17);
     when(mockAddress.longitude).thenReturn(-42);
-    when(mockUserDataModel.geocoding).thenReturn(mockUserGeocoding);
+    when(mockUserModel.geocoding).thenReturn(mockUserGeocoding);
     when(mockPlaces.findAddressPredictions(
       placeName: anyNamed("placeName"),
       latitude: anyNamed("latitude"),
@@ -71,11 +74,11 @@ void main() {
   Future<void> pumpWidget(WidgetTester tester) async {
     await tester.pumpWidget(MultiProvider(
       providers: [
-        ChangeNotifierProvider<UserDataModel>(
-          create: (context) => mockUserDataModel,
+        ChangeNotifierProvider<UserModel>(
+          create: (context) => mockUserModel,
         ),
-        ChangeNotifierProvider<RouteModel>(
-          create: (context) => mockRouteModel,
+        ChangeNotifierProvider<TripModel>(
+          create: (context) => mockTripModel,
         ),
       ],
       builder: (context, child) {
@@ -173,7 +176,7 @@ void main() {
         "starts as enabled if chosenDropOffAddress is not null and PlacePicker is displayed",
         (WidgetTester tester) async {
       // this causes googleMapsEnabled to be true
-      when(mockRouteModel.dropOffAddress).thenReturn(mockAddress);
+      when(mockTripModel.dropOffAddress).thenReturn(mockAddress);
       // add widget to the UI
       await pumpWidget(tester);
 
@@ -196,7 +199,7 @@ void main() {
         "starts as disabled if chosenDropOffAddress is null and a PlacePicker is not displayed",
         (WidgetTester tester) async {
       // this causes googleMapsEnabled to be false
-      when(mockRouteModel.dropOffAddress).thenReturn(null);
+      when(mockTripModel.dropOffAddress).thenReturn(null);
       // add widget to the UI
       await pumpWidget(tester);
       await tester.pumpAndSettle();
@@ -220,7 +223,7 @@ void main() {
         "is enabled if we tap 'Definir destino no mapa' and disable if we tap 'Para Onde'",
         (WidgetTester tester) async {
       // this causes googleMapsEnabled to be false
-      when(mockRouteModel.dropOffAddress).thenReturn(null);
+      when(mockTripModel.dropOffAddress).thenReturn(null);
       // add widget to the UI
       await pumpWidget(tester);
       await tester.pumpAndSettle();
@@ -250,10 +253,12 @@ void main() {
       expect(defineDestinationFinder, findsNothing);
 
       // tap 'Para Onde'
-      await tester.tap(find.widgetWithText(
+      final whereToFinder = find.widgetWithText(
         AppInputText,
-        "Para onde?",
-      ));
+        "Insira o endereço de destino.",
+      );
+      expect(whereToFinder, findsOneWidget);
+      await tester.tap(whereToFinder);
       await tester.pump();
 
       // expect disabled PlacePicker and enabled 'Definir destino no mapa'
@@ -265,17 +270,17 @@ void main() {
 
   group("addressPredictions", () {
     testWidgets(
-        "updates routeModel and returns to previous screen if pick an address from predictions",
+        "updates TripModel and returns to previous screen if pick an address from predictions",
         (WidgetTester tester) async {
       // add DefineRoute to the UI
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider<UserDataModel>(
-              create: (context) => mockUserDataModel,
+            ChangeNotifierProvider<UserModel>(
+              create: (context) => mockUserModel,
             ),
-            ChangeNotifierProvider<RouteModel>(
-              create: (context) => mockRouteModel,
+            ChangeNotifierProvider<TripModel>(
+              create: (context) => mockTripModel,
             ),
           ],
           builder: (context, child) {
@@ -298,8 +303,11 @@ void main() {
       verify(mockNavigatorObserver.didPush(any, any));
       expect(find.byType(DefineRoute), findsOneWidget);
 
-      // tap on 'Para onde?' AppInputText
-      await tester.tap(find.widgetWithText(AppInputText, "Para onde?"));
+      // tap on 'Insira o endereço de destino.' AppInputText
+      final insertDestinationFinder =
+          find.widgetWithText(AppInputText, "Para onde?");
+      expect(insertDestinationFinder, findsOneWidget);
+      await tester.tap(insertDestinationFinder);
       await tester.pump();
 
       // verify that DefineDropOff was pushed
@@ -307,8 +315,9 @@ void main() {
       await tester.pump();
       expect(find.byType(DefineDropOff), findsOneWidget);
 
-      // // tap "Para onde?" AppInputText and insert text
-      final whereToFinder = find.widgetWithText(AppInputText, "Para onde?");
+      // // tap "Insira o endereço de destino." AppInputText and insert text
+      final whereToFinder =
+          find.widgetWithText(AppInputText, "Insira o endereço de destino.");
       await tester.tap(whereToFinder.last);
       await tester.enterText(whereToFinder.last, "Rua Presb");
       await tester.pumpAndSettle();
@@ -318,16 +327,16 @@ void main() {
           find.widgetWithText(BorderlessButton, "Rua Presbiteriana");
       expect(addressPredictionFinder, findsOneWidget);
 
-      // before tapping addressPrediction, routeModel hasn't been updated
-      verifyNever(mockRouteModel.updateDropOffAddres(any));
+      // before tapping addressPrediction, TripModel hasn't been updated
+      verifyNever(mockTripModel.updateDropOffAddres(any));
 
       // tap on addressPrediction
       await tester.tap(addressPredictionFinder);
       await tester.pumpAndSettle();
 
-      // after tapping on addressPrediction, routeModel is updated
+      // after tapping on addressPrediction, TripModel is updated
       expect(
-        verify(mockRouteModel.updateDropOffAddres(any)).callCount,
+        verify(mockTripModel.updateDropOffAddres(any)).callCount,
         equals(1),
       );
 

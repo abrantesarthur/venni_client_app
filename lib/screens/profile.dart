@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/editEmail.dart';
 import 'package:rider_frontend/screens/editPhone.dart';
 import 'package:rider_frontend/screens/insertNewPassword.dart';
@@ -10,12 +10,12 @@ import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 import 'dart:io' as dartIo;
 import 'package:path/path.dart' as path;
 
-import '../models/models.dart';
+import '../models/firebase.dart';
 
 // TODO: write comments
 // TODO: fix image overflow
@@ -36,8 +36,6 @@ class ProfileState extends State<Profile> {
       FirebaseModel firebase =
           Provider.of<FirebaseModel>(context, listen: false);
       firebase.auth.currentUser.reload();
-
-      print(firebase.auth.currentUser.emailVerified);
     });
 
     super.initState();
@@ -151,7 +149,7 @@ class ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
-    final UserDataModel userData = Provider.of<UserDataModel>(context);
+    final UserModel user = Provider.of<UserModel>(context);
 
     return GoBackScaffold(
       resizeToAvoidBottomInset: false,
@@ -171,9 +169,10 @@ class ProfileState extends State<Profile> {
                   );
 
                   // update ui
-                  userData.setProfileImage(
-                    file: FileImage(dartIo.File(img.path)),
-                    name: "profile" + path.basename(img.path),
+                  user.setProfileImage(
+                    ProfileImage(
+                        file: FileImage(dartIo.File(img.path)),
+                        name: "profile" + path.basename(img.path)),
                   );
                 }
               },
@@ -186,9 +185,9 @@ class ProfileState extends State<Profile> {
                       shape: BoxShape.circle,
                       image: new DecorationImage(
                         fit: BoxFit.cover,
-                        image: userData.profileImage == null
+                        image: user.profileImage == null
                             ? AssetImage("images/user_icon.png")
-                            : userData.profileImage.file,
+                            : user.profileImage.file,
                       ),
                     ),
                   ),

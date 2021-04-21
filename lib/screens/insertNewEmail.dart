@@ -8,10 +8,10 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/utils/utils.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 
-import '../models/models.dart';
-import '../vendors/firebase.dart';
-import '../vendors/firebase.dart';
+
+import '../models/firebase.dart';
 import '../widgets/warning.dart';
 
 class InsertNewEmail extends StatefulWidget {

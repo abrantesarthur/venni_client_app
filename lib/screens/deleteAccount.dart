@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputPassword.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
@@ -9,10 +9,10 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 
-import '../models/models.dart';
+import '../models/firebase.dart';
 
-// TODO: move wipeout logic to backend (https://github.com/FirebaseExtended/user-data-protection)
 class DeleteAccount extends StatefulWidget {
   static const String routeName = "DeleteAccount";
 
@@ -26,7 +26,7 @@ class DeleteAccountState extends State<DeleteAccount> {
   Color buttonColor;
   Widget buttonChild;
   Function buttonCallback;
-  IconData badRideExperienceIcon;
+  IconData badTripExperienceIcon;
   IconData badAppExperienceIcon;
   IconData hasAnotherAccountIcon;
   IconData doesntUseServiceIcon;
@@ -39,14 +39,14 @@ class DeleteAccountState extends State<DeleteAccount> {
     passwordFocusNode = FocusNode();
     buttonCallback = null;
     buttonColor = AppColor.disabled;
-    badRideExperienceIcon = Icons.check_box_outline_blank;
+    badTripExperienceIcon = Icons.check_box_outline_blank;
     badAppExperienceIcon = Icons.check_box_outline_blank;
     hasAnotherAccountIcon = Icons.check_box_outline_blank;
     doesntUseServiceIcon = Icons.check_box_outline_blank;
     anotherIcon = Icons.check_box_outline_blank;
     deleteReasons = {
       DeleteReason.badAppExperience: false,
-      DeleteReason.badRideExperience: false,
+      DeleteReason.badTripExperience: false,
       DeleteReason.hasAnotherAccount: false,
       DeleteReason.doesntUseService: false,
       DeleteReason.another: false,
@@ -154,13 +154,13 @@ class DeleteAccountState extends State<DeleteAccount> {
           deleteReasons[DeleteReason.badAppExperience] = false;
         }
         break;
-      case DeleteReason.badRideExperience:
-        if (badRideExperienceIcon == Icons.check_box_outline_blank) {
-          badRideExperienceIcon = Icons.check_box_rounded;
-          deleteReasons[DeleteReason.badRideExperience] = true;
+      case DeleteReason.badTripExperience:
+        if (badTripExperienceIcon == Icons.check_box_outline_blank) {
+          badTripExperienceIcon = Icons.check_box_rounded;
+          deleteReasons[DeleteReason.badTripExperience] = true;
         } else {
-          badRideExperienceIcon = Icons.check_box_outline_blank;
-          deleteReasons[DeleteReason.badRideExperience] = false;
+          badTripExperienceIcon = Icons.check_box_outline_blank;
+          deleteReasons[DeleteReason.badTripExperience] = false;
         }
         break;
       case DeleteReason.hasAnotherAccount:
@@ -232,9 +232,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.badRideExperience),
+                      onTap: () => toggleReason(DeleteReason.badTripExperience),
                       primaryText: "Experiência ruim durante corrida.",
-                      iconRight: badRideExperienceIcon,
+                      iconRight: badTripExperienceIcon,
                       iconRightColor: AppColor.primaryPink,
                       primaryTextSize: 16,
                     ),

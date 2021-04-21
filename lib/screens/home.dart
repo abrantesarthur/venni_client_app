@@ -1,265 +1,441 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
+import 'package:rider_frontend/screens/pilotProfile.dart';
+import 'package:rider_frontend/screens/shareLocation.dart';
+import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/polylinePoints.dart';
-import 'package:rider_frontend/cloud_functions/rideService.dart';
-import 'package:rider_frontend/vendors/svg.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseStorage.dart';
+import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/cancelButton.dart';
+import 'package:rider_frontend/widgets/circularImage.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/menuButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
+
+class HomeArguments {
+  final FirebaseModel firebase;
+  final TripModel trip;
+  final UserModel user;
+  final GoogleMapsModel googleMaps;
+
+  HomeArguments({
+    @required this.firebase,
+    @required this.trip,
+    @required this.user,
+    @required this.googleMaps,
+  });
+}
 
 class Home extends StatefulWidget {
   static const routeName = "home";
+  final FirebaseModel firebase;
+  final TripModel trip;
+  final UserModel user;
+  final GoogleMapsModel googleMaps;
+
+  Home({
+    @required this.firebase,
+    @required this.trip,
+    @required this.user,
+    @required this.googleMaps,
+  });
 
   @override
   HomeState createState() => HomeState();
 }
 
 class HomeState extends State<Home> {
-  GoogleMapController _googleMapController;
-  String _mapStyle;
-  Map<PolylineId, Polyline> polylines = {};
-  Set<Marker> markers = {};
-  bool myLocationEnabled;
-  bool myLocationButtonEnabled;
-  double googleMapsTopPadding;
-  double googleMapsBottomPadding;
-  FirebaseModel _firebase;
-  RouteModel _route;
+  Future<bool> finishedDownloadingUserData;
   GlobalKey<ScaffoldState> _scaffoldKey;
+  StreamSubscription driverSubscription;
+  StreamSubscription tripSubscription;
+  StreamSubscription userPositionSubscription;
   var _firebaseListener;
-  var _routeListener;
+  var _tripListener;
 
   @override
   void initState() {
     super.initState();
-    myLocationEnabled = true;
-    myLocationButtonEnabled = true;
+
     _scaffoldKey = GlobalKey<ScaffoldState>();
 
-    // load map style
-    rootBundle
-        .loadString("assets/map_style.txt")
-        .then((value) => {_mapStyle = value});
+    // trigger download user data
+    finishedDownloadingUserData = _downloadUserData();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // get relevant models
-      _route = Provider.of<RouteModel>(context, listen: false);
-      _firebase = Provider.of<FirebaseModel>(context, listen: false);
+    // after finishing download, user retrieved lat and lng to set maps camera view
+    finishedDownloadingUserData.then(
+      (_) => {
+        if (widget.user.geocoding != null)
+          {
+            widget.googleMaps.initialCameraLatLng = LatLng(
+                widget.user.geocoding?.latitude,
+                widget.user.geocoding?.longitude),
+          }
+      },
+    );
 
-      // define _firebaseListener so we can remove listener later.
-      // this is how we make sign out work!
+    // add listeners after tree is built and we have context
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // add listener to FirebaseModel so user is redirected to Start when logs out
       _firebaseListener = () {
-        if (!_firebase.isRegistered) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, Start.routeName, (_) => false);
-        }
+        _signOut(context);
       };
+      widget.firebase.addListener(_firebaseListener);
 
-      // define _routeListener so we can remove listenr later
-      // whenever we change the route, _rideStatusListener is triggered
-      _routeListener = () async {
-        await _rideStatusListener(context);
+      // add listener to TripModel so UI is redrawn whenever trip changes status
+      _tripListener = () async {
+        await _redrawUIOnTripUpdate(context);
       };
-
-      // add listener to RouteModel so polyline is redrawn automatically
-      _route.addListener(_routeListener);
-      // add listener to FirebaseModel so user is redirected when logs out
-      _firebase.addListener(_firebaseListener);
+      widget.trip.addListener(_tripListener);
     });
   }
 
   @override
   void dispose() {
-    if (_googleMapController != null) {
-      _googleMapController.dispose();
+    widget.firebase.removeListener(_firebaseListener);
+    widget.trip.removeListener(_tripListener);
+    if (userPositionSubscription != null) {
+      userPositionSubscription.cancel();
     }
-    _firebase.removeListener(_firebaseListener);
-    _route.removeListener(_routeListener);
+    if (driverSubscription != null) {
+      driverSubscription.cancel();
+    }
+    if (tripSubscription != null) {
+      tripSubscription.cancel();
+    }
     super.dispose();
-  }
-
-  // _rideStatusListener is triggered whenever we change the route.
-  // it looks at the route status and updates the UI accordingly
-  Future<void> _rideStatusListener(BuildContext context) async {
-    RouteModel route = Provider.of<RouteModel>(context, listen: false);
-    if (route.rideStatus == null || route.rideStatus == RideStatus.off) return;
-
-    final screenHeight = MediaQuery.of(context).size.height;
-    if (route.rideStatus == RideStatus.waitingForConfirmation) {
-      // draw directions on map
-      await drawPolyline(context);
-
-      setState(() {
-        // hide user's location details
-        myLocationEnabled = false;
-        myLocationButtonEnabled = false;
-
-        // reset paddings
-        googleMapsBottomPadding = screenHeight * 0.4;
-        googleMapsTopPadding = screenHeight * 0.06;
-      });
-    } else {
-      // TODO: handle other ride status cases
-      // trigger widget rebuild
-      setState(() {});
-    }
-  }
-
-  void onMapCreatedCallback(BuildContext context, GoogleMapController c) async {
-    // set map style
-    await c.setMapStyle(_mapStyle);
-
-    setState(() {
-      _googleMapController = c;
-    });
-  }
-
-  Future<void> drawMarkers(
-    BuildContext context,
-    Polyline polyline,
-  ) async {
-    BitmapDescriptor pickUpMarkerIcon = await Svg.bitmapDescriptorFromSvg(
-      context,
-      "images/pickUpIcon.svg",
-    );
-    BitmapDescriptor dropOffMarkerIcon = await Svg.bitmapDescriptorFromSvg(
-      context,
-      "images/dropOffIcon.svg",
-    );
-    LatLng pickUpMarkerPosition = LatLng(
-      polyline.points.first.latitude,
-      polyline.points.first.longitude,
-    );
-    Marker pickUpMarker = Marker(
-      markerId: MarkerId("pickUpMarker"),
-      position: pickUpMarkerPosition,
-      icon: pickUpMarkerIcon,
-    );
-    LatLng dropOffMarkerPosition = LatLng(
-      polyline.points.last.latitude,
-      polyline.points.last.longitude,
-    );
-    Marker dropOffMarker = Marker(
-      markerId: MarkerId("dropOffMakrer"),
-      position: dropOffMarkerPosition,
-      icon: dropOffMarkerIcon,
-    );
-
-    markers.add(pickUpMarker);
-    markers.add(dropOffMarker);
-  }
-
-  Future<void> drawPolyline(
-    BuildContext context,
-  ) async {
-    // get route model
-    RouteModel route = Provider.of<RouteModel>(context, listen: false);
-
-    // set polylines
-    PolylineId polylineId = PolylineId("poly");
-    Polyline polyline = AppPolylinePoints.getPolylineFromEncodedPoints(
-      id: polylineId,
-      encodedPoints: route.encodedPoints,
-    );
-    polylines[polylineId] = polyline;
-
-    // add bounds to map view
-    // for some reason we have to delay computation so animateCamera works
-    Future.delayed(Duration(milliseconds: 50), () async {
-      await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
-        AppPolylinePoints.calculateBounds(polyline),
-        30,
-      ));
-    });
-
-    // draw  markers
-    await drawMarkers(context, polyline);
-  }
-
-  Future<void> defineRoute(BuildContext context, DefineRouteMode mode) async {
-    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    String userIdToken = await firebase.auth.currentUser.getIdToken();
-    print(userIdToken);
-    // Navigator.pushNamed(
-    //   context,
-    //   DefineRoute.routeName,
-    //   arguments: DefineRouteArguments(
-    //     mode: mode,
-    //   ),
-    // );
   }
 
   @override
   Widget build(BuildContext context) {
     // get user position
-    UserDataModel userData = Provider.of<UserDataModel>(context, listen: false);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    TripModel trip = Provider.of<TripModel>(context);
+    GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(context);
+    UserModel user = Provider.of<UserModel>(context);
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: Menu(),
-      body: Stack(
-        children: [
-          GoogleMap(
-            myLocationButtonEnabled: myLocationButtonEnabled,
-            myLocationEnabled: myLocationEnabled,
-            trafficEnabled: false,
-            zoomControlsEnabled: false,
-            mapType: MapType.normal,
-            initialCameraPosition: CameraPosition(
-              target: LatLng(
-                userData.geocoding.latitude,
-                userData.geocoding.longitude,
-              ),
-              zoom: 16.5,
+    // provide GoogleMapsModel
+    return FutureBuilder(
+        initialData: false,
+        future: finishedDownloadingUserData,
+        builder: (
+          BuildContext context,
+          AsyncSnapshot<bool> snapshot,
+        ) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // show loading screen while waiting for download to succeed
+            return Splash(
+                text: "Muito bom ter você de volta, " +
+                    firebase.auth.currentUser.displayName.split(" ").first +
+                    "!");
+          }
+
+          // make sure we successfully got user position
+          if (snapshot.data == false) {
+            return ShareLocation(push: Home.routeName);
+          }
+
+          // user data download finished: show home screen
+          return Scaffold(
+            key: _scaffoldKey,
+            drawer: Menu(),
+            body: Stack(
+              children: [
+                GoogleMap(
+                  myLocationButtonEnabled: googleMaps.myLocationButtonEnabled,
+                  myLocationEnabled: googleMaps.myLocationEnabled,
+                  trafficEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: googleMaps.initialCameraLatLng,
+                    zoom: googleMaps.initialZoom,
+                  ),
+                  padding: EdgeInsets.only(
+                    top: googleMaps.googleMapsTopPadding ?? screenHeight / 12,
+                    bottom: googleMaps.googleMapsBottomPadding ??
+                        screenHeight / 8.5,
+                    left: screenWidth / 20,
+                    right: screenWidth / 20,
+                  ),
+                  onMapCreated: googleMaps.onMapCreatedCallback,
+                  polylines: Set<Polyline>.of(googleMaps.polylines.values),
+                  markers: googleMaps.markers,
+                ),
+                for (var child in _buildRemainingStackChildren(
+                  context: context,
+                  scaffoldKey: _scaffoldKey,
+                  trip: trip,
+                  user: user,
+                ))
+                  child,
+              ],
             ),
-            padding: EdgeInsets.only(
-              top: googleMapsTopPadding ?? screenHeight / 12,
-              bottom: googleMapsBottomPadding ?? screenHeight / 7,
-              left: screenWidth / 20,
-              right: screenWidth / 20,
-            ),
-            onMapCreated: (GoogleMapController c) {
-              onMapCreatedCallback(context, c);
-            },
-            polylines: Set<Polyline>.of(polylines.values),
-            markers: markers,
-          ),
-          for (var widget in _buildRemainingStackChildren(
-            context: context,
-            homeState: this,
-            scaffoldKey: _scaffoldKey,
-          ))
-            widget,
-        ],
-      ),
-    );
+          );
+        });
   }
+
+  Future<bool> _downloadUserData() async {
+    // get user address
+    await widget.user.getGeocoding();
+    if (widget.user.geocoding == null) {
+      return false;
+    }
+    await widget.user.downloadData(widget.firebase);
+    try {
+      // update position whenever it changes 100 meters or every 10 seconds
+      Stream<Position> userPositionStream = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.best,
+        distanceFilter: 100,
+        intervalDuration: Duration(seconds: 10),
+      );
+      userPositionSubscription = userPositionStream.listen((position) {
+        widget.user.getGeocoding(pos: position);
+      });
+    } catch (_) {}
+    return true;
+  }
+
+  // push start screen when user logs out
+  void _signOut(BuildContext context) {
+    if (!widget.firebase.isRegistered) {
+      Navigator.pushNamedAndRemoveUntil(context, Start.routeName, (_) => false);
+    }
+  }
+
+  void _cancelSubscriptions() {
+    // cancel subscriptions
+    if (driverSubscription != null) {
+      driverSubscription.cancel();
+    }
+    if (tripSubscription != null) {
+      tripSubscription.cancel();
+    }
+    // set subscriptions to null so we know they've been cancelled
+    driverSubscription = null;
+    tripSubscription = null;
+  }
+
+  // _redrawUIOnTripUpdate is triggered whenever we update the tripModel.
+  // it looks at the trip status and updates the UI accordingly
+  Future<void> _redrawUIOnTripUpdate(BuildContext context) async {
+    TripModel trip = widget.trip;
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+    GoogleMapsModel googleMaps =
+        Provider.of<GoogleMapsModel>(context, listen: false);
+
+    if (trip.tripStatus == null ||
+        trip.tripStatus == TripStatus.off ||
+        trip.tripStatus == TripStatus.canceledByClient ||
+        trip.tripStatus == TripStatus.canceledByDriver) {
+      await googleMaps.undrawPolyline(context);
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.completed) {
+      await googleMaps.undrawPolyline(context);
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.waitingConfirmation) {
+      await widget.googleMaps.drawPolyline(
+        context: context,
+        encodedPoints: trip.encodedPoints,
+        topPadding: MediaQuery.of(context).size.height / 40,
+        bottomPadding: MediaQuery.of(context).size.height / 3,
+      );
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.waitingDriver) {
+      String uid = firebase.auth.currentUser.uid;
+
+      // only reset subscription if it's null (i.e., it has been cancelled or this
+      // is the first time it's being used)
+      // a business rule is that when we cancel subscriptions we set them to null
+      // This allows us to notify listeners when updating trip without redefining
+      // subscriptions when _redrawUIOnTripUpdate is called again
+      if (driverSubscription == null) {
+        // listen for updates in the driver position
+        driverSubscription = firebase.database.onDriverUpdate(driver.id, (e) {
+          // only execute listener if status is still waitingDriver. This check
+          // is necessary because it is possible that local status may be updated
+          // before backend learns about the update and, as a consequence,
+          // cancelling tripSubscription. In those cases, if we don't perform
+          // this check, we will execute unintended actions
+          if (trip.tripStatus == TripStatus.waitingDriver) {
+            // update driver coordinates
+            driver.updateCurrentLatitude(e.snapshot.value["current_latitude"]);
+            driver
+                .updateCurrentLongitude(e.snapshot.value["current_longitude"]);
+            // draw polyline between user and driver
+            googleMaps.drawPolylineFromDriverToOrigin(context);
+          }
+        });
+      }
+
+      if (tripSubscription == null) {
+        tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) {
+          TripStatus tripStatus = getTripStatusFromString(e.snapshot.value);
+          if (tripStatus != TripStatus.waitingDriver) {
+            // stop subscriptions when trip status is no longer waitingDriver
+            _cancelSubscriptions();
+            googleMaps.undrawPolyline(context);
+            // transitions to completed, cancelldByDriver or cancelledByClient
+            trip.updateStatus(tripStatus);
+          }
+        });
+      }
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.inProgress) {
+      String uid = firebase.auth.currentUser.uid;
+
+      if (driverSubscription == null) {
+        // listen for updates in the driver position
+        driverSubscription = firebase.database.onDriverUpdate(driver.id, (e) {
+          if (trip.tripStatus == TripStatus.inProgress) {
+            // update driver coordinates
+            driver.updateCurrentLatitude(e.snapshot.value["current_latitude"]);
+            driver
+                .updateCurrentLongitude(e.snapshot.value["current_longitude"]);
+            // draw polyline between user and driver
+            googleMaps.drawPolylineFromDriverToDestination(context);
+          }
+        });
+      }
+
+      if (tripSubscription == null) {
+        tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) {
+          TripStatus tripStatus = getTripStatusFromString(e.snapshot.value);
+          if (tripStatus != TripStatus.inProgress) {
+            // stop subscriptions when trip status is no longer inProgress
+            _cancelSubscriptions();
+            googleMaps.undrawPolyline(context);
+            // transitions to completed, cancelledByDriver or cancelledByClient
+            trip.updateStatus(tripStatus);
+          }
+        });
+      }
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.noDriversAvailable ||
+        trip.tripStatus == TripStatus.lookingForDriver) {
+      // alert user to wait
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Nenhum motorista disponível"),
+              content: Text(
+                "Aguarde um minutinho e tente novamente.",
+                style: TextStyle(color: AppColor.disabled),
+              ),
+              actions: [
+                TextButton(
+                  child: Text(
+                    "ok",
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
+        );
+      });
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.paymentFailed) {
+      // give user the option of picking another payment method
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("O pagamento falhou :("),
+              content: Text(
+                "Escolha outra forma de pagamento",
+                style: TextStyle(color: AppColor.disabled),
+              ),
+              actions: [
+                TextButton(
+                  child: Text(
+                    "cancelar",
+                    style: TextStyle(color: Colors.red, fontSize: 18),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                TextButton(
+                  child: Text(
+                    "escolher",
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  // TODO: substitute for pushing the payment screen and then updating
+                  // user's payment method which will reflect on floating card selection
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
+        );
+      });
+      return;
+    }
+    return;
+  }
+}
+
+Future<void> _pushDefineRoute(
+    BuildContext context, DefineRouteMode mode) async {
+  Navigator.pushNamed(
+    context,
+    DefineRoute.routeName,
+    arguments: DefineRouteArguments(
+      mode: mode,
+    ),
+  );
 }
 
 List<Widget> _buildRemainingStackChildren({
   @required BuildContext context,
-  @required HomeState homeState,
   @required GlobalKey<ScaffoldState> scaffoldKey,
+  @required TripModel trip,
+  @required UserModel user,
 }) {
-  RouteModel route = Provider.of<RouteModel>(context, listen: false);
-
-  if (route.rideStatus == null || route.rideStatus == RideStatus.off) {
+  if (trip.tripStatus == null ||
+      trip.tripStatus == TripStatus.off ||
+      trip.tripStatus == TripStatus.canceledByClient ||
+      trip.tripStatus == TripStatus.canceledByDriver ||
+      trip.tripStatus == TripStatus.completed) {
     return [
       OverallPadding(
         child: Container(
@@ -269,7 +445,7 @@ List<Widget> _buildRemainingStackChildren({
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
             onTapCallBack: () {
-              homeState.defineRoute(context, DefineRouteMode.request);
+              _pushDefineRoute(context, DefineRouteMode.request);
             },
           ),
         ),
@@ -283,113 +459,282 @@ List<Widget> _buildRemainingStackChildren({
       )
     ];
   }
+
+  if (trip.tripStatus == TripStatus.waitingConfirmation ||
+      trip.tripStatus == TripStatus.paymentFailed ||
+      trip.tripStatus == TripStatus.noDriversAvailable ||
+      trip.tripStatus == TripStatus.lookingForDriver) {
+    // if user is about to confirm trip for the first time (waitingConfirmation)
+    // has already confirmed but received a paymentFailed, give them the
+    // option of trying again.
+    return [
+      _buildCancelRideButton(context, trip),
+      Column(
+        children: [
+          Spacer(),
+          _buildRideSummaryFloatingCard(context, trip),
+          _buildEditAndConfirmButtons(context, trip),
+        ],
+      ),
+    ];
+  }
+
+  if (trip.tripStatus == TripStatus.waitingDriver) {
+    return [
+      _buildCancelRideButton(context, trip,
+          // TODO: decide on final fee
+          content:
+              "Atenção: como alguém já está a caminho, será cobrada uma taxa de R\$2,00,"),
+      Column(
+        children: [
+          Spacer(),
+          _buildPilotSummaryFloatingCard(
+            context,
+            trip: trip,
+            user: user,
+          ),
+        ],
+      ),
+    ];
+  }
+
+  if (trip.tripStatus == TripStatus.inProgress) {
+    return [
+      Column(
+        children: [
+          Spacer(),
+          _buildTripSummaryFloatingCard(
+            context,
+            trip: trip,
+            user: user,
+          ),
+        ],
+      ),
+    ];
+  }
+  return [];
+}
+
+Widget _buildTripSummaryFloatingCard(
+  BuildContext context, {
+  @required TripModel trip,
+  @required UserModel user,
+}) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  // Listen is false, so we must call setState manually if we change the model
+
+  return OverallPadding(
+    bottom: screenHeight / 20,
+    left: 0,
+    right: 0,
+    child: FloatingCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Previsão de chegada",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            (trip.eta.hour < 10
+                    ? "0" + trip.eta.hour.toString()
+                    : trip.eta.hour.toString()) +
+                ":" +
+                (trip.eta.minute < 10
+                    ? "0" + trip.eta.minute.toString()
+                    : trip.eta.minute.toString()),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 60,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildPilotSummaryFloatingCard(
+  BuildContext context, {
+  @required TripModel trip,
+  @required UserModel user,
+}) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
+  // Listen is false, so we must call setState manually if we change the model
+  DriverModel driver = Provider.of<DriverModel>(context, listen: false);
 
-  switch (route.rideStatus) {
-    case RideStatus.waitingForConfirmation:
-      return [
-        Positioned(
-          right: 0,
-          child: OverallPadding(
-            child: CancelButton(onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return YesNoDialog(
-                        title: "Cancelar Pedido",
-                        onPressedYes: () {
-                          // TODO: send cancelRide request
-                        });
-                  });
-              // TODO: display cancel alert and
-            }),
-          ),
-        ),
-        Column(
-          children: [
-            Spacer(),
-            _buildRideSummaryFloatingCard(context),
-            OverallPadding(
-              bottom: screenHeight / 20,
-              top: screenHeight / 40,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  return OverallPadding(
+    bottom: screenHeight / 20,
+    left: 0,
+    right: 0,
+    child: FloatingCard(
+      child: Column(
+        children: [
+          SizedBox(height: screenHeight / 100),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppButton(
-                    textData: "Editar Rota",
-                    borderRadius: 10.0,
-                    height: screenHeight / 15,
-                    width: screenWidth / 2.5,
-                    buttonColor: Colors.grey[900],
-                    textStyle: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  Text(
+                    // TODO: notify client when driver is near
+                    trip.driverArrivalSeconds > 90
+                        ? "Motorista a caminho"
+                        : (trip.driverArrivalSeconds > 5
+                            ? "Motorista próximo"
+                            : "Motorista no local"),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                    onTapCallBack: () async {
-                      await homeState.defineRoute(
-                          context, DefineRouteMode.edit);
-                    },
                   ),
-                  AppButton(
-                    textData: "Confirmar",
-                    borderRadius: 10.0,
-                    height: screenHeight / 15,
-                    width: screenWidth / 2.5,
-                    textStyle: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  Text(
+                    "Vá ao local de encontro",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColor.disabled,
+                      fontWeight: FontWeight.w600,
                     ),
-                    onTapCallBack: () {
-                      homeState.setState(() {});
-                    },
                   ),
                 ],
               ),
-            )
-          ],
-        ),
-      ];
-    case RideStatus.waitingForRider:
-      return [
-        Container(
-          alignment: Alignment.bottomCenter,
-          child: AppButton(
-            borderRadius: 10.0,
-            textData: "Waiting for rider.",
-            onTapCallBack: () {
-              homeState.setState(() {});
-            },
+              SizedBox(width: screenWidth / 20),
+              Spacer(),
+              Text(
+                (trip.driverArrivalSeconds / 60).round().toString() + " min",
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
           ),
-        )
-      ];
-    case RideStatus.inProgress:
-      return [
-        Container(
-          alignment: Alignment.bottomCenter,
-          child: AppButton(
-            borderRadius: 10.0,
-            textData: "in Progress",
-            onTapCallBack: () {
-              homeState.setState(() {});
-            },
+          SizedBox(height: screenHeight / 100),
+          Divider(thickness: 0.1, color: Colors.black),
+          SizedBox(height: screenHeight / 100),
+          InkWell(
+            child: Row(
+              children: [
+                CircularImage(
+                  size: screenHeight / 13,
+                  imageFile: driver.profileImage == null
+                      ? AssetImage("images/user_icon.png")
+                      : driver.profileImage.file,
+                ),
+                SizedBox(width: screenWidth / 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: screenWidth / 4.2, // avoid overflowsr
+                          ),
+                          child: Text(
+                            driver.name,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: screenWidth / 50),
+                        Text(
+                          driver.rating.toString(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Icon(
+                          Icons.star_rate,
+                          size: 17,
+                          color: Colors.black87,
+                        )
+                      ],
+                    ),
+                    Text(
+                      driver.vehicle.brand.toUpperCase() +
+                          " " +
+                          driver.vehicle.model.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColor.disabled,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      driver.phoneNumber,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColor.disabled,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Spacer(),
+                Text(
+                  driver.vehicle.plate.toUpperCase(),
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+            onTap: () => Navigator.pushNamed(context, PilotProfile.routeName),
           ),
-        )
-      ];
-    default:
-      return [Container()];
-  }
+          SizedBox(height: screenHeight / 100),
+        ],
+      ),
+    ),
+  );
 }
 
-Widget _buildRideSummaryFloatingCard(BuildContext context) {
+Widget _buildCancelRideButton(
+  BuildContext context,
+  TripModel trip, {
+  String title,
+  String content,
+}) {
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+  DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+  return Positioned(
+    right: 0,
+    child: OverallPadding(
+      child: CancelButton(onPressed: () {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return YesNoDialog(
+                title: title ?? "Cancelar Pedido?",
+                content: content,
+                onPressedYes: () {
+                  // TODO: charge fee if necessary
+                  // cancel trip and update trip and driver models once it succeeds
+                  firebase.functions.cancelTrip();
+                  // update trip model once cancellation succeeds
+                  trip.clear(status: TripStatus.canceledByClient);
+                  // update driver model once cancellation succeeds
+                  driver.clear();
+
+                  Navigator.pop(context);
+                },
+              );
+            });
+      }),
+    ),
+  );
+}
+
+Widget _buildRideSummaryFloatingCard(BuildContext context, TripModel trip) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
-  RouteModel route = Provider.of<RouteModel>(context, listen: false);
 
   return FloatingCard(
-    bottom: 0,
     child: Column(
       children: [
         SizedBox(height: screenHeight / 200),
@@ -401,7 +746,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context) {
             ),
             Spacer(),
             Text(
-              route.etaString,
+              trip.etaString,
               style: TextStyle(fontSize: 18),
             ),
           ],
@@ -415,7 +760,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context) {
             ),
             Spacer(),
             Text(
-              "R\$ " + route.farePrice.toString(),
+              "R\$ " + trip.farePrice.toString(),
               style: TextStyle(fontSize: 18),
             ),
           ],
@@ -495,6 +840,54 @@ Widget _buildRideSummaryFloatingCard(BuildContext context) {
           ],
         ),
         SizedBox(height: screenHeight / 200),
+      ],
+    ),
+  );
+}
+
+Widget _buildEditAndConfirmButtons(BuildContext context, TripModel trip) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
+  return OverallPadding(
+    bottom: screenHeight / 20,
+    top: screenHeight / 40,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        AppButton(
+          textData: "Editar Rota",
+          borderRadius: 10.0,
+          height: screenHeight / 15,
+          width: screenWidth / 2.5,
+          buttonColor: Colors.grey[900],
+          textStyle: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          onTapCallBack: () async {
+            await _pushDefineRoute(context, DefineRouteMode.edit);
+          },
+        ),
+        AppButton(
+            textData: "Confirmar",
+            borderRadius: 10.0,
+            height: screenHeight / 15,
+            width: screenWidth / 2.5,
+            textStyle: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            onTapCallBack: () async {
+              await Navigator.pushNamed(context, ConfirmTrip.routeName,
+                  arguments: ConfirmTripArguments(
+                    firebase: firebase,
+                    trip: trip,
+                  ));
+            }),
       ],
     ),
   );

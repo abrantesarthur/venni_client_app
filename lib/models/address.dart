@@ -49,16 +49,16 @@ class Address {
     });
     final acs = AddressComponents(acList);
     isDropOff = dropOff;
-    placeID = pickResult.placeId;
     mainText = acs.buildAddressMainText();
     secondaryText = acs.buildAddressSecondaryText();
+    placeID = pickResult.placeId;
   }
 
   // TODO: format just like GeocodingResult
   Address.fromAutocompleteResponse(Map<String, dynamic> json, bool dropOff) {
-    secondaryText = json["structured_formatting"]["secondary_text"];
-    mainText = json["structured_formatting"]["main_text"];
-    placeID = json["place_id"];
     isDropOff = dropOff;
+    mainText = json["structured_formatting"]["main_text"];
+    secondaryText = json["structured_formatting"]["secondary_text"];
+    placeID = json["place_id"];
   }
 }

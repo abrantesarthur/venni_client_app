@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
@@ -39,18 +39,17 @@ class DefineDropOffState extends State<DefineDropOff> {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       // get relevant models
-      RouteModel route = Provider.of<RouteModel>(context, listen: false);
-      UserDataModel userData =
-          Provider.of<UserDataModel>(context, listen: false);
+      TripModel trip = Provider.of<TripModel>(context, listen: false);
+      UserModel user = Provider.of<UserModel>(context, listen: false);
 
       // if there is an initial address show google maps.
       // it is configured to show that address too
-      googleMapsEnabled = route.dropOffAddress != null;
+      googleMapsEnabled = trip.dropOffAddress != null;
 
       // suggest locations as user searches locations
       dropOffTextEditingController.addListener(() async {
         // TODO: FIX BUG
-        await textFieldListener(true, userData.geocoding);
+        await textFieldListener(true, user.geocoding);
       });
     });
   }
@@ -62,24 +61,28 @@ class DefineDropOffState extends State<DefineDropOff> {
   }
 
   Future<void> textFieldListener(
-      bool isDropOff, GeocodingResult userGeocoding) async {
+      bool isDropOff, GeocodingResult clientGeocoding) async {
     String location = dropOffTextEditingController.text ?? "";
     if (location.length == 0) {
-      setState(() {
-        addressPredictions = null;
-      });
+      if (this.mounted) {
+        setState(() {
+          addressPredictions = null;
+        });
+      }
     } else {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
-        latitude: userGeocoding.latitude,
-        longitude: userGeocoding.longitude,
+        latitude: clientGeocoding.latitude,
+        longitude: clientGeocoding.longitude,
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
-      setState(() {
-        addressPredictions = predictions;
-      });
+      if (this.mounted) {
+        setState(() {
+          addressPredictions = predictions;
+        });
+      }
     }
   }
 
@@ -87,8 +90,8 @@ class DefineDropOffState extends State<DefineDropOff> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    UserDataModel userData = Provider.of<UserDataModel>(context);
-    RouteModel route = Provider.of<RouteModel>(context);
+    UserModel user = Provider.of<UserModel>(context);
+    TripModel trip = Provider.of<TripModel>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -125,10 +128,10 @@ class DefineDropOffState extends State<DefineDropOff> {
                       },
                       fontSize: 16,
                       width: screenWidth / 1.3,
-                      hintText: "Para onde?",
+                      hintText: "Insira o endereço de destino.",
                       hintColor: AppColor.disabled,
                       controller: dropOffTextEditingController,
-                      autoFocus: route.dropOffAddress == null,
+                      autoFocus: trip.dropOffAddress == null,
                     ),
                   ],
                 ),
@@ -165,9 +168,9 @@ class DefineDropOffState extends State<DefineDropOff> {
               : Expanded(
                   child: buildPlacePicker(
                     context: context,
-                    userGeocoding: userData.geocoding,
+                    userGeocoding: user.geocoding,
                     isDropOff: true,
-                    initialAddress: route.dropOffAddress,
+                    initialAddress: trip.dropOffAddress,
                   ),
                 )
         ],
@@ -223,9 +226,9 @@ void updateDropOffAndPop(
   BuildContext context,
   Address address,
 ) {
-  RouteModel routeModel = Provider.of<RouteModel>(context, listen: false);
+  TripModel tripModel = Provider.of<TripModel>(context, listen: false);
   // set location as drop off point
-  routeModel.updateDropOffAddres(address);
+  tripModel.updateDropOffAddres(address);
 
   // go back to DefineRoute screen
   Navigator.pop(context);

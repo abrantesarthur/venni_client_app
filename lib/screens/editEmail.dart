@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/screens/insertNewEmail.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-import '../models/models.dart';
-import '../vendors/firebase.dart';
+import '../models/firebase.dart';
+
 
 class EditEmail extends StatefulWidget {
   static const String routeName = "EditEmail";

@@ -69,6 +69,7 @@ class AppButton extends StatelessWidget {
                     ? child
                     : Text(
                         textData,
+                        textAlign: TextAlign.center,
                         style: textStyle ??
                             TextStyle(
                                 fontWeight: FontWeight.bold,

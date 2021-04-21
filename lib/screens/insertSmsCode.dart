@@ -5,9 +5,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
@@ -15,8 +15,8 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
 enum InsertSmsCodeMode {
-  pushNewRoute,
-  popBack,
+  insertNewPhone,
+  editPhone,
 }
 
 class InsertSmsCodeArguments {
@@ -68,6 +68,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
   int _resendToken;
   FirebaseAuth _firebaseAuth;
   FirebaseDatabase _firebaseDatabase;
+  FirebaseAuthException _exception;
 
   @override
   void initState() {
@@ -156,6 +157,33 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
     });
   }
 
+  // verificationCompletedCallback behaves differently depending on mode
+  Future<void> verificationCompletedCallback(
+    BuildContext context,
+    PhoneAuthCredential credential, {
+    Function onExceptionCallback,
+  }) async {
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
+    if (widget.mode == InsertSmsCodeMode.editPhone &&
+        firebase.auth.currentUser != null) {
+      try {
+        await firebase.auth.currentUser.updatePhoneNumber(credential);
+      } catch (e) {
+        _exception = e;
+      }
+    } else {
+      await _firebaseAuth.verificationCompletedCallback(
+        context: context,
+        credential: credential,
+        firebaseDatabase: _firebaseDatabase,
+        firebaseAuth: _firebaseAuth,
+        onExceptionCallback: onExceptionCallback ??
+            (FirebaseAuthException e) => displayErrorMessage(context, e),
+      );
+    }
+  }
+
   // resendCode tries to resend the sms code to the same phoneNumber
   Future<void> resendCode(BuildContext context) async {
     // remove warning message
@@ -170,11 +198,9 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
       // create a credential with the SMS code that arrives without the user
       // having to input it.
       verificationCompleted: (PhoneAuthCredential credential) {
-        _firebaseAuth.verificationCompletedCallback(
-          context: context,
-          credential: credential,
-          firebaseDatabase: _firebaseDatabase,
-          firebaseAuth: _firebaseAuth,
+        verificationCompletedCallback(
+          context,
+          credential,
           onExceptionCallback: (FirebaseAuthException e) {
             setState(() {
               // reset timer and resendCodeWarning
@@ -235,14 +261,7 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
     PhoneAuthCredential phoneCredential = PhoneAuthProvider.credential(
         verificationId: _verificationId, smsCode: smsCode);
 
-    await _firebaseAuth.verificationCompletedCallback(
-      context: context,
-      credential: phoneCredential,
-      firebaseDatabase: _firebaseDatabase,
-      firebaseAuth: _firebaseAuth,
-      onExceptionCallback: (FirebaseAuthException e) =>
-          displayErrorMessage(context, e),
-    );
+    await verificationCompletedCallback(context, phoneCredential);
 
     setState(() {
       // stop circular Progress indicator
@@ -253,8 +272,9 @@ class InsertSmsCodeState extends State<InsertSmsCode> {
       );
     });
 
-    if (widget.mode == InsertSmsCodeMode.popBack) {
-      Navigator.pop(context);
+    if (widget.mode == InsertSmsCodeMode.editPhone) {
+      // pop and return exception to be handled by InsertNewPhone screen
+      Navigator.pop(context, _exception);
     }
   }
 

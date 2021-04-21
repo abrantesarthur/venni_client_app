@@ -25,6 +25,7 @@ class Geocoding extends GoogleWebService {
     if (response != null && response.statusCode == 200) {
       return GeocodingResponse.fromJson(jsonDecode(response.body));
     }
+
     return null;
   }
 }

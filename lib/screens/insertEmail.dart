@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -11,8 +11,8 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/utils/utils.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 
-import '../vendors/firebase.dart';
 
 class InsertEmailArguments {
   final UserCredential userCredential;

@@ -1,23 +1,23 @@
-stages:
-  - test
+# stages:
+#   - test
 
-unit_tests:
-  stage: test
-  script:
-    - flutter test test/unit
-  tags:
-    - flutter
-
-widget_tests:
-  stage: test
-  script:
-    - flutter test test/widget/*
-  tags:
-    - flutter
-
-# integration_tests:
+# unit_tests:
 #   stage: test
 #   script:
-#     - flutter test test/integration/*
+#     - flutter test test/unit
 #   tags:
-#     - docker
+#     - flutter
+
+# widget_tests:
+#   stage: test
+#   script:
+#     - flutter test test/widget/*
+#   tags:
+#     - flutter
+
+# # integration_tests:
+# #   stage: test
+# #   script:
+# #     - flutter test test/integration/*
+# #   tags:
+# #     - docker

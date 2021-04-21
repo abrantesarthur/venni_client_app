@@ -30,7 +30,7 @@ class PickMapLocationState extends State<PickMapLocation> {
   String _googleApiKey;
   @override
   void initState() {
-    _googleApiKey = AppConfig.env.values.googleApiKey;
+    _googleApiKey = AppConfig.env.values.googleMapsApiKey;
     super.initState();
   }
 

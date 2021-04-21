@@ -2,11 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
@@ -108,7 +108,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
         phoneNumber: phoneNumber,
         verificationId: verificationId,
         resendToken: resendToken,
-        mode: InsertSmsCodeMode.pushNewRoute,
+        mode: InsertSmsCodeMode.insertNewPhone,
       ),
     );
 

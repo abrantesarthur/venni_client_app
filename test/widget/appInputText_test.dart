@@ -151,7 +151,7 @@ void main() {
   ) async {
     // define the callback function
     void callback(String param) {
-      print(param);
+      print("hi");
     }
 
     // build the widget

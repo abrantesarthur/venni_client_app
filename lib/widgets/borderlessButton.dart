@@ -65,6 +65,7 @@ class BorderlessButton extends StatelessWidget {
                 children: [
                   Text(
                     primaryText,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: primaryTextColor ?? Colors.black,
                       fontSize: primaryTextSize ?? 16,

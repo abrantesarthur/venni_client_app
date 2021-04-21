@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,22 +8,26 @@ class FirebaseModel extends ChangeNotifier {
   FirebaseAuth _firebaseAuth;
   FirebaseDatabase _firebaseDatabase;
   FirebaseStorage _firebaseStorage;
+  FirebaseFunctions _firebaseFunctions;
   bool _isRegistered = false;
 
   FirebaseAuth get auth => _firebaseAuth;
   FirebaseDatabase get database => _firebaseDatabase;
   FirebaseStorage get storage => _firebaseStorage;
+  FirebaseFunctions get functions => _firebaseFunctions;
   bool get isRegistered => _isRegistered;
 
   FirebaseModel({
     @required FirebaseAuth firebaseAuth,
     @required FirebaseDatabase firebaseDatabase,
     @required FirebaseStorage firebaseStorage,
+    @required FirebaseFunctions firebaseFunctions,
   }) {
     // set firebase instances
     _firebaseAuth = firebaseAuth;
     _firebaseDatabase = firebaseDatabase;
     _firebaseStorage = firebaseStorage;
+    _firebaseFunctions = firebaseFunctions;
     if (_userIsRegistered(firebaseAuth.currentUser)) {
       _isRegistered = true;
     } else {

@@ -1,17 +1,17 @@
-import 'dart:io' as dartIo;
-
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rider_frontend/config/config.dart';
-import 'package:rider_frontend/vendors/firebase.dart';
+import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/models.dart';
-import 'package:rider_frontend/models/route.dart';
-import 'package:rider_frontend/models/userData.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
@@ -27,14 +27,14 @@ import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
 import 'package:rider_frontend/screens/settings.dart';
+import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
-import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/vendors/places.dart';
 
 /**
@@ -51,11 +51,14 @@ class _AppState extends State<App> {
   bool _initialized = false;
   bool _error = false;
   FirebaseModel firebaseModel;
-  RouteModel routeModel;
-  UserDataModel userDataModel;
+  TripModel tripModel;
+  UserModel user;
+  GoogleMapsModel googleMaps;
+  DriverModel driver;
   FirebaseAuth firebaseAuth;
   FirebaseDatabase firebaseDatabase;
   FirebaseStorage firebaseStorage;
+  FirebaseFunctions firebaseFunctions;
 
   @override
   void initState() {
@@ -63,131 +66,58 @@ class _AppState extends State<App> {
     super.initState();
   }
 
-  Future<void> initializeApp() async {
-    // TODO: load user info or think about how to store in device (like credit card, photo, ride-request etc)
-    // TODO: decide whether to set firebase.database.setPersistenceEnabled(true)
-
-    await initializeUserPosition();
-    await initializeFlutterFire();
+  @override
+  @override
+  void dispose() {
+    if (googleMaps != null) {
+      googleMaps.dispose();
+    }
+    super.dispose();
   }
 
-  Future<void> initializeUserPosition() async {
-    // get user position
-    Position userPos = await determineUserPosition();
-
-    // get user geocoding
-    GeocodingResponse geocoding = await Geocoding().searchByPosition(userPos);
-
-    GeocodingResult geocodingResult = geocoding.results[0];
-
-    // set usertPositionModel
-    userDataModel = UserDataModel(geocoding: geocodingResult);
+  Future<void> initializeApp() async {
+    // TODO: load user info or think about how to store in device (like credit card, photo, trip-request etc)
+    // TODO: decide whether to set firebase.database.setPersistenceEnabled(true)
+    await initializeFlutterFire();
   }
 
   // Define an async function to initialize FlutterFire
   Future<void> initializeFlutterFire() async {
     try {
-      // if running in production mode
-      if (AppConfig.env.flavor == Flavor.PROD) {
-        /*
+      /*
         By default, initializeApp references the FirebaseOptions object that
         read the configuration from GoogleService-Info.plist on iOS and
-        google-services.json on Android. In our case, these files target the
-        venni-rider-staging project.
+        google-services.json on Android. Which such files we end up picking
+        depends on which value we pass to the --flavor flag of futter run 
         reference: https://firebase.google.com/docs/projects/multiprojects */
-        if (Firebase.apps.length == 0) {
-          await Firebase.initializeApp();
-        }
+      if (Firebase.apps.length == 0) {
+        await Firebase.initializeApp();
+      }
 
-        // insantiate authentication, database, and storage
-        firebaseAuth = FirebaseAuth.instance;
-        firebaseDatabase = FirebaseDatabase.instance;
-        firebaseStorage = FirebaseStorage.instance;
-      } else {
-        /* If running on Dev mode, we manually instantiate the FirebaesOptions to
-        target the venni-rider-development project instead of donwnloading 
-        configuration files. It's also worth noting that, in this case, the 
-        RealtimeDatabase, Cloud Functions and Database are accessed locally 
-        through the Firebase Emulator Suite.
-        reference: https://firebase.flutter.dev/docs/core/usage/ */
-        FirebaseApp app;
+      // insantiate authentication, database, and storage
+      firebaseAuth = FirebaseAuth.instance;
+      firebaseDatabase = FirebaseDatabase.instance;
+      firebaseStorage = FirebaseStorage.instance;
+      firebaseFunctions = FirebaseFunctions.instance;
 
-        if (Firebase.apps.length == 0) {
-          try {
-            // TODO: may have to initialize androidClientID as well
-            app = await Firebase.initializeApp(
-              name: "development-app",
-              options: FirebaseOptions(
-                appId: dartIo.Platform.isAndroid
-                    ? "1:528515096365:android:fe236235a67557462bbda4"
-                    : "1:528515096365:ios:2f4ce7c826e3fde52bbda4",
-                iosClientId:
-                    "528515096365-1dd5okam06mgdptu9hp3nldmse7fjpfu.apps.googleusercontent.com",
-                iosBundleId: "com.venni.development.rider",
-                apiKey: "AIzaSyB3XWRvzLTbSOiXOEocSh646slpxk0sh_4",
-                messagingSenderId: "528515096365",
-                projectId: "venni-rider-development",
-                storageBucket: "venni-rider-development.appspot.com",
-              ),
-            );
-          } catch (e) {
-            print(e);
-            app = Firebase.app("development-app");
-          }
-        } else {
-          app = Firebase.app("development-app");
-        }
-
-        // instantiate authentication
-        firebaseAuth = FirebaseAuth.instanceFor(app: app);
-
-        // instantiate database targetting emulator
-        firebaseDatabase = FirebaseDatabase(
-          app: app,
-          databaseURL: AppConfig.env.values.realtimeDatabaseURL,
-        );
-
-        // instantiate storage (the only resource not running locally)
-        firebaseStorage = FirebaseStorage.instanceFor(app: app);
+      // check if cloud functions are being emulated locally
+      if (AppConfig.env.values.emulateCloudFunctions) {
+        firebaseFunctions.useFunctionsEmulator(
+            origin: AppConfig.env.values.cloudFunctionsBaseURL);
       }
 
       // set default authentication language as brazilian portuguese
       await firebaseAuth.setLanguageCode("pt_br");
-
-      // if user is logged in
-      if (firebaseAuth.currentUser != null) {
-        // download user data
-        _downloadUserData(firebaseAuth.currentUser.uid);
-      }
 
       setState(() {
         _initialized = true;
         _error = false;
       });
     } catch (e) {
-      print(e);
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
       });
-    }
-  }
-
-  Future<void> _downloadUserData(String uid) async {
-    // download user image file
-    ProfileImage profileImage = await firebaseStorage.getProfileImage(uid: uid);
-
-    if (profileImage != null) {
-      userDataModel.setProfileImage(
-        file: profileImage.file,
-        name: profileImage.name,
-      );
-    }
-
-    // get user rating
-    double rating = await firebaseDatabase.getUserRating(uid);
-    if (rating != null) {
-      userDataModel.setUserRating(rating);
     }
   }
 
@@ -211,6 +141,7 @@ class _AppState extends State<App> {
   // TODO: overflow happens if a "O email já está sendo usado." warning happens
   // TODO:  make sure that user logs out when account is deleted or disactivated in firebase
   // TODO: decide on which logos to use
+  // TODO: implement prod flavor https://medium.com/@animeshjain/build-flavors-in-flutter-android-and-ios-with-different-firebase-projects-per-flavor-27c5c5dac10b
 
   @override
   Widget build(BuildContext context) {
@@ -241,9 +172,14 @@ class _AppState extends State<App> {
         firebaseAuth: firebaseAuth,
         firebaseDatabase: firebaseDatabase,
         firebaseStorage: firebaseStorage,
+        firebaseFunctions: firebaseFunctions,
       );
 
-      routeModel = RouteModel();
+      // initialize models
+      tripModel = TripModel();
+      user = UserModel();
+      googleMaps = GoogleMapsModel();
+      driver = DriverModel();
     } else {
       return Splash();
     }
@@ -255,11 +191,17 @@ class _AppState extends State<App> {
           ChangeNotifierProvider<FirebaseModel>(
             create: (context) => firebaseModel,
           ),
-          ChangeNotifierProvider<RouteModel>(
-            create: (context) => routeModel,
+          ChangeNotifierProvider<TripModel>(
+            create: (context) => tripModel,
           ),
-          ChangeNotifierProvider<UserDataModel>(
-            create: (context) => userDataModel,
+          ChangeNotifierProvider<UserModel>(
+            create: (context) => user,
+          ),
+          ChangeNotifierProvider<GoogleMapsModel>(
+            create: (context) => googleMaps,
+          ),
+          ChangeNotifierProvider<DriverModel>(
+            create: (context) => driver,
           )
         ], // pass user model down
         builder: (context, child) {
@@ -275,6 +217,20 @@ class _AppState extends State<App> {
                 firebase.isRegistered ? Home.routeName : Start.routeName,
             // pass appropriate arguments to routes
             onGenerateRoute: (RouteSettings settings) {
+              // if Home is pushed
+              if (settings.name == Home.routeName) {
+                final HomeArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return Home(
+                    firebase: args.firebase,
+                    trip: args.trip,
+                    user: args.user,
+                    googleMaps: args.googleMaps,
+                  );
+                });
+              }
+
+              // if InsertPhone is pushed
               if (settings.name == InsertPhone.routeName) {
                 return MaterialPageRoute(builder: (context) {
                   return InsertPhone(); // TODO: move to routes
@@ -357,12 +313,38 @@ class _AppState extends State<App> {
                 });
               }
 
+              // if ConfirmTrip is pushed
+              if (settings.name == ConfirmTrip.routeName) {
+                final ConfirmTripArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return ConfirmTrip(
+                    firebase: args.firebase,
+                    trip: args.trip,
+                  );
+                });
+              }
+
+              // if ShareLocation is pushed
+              if (settings.name == ShareLocation.routeName) {
+                final ShareLocationArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return ShareLocation(
+                    push: args.push,
+                  );
+                });
+              }
+
               assert(false, 'Need to implement ${settings.name}');
               return null;
             },
             routes: {
+              Home.routeName: (context) => Home(
+                    firebase: firebaseModel,
+                    trip: tripModel,
+                    user: user,
+                    googleMaps: googleMaps,
+                  ),
               Start.routeName: (context) => Start(),
-              Home.routeName: (context) => Home(),
               Settings.routeName: (context) => Settings(),
               Profile.routeName: (context) => Profile(),
               Privacy.routeName: (context) => Privacy(),
@@ -372,6 +354,7 @@ class _AppState extends State<App> {
               InsertNewPhone.routeName: (context) => InsertNewPhone(),
               InsertNewEmail.routeName: (context) => InsertNewEmail(),
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
+              PilotProfile.routeName: (context) => PilotProfile(),
             },
           );
         });

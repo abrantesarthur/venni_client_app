@@ -12,7 +12,7 @@ class Places {
   String _googleApiKey;
 
   Places() {
-    _googleApiKey = AppConfig.env.values.googleApiKey;
+    _googleApiKey = AppConfig.env.values.googleMapsApiKey;
   }
 
   Future<List<Address>> findAddressPredictions({

@@ -18,6 +18,7 @@
 
 # Visual Studio Code related
 .vscode/
+.vscode/**
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -58,7 +59,7 @@
 **/ios/**/profile
 **/ios/**/xcuserdata
 **/ios/.generated/
-**/ios/build
+**/ios/build/**
 **/ios/Flutter/App.framework
 **/ios/Flutter/Flutter*.framework
 **/ios/Flutter/Generated*.xcconfig

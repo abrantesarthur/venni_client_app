@@ -13,12 +13,6 @@ enum DeleteReason {
 }
 
 extension AppFirebaseDatabase on FirebaseDatabase {
-  Future<void> deleteUser(String uid) async {
-    try {
-      await this.reference().child("users").child(uid).remove();
-    } catch (e) {}
-  }
-
   Future<void> submitDeleteReasons({
     @required Map<DeleteReason, bool> reasons,
     @required String uid,
@@ -68,18 +62,19 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     });
   }
 
-  // TODO: cache
   Future<double> getUserRating(String uid) async {
+    double result;
     try {
       DataSnapshot snapshot = await this
           .reference()
-          .child("users")
+          .child("clients")
           .child(uid)
           .child("rating")
           .once();
-      return snapshot.value;
+      // typecast to double if integer
+      result = double.parse(snapshot.value);
     } catch (_) {}
-    return null;
+    return result;
   }
 
   Future<TripStatus> getTripStatus(String uid) async {

@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:mockito/mockito.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/models/driver.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -30,6 +31,8 @@ class MockUserModel extends Mock implements UserModel {}
 
 class MockTripModel extends Mock implements TripModel {}
 
+class MockDriverModel extends Mock implements DriverModel {}
+
 class MockGoogleMapsModel extends Mock implements GoogleMapsModel {}
 
 class MockGeocodingResult extends Mock implements GeocodingResult {}
@@ -46,6 +49,7 @@ MockUserCredential mockUserCredential = MockUserCredential();
 MockUser mockUser = MockUser();
 MockUserModel mockUserModel = MockUserModel();
 MockTripModel mockTripModel = MockTripModel();
+MockDriverModel mockDriverModel = MockDriverModel();
 MockGoogleMapsModel mockGoogleMapsModel = MockGoogleMapsModel();
 MockGeocodingResult mockGeocodingResult = MockGeocodingResult();
 MockGeocodingResult mockUserGeocoding = MockGeocodingResult();

@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:rider_frontend/screens/rateDriver.dart';
 
 extension AppFirebaseFunctions on FirebaseFunctions {
   Future<RequestTripResult> _doTrip({
@@ -56,6 +57,38 @@ extension AppFirebaseFunctions on FirebaseFunctions {
       throw e;
     }
     return null;
+  }
+
+  Future<void> rateDriver({
+    @required String driverID,
+    @required int score,
+    Map<FeedbackComponent, bool> feedbackComponents,
+    String feedbackMessage,
+  }) async {
+    // build argument
+    Map<String, dynamic> args = {
+      "driver_id": driverID,
+      "score": score,
+    };
+    if (feedbackComponents != null) {
+      feedbackComponents.forEach((key, value) {
+        if (key == FeedbackComponent.cleanliness_went_well) {
+          args["cleanliness_went_well"] = value;
+        }
+        if (key == FeedbackComponent.safety_went_well) {
+          args["safety_went_well"] = value;
+        }
+        if (key == FeedbackComponent.waiting_time_went_well) {
+          args["waiting_time_went_well"] = value;
+        }
+      });
+    }
+    if (feedbackMessage != null && feedbackMessage.length > 0) {
+      args["feedback"] = feedbackMessage;
+    }
+    try {
+      await this.httpsCallable("trip-rate_driver").call(args);
+    } catch (_) {}
   }
 }
 
@@ -153,18 +186,18 @@ class ConfirmTripResult {
       uid: json["uid"],
       name: json["name"],
       lastName: json["last_name"],
-      totalTrips: json["total_trips"],
-      memberSince: json["member_since"],
+      totalTrips: int.parse(json["total_trips"]),
+      memberSince: int.parse(json["member_since"]),
       phoneNumber: json["phone_number"],
       currentClientID: json["current_client_uid"],
-      currentLatitude: json["current_latitude"],
-      currentLongitude: json["current_longitude"],
+      currentLatitude: double.parse(json["current_latitude"]),
+      currentLongitude: double.parse(json["current_longitude"]),
       currentZone: json["current_zone"],
       driverStatus: driverStatus,
       tripStatus: tripStatus,
       vehicle: Vehicle.fromJson(json["vehicle"]),
-      idleSince: json["idle_since"],
-      rating: json["rating"],
+      idleSince: int.parse(json["idle_since"]),
+      rating: double.parse(double.parse(json["rating"]).toStringAsFixed(2)),
     );
   }
 }

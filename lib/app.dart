@@ -30,6 +30,7 @@ import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
+import 'package:rider_frontend/screens/rateDriver.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -355,6 +356,7 @@ class _AppState extends State<App> {
               InsertNewEmail.routeName: (context) => InsertNewEmail(),
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
               PilotProfile.routeName: (context) => PilotProfile(),
+              RateDriver.routeName: (context) => RateDriver(),
             },
           );
         });

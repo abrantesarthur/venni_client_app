@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/driver.dart';
-import 'package:rider_frontend/models/firebase.dart';
-import 'package:rider_frontend/models/googleMaps.dart';
-import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
-import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 
 class TripModel extends ChangeNotifier {
@@ -75,7 +68,10 @@ class TripModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clear({TripStatus status = TripStatus.off}) {
+  void clear({
+    TripStatus status = TripStatus.off,
+    bool notify = true,
+  }) {
     _tripStatus = status;
     _currentPickUpAddress = null;
     _currentDropOffAddress = null;
@@ -87,7 +83,9 @@ class TripModel extends ChangeNotifier {
     _encodedPoints = null;
     _eta = null;
     _etaString = null;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   DateTime _calculateETA() {

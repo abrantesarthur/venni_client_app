@@ -68,17 +68,20 @@ class GoogleMapsModel extends ChangeNotifier {
   }
 
   Future<void> undrawPolyline(
-    BuildContext context,
-  ) async {
+    BuildContext context, {
+    bool animateCamera = true,
+  }) async {
     // remove polylines
     _polylines.clear();
     // remove markers
     _undrawMarkers();
 
-    await _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(
-      _initialCameraLatLng,
-      _initialZoom,
-    ));
+    if (animateCamera) {
+      await _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(
+        _initialCameraLatLng,
+        _initialZoom,
+      ));
+    }
 
     // reset maps camera view by showing location button and removing padding
     setGoogleMapsCameraView();

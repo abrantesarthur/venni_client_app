@@ -13,14 +13,13 @@ import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
+import 'package:rider_frontend/screens/rateDriver.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
-import 'package:rider_frontend/vendors/firebaseStorage.dart';
-import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/cancelButton.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
@@ -222,17 +221,23 @@ class HomeState extends State<Home> {
     }
   }
 
-  void _cancelSubscriptions() {
-    // cancel subscriptions
+  void _cancelDriverSubscription() {
     if (driverSubscription != null) {
       driverSubscription.cancel();
     }
+    driverSubscription = null;
+  }
+
+  void _cancelTripSubscription() {
     if (tripSubscription != null) {
       tripSubscription.cancel();
     }
-    // set subscriptions to null so we know they've been cancelled
-    driverSubscription = null;
     tripSubscription = null;
+  }
+
+  void _cancelSubscriptions() {
+    _cancelDriverSubscription();
+    _cancelTripSubscription();
   }
 
   // _redrawUIOnTripUpdate is triggered whenever we update the tripModel.
@@ -248,11 +253,8 @@ class HomeState extends State<Home> {
         trip.tripStatus == TripStatus.off ||
         trip.tripStatus == TripStatus.canceledByClient ||
         trip.tripStatus == TripStatus.canceledByDriver) {
-      await googleMaps.undrawPolyline(context);
-      return;
-    }
-
-    if (trip.tripStatus == TripStatus.completed) {
+      // wait before undrawing polyline to help prevent concurrency issues
+      await Future.delayed(Duration(milliseconds: 500));
       await googleMaps.undrawPolyline(context);
       return;
     }
@@ -267,77 +269,94 @@ class HomeState extends State<Home> {
       return;
     }
 
-    if (trip.tripStatus == TripStatus.waitingDriver) {
-      String uid = firebase.auth.currentUser.uid;
-
+    void handleDriverUpdates(TripStatus expectedStatus) {
       // only reset subscription if it's null (i.e., it has been cancelled or this
-      // is the first time it's being used)
-      // a business rule is that when we cancel subscriptions we set them to null
-      // This allows us to notify listeners when updating trip without redefining
-      // subscriptions when _redrawUIOnTripUpdate is called again
+      // is the first time it's being used). We enforce a business rule that
+      // when we cancel subscriptions we set them to null. This allows us to
+      // update the TripModel and, as a consequence, notify listeners without
+      // redefining subscriptions when _redrawUIOnTripUpdate is called again.
       if (driverSubscription == null) {
-        // listen for updates in the driver position
         driverSubscription = firebase.database.onDriverUpdate(driver.id, (e) {
-          // only execute listener if status is still waitingDriver. This check
-          // is necessary because it is possible that local status may be updated
-          // before backend learns about the update and, as a consequence,
-          // cancelling tripSubscription. In those cases, if we don't perform
-          // this check, we will execute unintended actions
-          if (trip.tripStatus == TripStatus.waitingDriver) {
+          // if pilot was set free, stop listening for his updates, as he is
+          // no longer handling our trip.
+          DriverStatus driverStatus =
+              getDriverStatusFromString(e.snapshot.value["status"]);
+          if (driverStatus != DriverStatus.busy) {
+            _cancelDriverSubscription();
+            return;
+          }
+          // only redraw polyline if trip status is as expected and driver
+          // position has changed. The first check is necessary because it is
+          // possible that local status may be updated before backend learns
+          // about the update thus triggering the cancelling of this listener.
+          // If we don't perform this check, we will continue redrawing the
+          // polyline even though local trip state has already changed. The
+          // second check is necessary as to avoid unecessary redrawing.
+          double newLat = double.parse(e.snapshot.value["current_latitude"]);
+          double newLng = double.parse(e.snapshot.value["current_longitude"]);
+          if (trip.tripStatus == expectedStatus &&
+              (newLat != driver.currentLatitude ||
+                  newLng != driver.currentLongitude)) {
             // update driver coordinates
-            driver.updateCurrentLatitude(e.snapshot.value["current_latitude"]);
-            driver
-                .updateCurrentLongitude(e.snapshot.value["current_longitude"]);
-            // draw polyline between user and driver
-            googleMaps.drawPolylineFromDriverToOrigin(context);
+            driver.updateCurrentLatitude(newLat);
+            driver.updateCurrentLongitude(newLng);
+            // draw polyline from driver to origin or from driver to destination
+            if (expectedStatus == TripStatus.waitingDriver) {
+              googleMaps.drawPolylineFromDriverToOrigin(context);
+            } else if (expectedStatus == TripStatus.inProgress) {
+              googleMaps.drawPolylineFromDriverToDestination(context);
+            }
           }
         });
       }
+    }
 
+    void handleTripUpdates(TripStatus expectedStatus) {
       if (tripSubscription == null) {
+        String uid = firebase.auth.currentUser.uid;
         tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) {
-          TripStatus tripStatus = getTripStatusFromString(e.snapshot.value);
-          if (tripStatus != TripStatus.waitingDriver) {
-            // stop subscriptions when trip status is no longer waitingDriver
+          TripStatus newTripStatus = getTripStatusFromString(e.snapshot.value);
+          if (newTripStatus != expectedStatus) {
+            // stop subscriptions when new trip status is not what we expected
             _cancelSubscriptions();
-            googleMaps.undrawPolyline(context);
-            // transitions to completed, cancelldByDriver or cancelledByClient
-            trip.updateStatus(tripStatus);
+            if (newTripStatus == TripStatus.inProgress) {
+              // if new trip status is inProgress redrawy polyline, but this time
+              // from driver to destination
+              trip.updateStatus(newTripStatus);
+              googleMaps.drawPolylineFromDriverToDestination(context);
+            } else if (trip.tripStatus != newTripStatus) {
+              // otherwise, do something only if local trip status has not
+              // been already updated to newTripStatus by some other code path
+              // (i.e., user canceled the trip request, which immediately updates
+              // local status, but also sends a request to cancel in firebase),
+              googleMaps.undrawPolyline(context);
+              trip.updateStatus(newTripStatus);
+            }
           }
         });
       }
+    }
+
+    if (trip.tripStatus == TripStatus.waitingDriver) {
+      handleDriverUpdates(TripStatus.waitingDriver);
+      handleTripUpdates(TripStatus.waitingDriver);
       return;
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
-      String uid = firebase.auth.currentUser.uid;
+      handleDriverUpdates(TripStatus.inProgress);
+      handleTripUpdates(TripStatus.inProgress);
+      return;
+    }
 
-      if (driverSubscription == null) {
-        // listen for updates in the driver position
-        driverSubscription = firebase.database.onDriverUpdate(driver.id, (e) {
-          if (trip.tripStatus == TripStatus.inProgress) {
-            // update driver coordinates
-            driver.updateCurrentLatitude(e.snapshot.value["current_latitude"]);
-            driver
-                .updateCurrentLongitude(e.snapshot.value["current_longitude"]);
-            // draw polyline between user and driver
-            googleMaps.drawPolylineFromDriverToDestination(context);
-          }
-        });
-      }
-
-      if (tripSubscription == null) {
-        tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) {
-          TripStatus tripStatus = getTripStatusFromString(e.snapshot.value);
-          if (tripStatus != TripStatus.inProgress) {
-            // stop subscriptions when trip status is no longer inProgress
-            _cancelSubscriptions();
-            googleMaps.undrawPolyline(context);
-            // transitions to completed, cancelledByDriver or cancelledByClient
-            trip.updateStatus(tripStatus);
-          }
-        });
-      }
+    if (trip.tripStatus == TripStatus.completed) {
+      await googleMaps.undrawPolyline(context);
+      await Navigator.pushNamed(context, RateDriver.routeName);
+      // important: don't notify listeneres when clearing models. This may cause
+      // null exceptions because there may still be widgets from RateDriver
+      //  that use the values from the models.
+      driver.clear(notify: false);
+      trip.clear(notify: false);
       return;
     }
 
@@ -431,6 +450,7 @@ List<Widget> _buildRemainingStackChildren({
   @required TripModel trip,
   @required UserModel user,
 }) {
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
   if (trip.tripStatus == null ||
       trip.tripStatus == TripStatus.off ||
       trip.tripStatus == TripStatus.canceledByClient ||
@@ -454,6 +474,10 @@ List<Widget> _buildRemainingStackChildren({
         child: OverallPadding(
           child: MenuButton(onPressed: () {
             scaffoldKey.currentState.openDrawer();
+            // trigger getUserRating so it is updated in case it's changed
+            firebase.database
+                .getUserRating(firebase.auth.currentUser.uid)
+                .then((value) => user.setRating(value));
           }),
         ),
       )
@@ -716,9 +740,8 @@ Widget _buildCancelRideButton(
                   // TODO: charge fee if necessary
                   // cancel trip and update trip and driver models once it succeeds
                   firebase.functions.cancelTrip();
-                  // update trip model once cancellation succeeds
+                  // update models
                   trip.clear(status: TripStatus.canceledByClient);
-                  // update driver model once cancellation succeeds
                   driver.clear();
 
                   Navigator.pop(context);

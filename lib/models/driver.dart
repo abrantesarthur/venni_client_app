@@ -34,7 +34,10 @@ class DriverModel extends ChangeNotifier {
 
   DriverModel();
 
-  void clear({TripStatus status = TripStatus.off}) {
+  void clear({
+    TripStatus status = TripStatus.off,
+    bool notify = true,
+  }) {
     _profileImage = null;
     _id = null;
     _name = null;
@@ -47,7 +50,9 @@ class DriverModel extends ChangeNotifier {
     _totalTrips = null;
     _memberSinceDate = null;
     _memberSince = null;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   // don't notify listeners, since we will update UI when redrawing polyline
@@ -62,7 +67,7 @@ class DriverModel extends ChangeNotifier {
 
   void updateProfileImage(ProfileImage img) {}
 
-  void fromConfirmTripResult(
+  Future<void> fromConfirmTripResult(
     BuildContext context,
     ConfirmTripResult result,
   ) async {
@@ -70,7 +75,6 @@ class DriverModel extends ChangeNotifier {
       return Future.value();
     }
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-
     _id = result.uid;
     _name = result.name;
     _lastName = result.lastName;
@@ -96,8 +100,8 @@ class DriverModel extends ChangeNotifier {
             _memberSinceDate.year.toString();
 
     // download driver profile picture
-    firebase.storage
-        .getDriverProfilePicture(result.uid)
-        .then((img) => this._profileImage = img);
+    ProfileImage img =
+        await firebase.storage.getDriverProfilePicture(result.uid);
+    this._profileImage = img;
   }
 }

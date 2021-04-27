@@ -10,6 +10,8 @@ class GoBackScaffold extends StatelessWidget {
   final bool resizeToAvoidBottomInset;
   final String title;
   final bool lockScreen;
+  final IconData goBackIcon;
+  final TextStyle titleStyle;
 
   GoBackScaffold({
     @required this.children,
@@ -17,6 +19,8 @@ class GoBackScaffold extends StatelessWidget {
     this.resizeToAvoidBottomInset,
     this.title,
     this.lockScreen,
+    this.goBackIcon,
+    this.titleStyle,
   });
 
   @override
@@ -31,6 +35,7 @@ class GoBackScaffold extends StatelessWidget {
             Row(
               children: [
                 GoBackButton(
+                  icon: goBackIcon,
                   onPressed: lockScreen != null && lockScreen
                       ? () {}
                       : () {
@@ -45,10 +50,11 @@ class GoBackScaffold extends StatelessWidget {
                 ? Column(children: [
                     Text(
                       title,
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black),
+                      style: titleStyle ??
+                          TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black),
                     ),
                     SizedBox(height: screenHeight / 30),
                   ])

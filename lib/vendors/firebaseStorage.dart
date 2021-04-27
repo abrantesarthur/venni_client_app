@@ -6,18 +6,6 @@ import 'package:path/path.dart' as path;
 import 'dart:io' as dartIo;
 
 extension AppFirebaseStorage on FirebaseStorage {
-  Future<void> deleteUser(String uid) async {
-    try {
-      ListResult objects =
-          await this.ref().child("user-photos").child(uid).list();
-      if (objects != null && objects.items.length > 0) {
-        objects.items.forEach((item) {
-          item.delete();
-        });
-      }
-    } catch (e) {}
-  }
-
   void putProfileImage({
     @required String uid,
     @required PickedFile img,

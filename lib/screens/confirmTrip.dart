@@ -129,9 +129,10 @@ class ConfirmTripState extends State<ConfirmTrip> {
 
           // regardless of whether request failed or not, we go back Home once
           // it finishes. trip-request will have one of the following statuses:
-          //    waitingConfirmation - very unlikely. Will only throw if
+          //    waitingConfirmation - very unlikely. Happens only if
           //      request is unauthenticated (not the case) or there's no active
-          //      trip request (not the case)
+          //      trip request (not the case). In those cases, confirmTrip returns
+          //      null.
           //    waitingDriver - request succeded! We should start listening for
           //      updates in driver position
           //    paymentFailed, noDriversAvailable - error was thrown
@@ -167,56 +168,53 @@ class ConfirmTripState extends State<ConfirmTrip> {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     DriverModel driver = Provider.of<DriverModel>(context, listen: false);
     TripModel trip = Provider.of<TripModel>(context, listen: false);
-    TripStatus tripStatus;
 
     // check for null result, which happens when confirmTrip throws an exception.
-    // In this case, there will obviously be no trip_status in result, so
-    // we retrieve it from the backend.
     if (result == null) {
-      String uid = firebase.auth.currentUser.uid;
-      tripStatus = await firebase.database.getTripStatus(uid);
-    } else {
-      tripStatus = result.tripStatus;
-    }
-
-    //if status is waitingConfirmation, which is very unlikely
-    // show failure message and cancel trip. Otherwise, we will
-    // rebuild the tree the same way as it was when we tapped confirmar.
-    if (tripStatus == TripStatus.waitingConfirmation) {
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Algo deu errado."),
-            content: Text(
-              "Tente novamente",
-              style: TextStyle(color: AppColor.disabled),
-            ),
-            actions: [
-              TextButton(
-                child: Text(
-                  "ok",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-                onPressed: () => Navigator.pop(context),
+      TripStatus tripStatus =
+          await firebase.database.getTripStatus(firebase.auth.currentUser.uid);
+      if (tripStatus == TripStatus.waitingConfirmation) {
+        //if status is waitingConfirmation, which is very unlikely
+        // cancel trip and show failure message . Otherwise, we would
+        // rebuild the tree the same way as it was when we tapped confirmar.
+        firebase.functions.cancelTrip();
+        trip.clear(notify: false);
+        driver.clear(notify: false);
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Algo deu errado."),
+              content: Text(
+                "Tente novamente",
+                style: TextStyle(color: AppColor.disabled),
               ),
-            ],
-          );
-        },
-      );
-      firebase.functions.cancelTrip();
-      trip.clear();
+              actions: [
+                TextButton(
+                  child: Text(
+                    "ok",
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        trip.updateStatus(tripStatus);
+      }
       return;
     }
 
-    if (tripStatus == TripStatus.waitingDriver) {
+    if (result.tripStatus == TripStatus.waitingDriver) {
       // populate DriverModel with information returned by confirmTrip
-      driver.fromConfirmTripResult(context, result);
+      await driver.fromConfirmTripResult(context, result);
     }
 
     // update trip status
-    trip.updateStatus(tripStatus);
+    trip.updateStatus(result.tripStatus);
   }
 }

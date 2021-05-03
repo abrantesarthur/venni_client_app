@@ -5,7 +5,7 @@ import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/models/user.dart';
 
-class DriverModel extends ChangeNotifier {
+class PilotModel extends ChangeNotifier {
   ProfileImage _profileImage;
   String _id;
   String _name;
@@ -32,7 +32,7 @@ class DriverModel extends ChangeNotifier {
   int get totalTrips => _totalTrips;
   String get memberSince => _memberSince;
 
-  DriverModel();
+  PilotModel();
 
   void clear({
     TripStatus status = TripStatus.off,
@@ -75,18 +75,18 @@ class DriverModel extends ChangeNotifier {
       return Future.value();
     }
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    _id = result.uid;
-    _name = result.name;
-    _lastName = result.lastName;
-    _phoneNumber = result.phoneNumber;
-    _vehicle = result.vehicle;
-    _rating = result.rating;
-    _currentLatitude = result.currentLatitude;
-    _currentLongitude = result.currentLongitude;
-    _totalTrips = result.totalTrips;
-    _memberSinceDate = result.memberSince == null
+    _id = result.pilotID;
+    _name = result.pilotName;
+    _lastName = result.pilotLastName;
+    _phoneNumber = result.pilotPhoneNumber;
+    _vehicle = result.pilotVehicle;
+    _rating = result.pilotRating;
+    _currentLatitude = result.pilotCurrentLatitude;
+    _currentLongitude = result.pilotCurrentLongitude;
+    _totalTrips = result.pilotTotalTrips;
+    _memberSinceDate = result.pilotMemberSince == null
         ? null
-        : (DateTime.fromMillisecondsSinceEpoch(result.memberSince));
+        : (DateTime.fromMillisecondsSinceEpoch(result.pilotMemberSince));
     _memberSince = _memberSinceDate == null
         ? null
         : (_memberSinceDate.day < 10
@@ -99,9 +99,9 @@ class DriverModel extends ChangeNotifier {
             "/" +
             _memberSinceDate.year.toString();
 
-    // download driver profile picture
+    // download pilot profile picture
     ProfileImage img =
-        await firebase.storage.getDriverProfilePicture(result.uid);
+        await firebase.storage.getPilotProfilePicture(result.pilotID);
     this._profileImage = img;
   }
 }

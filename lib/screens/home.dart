@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -13,7 +13,7 @@ import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
-import 'package:rider_frontend/screens/rateDriver.dart';
+import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
@@ -63,7 +63,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   Future<bool> finishedDownloadingUserData;
   GlobalKey<ScaffoldState> _scaffoldKey;
-  StreamSubscription driverSubscription;
+  StreamSubscription pilotSubscription;
   StreamSubscription tripSubscription;
   StreamSubscription userPositionSubscription;
   var _firebaseListener;
@@ -113,8 +113,8 @@ class HomeState extends State<Home> {
     if (userPositionSubscription != null) {
       userPositionSubscription.cancel();
     }
-    if (driverSubscription != null) {
-      driverSubscription.cancel();
+    if (pilotSubscription != null) {
+      pilotSubscription.cancel();
     }
     if (tripSubscription != null) {
       tripSubscription.cancel();
@@ -221,11 +221,11 @@ class HomeState extends State<Home> {
     }
   }
 
-  void _cancelDriverSubscription() {
-    if (driverSubscription != null) {
-      driverSubscription.cancel();
+  void _cancelPilotSubscription() {
+    if (pilotSubscription != null) {
+      pilotSubscription.cancel();
     }
-    driverSubscription = null;
+    pilotSubscription = null;
   }
 
   void _cancelTripSubscription() {
@@ -236,25 +236,28 @@ class HomeState extends State<Home> {
   }
 
   void _cancelSubscriptions() {
-    _cancelDriverSubscription();
+    _cancelPilotSubscription();
     _cancelTripSubscription();
   }
 
   // _redrawUIOnTripUpdate is triggered whenever we update the tripModel.
   // it looks at the trip status and updates the UI accordingly
   Future<void> _redrawUIOnTripUpdate(BuildContext context) async {
-    TripModel trip = widget.trip;
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
     GoogleMapsModel googleMaps =
         Provider.of<GoogleMapsModel>(context, listen: false);
 
-    if (trip.tripStatus == null ||
-        trip.tripStatus == TripStatus.off ||
-        trip.tripStatus == TripStatus.canceledByClient ||
-        trip.tripStatus == TripStatus.canceledByDriver) {
+    if (trip.tripStatus == null || trip.tripStatus == TripStatus.off) {
       // wait before undrawing polyline to help prevent concurrency issues
       await Future.delayed(Duration(milliseconds: 500));
+      await googleMaps.undrawPolyline(context);
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.canceledByClient ||
+        trip.tripStatus == TripStatus.canceledByPilot) {
       await googleMaps.undrawPolyline(context);
       return;
     }
@@ -269,23 +272,23 @@ class HomeState extends State<Home> {
       return;
     }
 
-    void handleDriverUpdates(TripStatus expectedStatus) {
+    void handlePilotUpdates(TripStatus expectedStatus) {
       // only reset subscription if it's null (i.e., it has been cancelled or this
       // is the first time it's being used). We enforce a business rule that
       // when we cancel subscriptions we set them to null. This allows us to
       // update the TripModel and, as a consequence, notify listeners without
       // redefining subscriptions when _redrawUIOnTripUpdate is called again.
-      if (driverSubscription == null) {
-        driverSubscription = firebase.database.onDriverUpdate(driver.id, (e) {
+      if (pilotSubscription == null) {
+        pilotSubscription = firebase.database.onPilotUpdate(pilot.id, (e) {
           // if pilot was set free, stop listening for his updates, as he is
           // no longer handling our trip.
-          DriverStatus driverStatus =
-              getDriverStatusFromString(e.snapshot.value["status"]);
-          if (driverStatus != DriverStatus.busy) {
-            _cancelDriverSubscription();
+          PilotStatus pilotStatus =
+              getPilotStatusFromString(e.snapshot.value["status"]);
+          if (pilotStatus != PilotStatus.busy) {
+            _cancelPilotSubscription();
             return;
           }
-          // only redraw polyline if trip status is as expected and driver
+          // only redraw polyline if trip status is as expected and pilot
           // position has changed. The first check is necessary because it is
           // possible that local status may be updated before backend learns
           // about the update thus triggering the cancelling of this listener.
@@ -295,16 +298,16 @@ class HomeState extends State<Home> {
           double newLat = double.parse(e.snapshot.value["current_latitude"]);
           double newLng = double.parse(e.snapshot.value["current_longitude"]);
           if (trip.tripStatus == expectedStatus &&
-              (newLat != driver.currentLatitude ||
-                  newLng != driver.currentLongitude)) {
-            // update driver coordinates
-            driver.updateCurrentLatitude(newLat);
-            driver.updateCurrentLongitude(newLng);
-            // draw polyline from driver to origin or from driver to destination
-            if (expectedStatus == TripStatus.waitingDriver) {
-              googleMaps.drawPolylineFromDriverToOrigin(context);
+              (newLat != pilot.currentLatitude ||
+                  newLng != pilot.currentLongitude)) {
+            // update pilot coordinates
+            pilot.updateCurrentLatitude(newLat);
+            pilot.updateCurrentLongitude(newLng);
+            // draw polyline from pilot to origin or from pilot to destination
+            if (expectedStatus == TripStatus.waitingPilot) {
+              googleMaps.drawPolylineFromPilotToOrigin(context);
             } else if (expectedStatus == TripStatus.inProgress) {
-              googleMaps.drawPolylineFromDriverToDestination(context);
+              googleMaps.drawPolylineFromPilotToDestination(context);
             }
           }
         });
@@ -321,9 +324,9 @@ class HomeState extends State<Home> {
             _cancelSubscriptions();
             if (newTripStatus == TripStatus.inProgress) {
               // if new trip status is inProgress redrawy polyline, but this time
-              // from driver to destination
+              // from pilot to destination
               trip.updateStatus(newTripStatus);
-              googleMaps.drawPolylineFromDriverToDestination(context);
+              googleMaps.drawPolylineFromPilotToDestination(context);
             } else if (trip.tripStatus != newTripStatus) {
               // otherwise, do something only if local trip status has not
               // been already updated to newTripStatus by some other code path
@@ -337,31 +340,31 @@ class HomeState extends State<Home> {
       }
     }
 
-    if (trip.tripStatus == TripStatus.waitingDriver) {
-      handleDriverUpdates(TripStatus.waitingDriver);
-      handleTripUpdates(TripStatus.waitingDriver);
+    if (trip.tripStatus == TripStatus.waitingPilot) {
+      handlePilotUpdates(TripStatus.waitingPilot);
+      handleTripUpdates(TripStatus.waitingPilot);
       return;
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
-      handleDriverUpdates(TripStatus.inProgress);
+      handlePilotUpdates(TripStatus.inProgress);
       handleTripUpdates(TripStatus.inProgress);
       return;
     }
 
     if (trip.tripStatus == TripStatus.completed) {
       await googleMaps.undrawPolyline(context);
-      await Navigator.pushNamed(context, RateDriver.routeName);
+      await Navigator.pushNamed(context, RatePilot.routeName);
       // important: don't notify listeneres when clearing models. This may cause
-      // null exceptions because there may still be widgets from RateDriver
+      // null exceptions because there may still be widgets from RatePilot
       //  that use the values from the models.
-      driver.clear(notify: false);
+      pilot.clear(notify: false);
       trip.clear(notify: false);
       return;
     }
 
-    if (trip.tripStatus == TripStatus.noDriversAvailable ||
-        trip.tripStatus == TripStatus.lookingForDriver) {
+    if (trip.tripStatus == TripStatus.noPilotsAvailable ||
+        trip.tripStatus == TripStatus.lookingForPilot) {
       // alert user to wait
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(
@@ -454,7 +457,7 @@ List<Widget> _buildRemainingStackChildren({
   if (trip.tripStatus == null ||
       trip.tripStatus == TripStatus.off ||
       trip.tripStatus == TripStatus.canceledByClient ||
-      trip.tripStatus == TripStatus.canceledByDriver ||
+      trip.tripStatus == TripStatus.canceledByPilot ||
       trip.tripStatus == TripStatus.completed) {
     return [
       OverallPadding(
@@ -486,8 +489,8 @@ List<Widget> _buildRemainingStackChildren({
 
   if (trip.tripStatus == TripStatus.waitingConfirmation ||
       trip.tripStatus == TripStatus.paymentFailed ||
-      trip.tripStatus == TripStatus.noDriversAvailable ||
-      trip.tripStatus == TripStatus.lookingForDriver) {
+      trip.tripStatus == TripStatus.noPilotsAvailable ||
+      trip.tripStatus == TripStatus.lookingForPilot) {
     // if user is about to confirm trip for the first time (waitingConfirmation)
     // has already confirmed but received a paymentFailed, give them the
     // option of trying again.
@@ -503,7 +506,7 @@ List<Widget> _buildRemainingStackChildren({
     ];
   }
 
-  if (trip.tripStatus == TripStatus.waitingDriver) {
+  if (trip.tripStatus == TripStatus.waitingPilot) {
     return [
       _buildCancelRideButton(context, trip,
           // TODO: decide on final fee
@@ -591,7 +594,7 @@ Widget _buildPilotSummaryFloatingCard(
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   // Listen is false, so we must call setState manually if we change the model
-  DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+  PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
 
   return OverallPadding(
     bottom: screenHeight / 20,
@@ -607,10 +610,10 @@ Widget _buildPilotSummaryFloatingCard(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // TODO: notify client when driver is near
-                    trip.driverArrivalSeconds > 90
+                    // TODO: notify client when pilot is near
+                    trip.pilotArrivalSeconds > 90
                         ? "Motorista a caminho"
-                        : (trip.driverArrivalSeconds > 5
+                        : (trip.pilotArrivalSeconds > 5
                             ? "Motorista próximo"
                             : "Motorista no local"),
                     style: TextStyle(
@@ -631,7 +634,7 @@ Widget _buildPilotSummaryFloatingCard(
               SizedBox(width: screenWidth / 20),
               Spacer(),
               Text(
-                (trip.driverArrivalSeconds / 60).round().toString() + " min",
+                (trip.pilotArrivalSeconds / 60).round().toString() + " min",
                 style: TextStyle(fontSize: 18),
               ),
             ],
@@ -644,9 +647,9 @@ Widget _buildPilotSummaryFloatingCard(
               children: [
                 CircularImage(
                   size: screenHeight / 13,
-                  imageFile: driver.profileImage == null
+                  imageFile: pilot.profileImage == null
                       ? AssetImage("images/user_icon.png")
-                      : driver.profileImage.file,
+                      : pilot.profileImage.file,
                 ),
                 SizedBox(width: screenWidth / 20),
                 Column(
@@ -660,7 +663,7 @@ Widget _buildPilotSummaryFloatingCard(
                             maxWidth: screenWidth / 4.2, // avoid overflowsr
                           ),
                           child: Text(
-                            driver.name,
+                            pilot.name,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -669,7 +672,7 @@ Widget _buildPilotSummaryFloatingCard(
                         ),
                         SizedBox(width: screenWidth / 50),
                         Text(
-                          driver.rating.toString(),
+                          pilot.rating.toString(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -683,9 +686,9 @@ Widget _buildPilotSummaryFloatingCard(
                       ],
                     ),
                     Text(
-                      driver.vehicle.brand.toUpperCase() +
+                      pilot.vehicle.brand.toUpperCase() +
                           " " +
-                          driver.vehicle.model.toUpperCase(),
+                          pilot.vehicle.model.toUpperCase(),
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColor.disabled,
@@ -693,7 +696,7 @@ Widget _buildPilotSummaryFloatingCard(
                       ),
                     ),
                     Text(
-                      driver.phoneNumber,
+                      pilot.phoneNumber,
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColor.disabled,
@@ -704,7 +707,7 @@ Widget _buildPilotSummaryFloatingCard(
                 ),
                 Spacer(),
                 Text(
-                  driver.vehicle.plate.toUpperCase(),
+                  pilot.vehicle.plate.toUpperCase(),
                   style: TextStyle(fontSize: 16),
                 ),
               ],
@@ -725,7 +728,9 @@ Widget _buildCancelRideButton(
   String content,
 }) {
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-  DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+  PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+  GoogleMapsModel googleMaps =
+      Provider.of<GoogleMapsModel>(context, listen: false);
   return Positioned(
     right: 0,
     child: OverallPadding(
@@ -738,12 +743,11 @@ Widget _buildCancelRideButton(
                 content: content,
                 onPressedYes: () {
                   // TODO: charge fee if necessary
-                  // cancel trip and update trip and driver models once it succeeds
+                  // cancel trip and update trip and pilot models once it succeeds
                   firebase.functions.cancelTrip();
                   // update models
                   trip.clear(status: TripStatus.canceledByClient);
-                  driver.clear();
-
+                  pilot.clear();
                   Navigator.pop(context);
                 },
               );
@@ -783,7 +787,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context, TripModel trip) {
             ),
             Spacer(),
             Text(
-              "R\$ " + trip.farePrice.toString(),
+              "R\$ " + trip.farePrice,
               style: TextStyle(fontSize: 18),
             ),
           ],

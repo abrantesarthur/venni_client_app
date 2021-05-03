@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -67,7 +67,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
         splashMessage = "Processando pagamento...";
       });
     }
-    if (tripStatus == TripStatus.lookingForDriver) {
+    if (tripStatus == TripStatus.lookingForPilot) {
       setState(() {
         splashMessage = "Encontrando o melhor piloto...";
       });
@@ -110,11 +110,6 @@ class ConfirmTripState extends State<ConfirmTrip> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return FutureBuilder<ConfirmTripResult>(
         future: confirmTripResult,
@@ -133,10 +128,10 @@ class ConfirmTripState extends State<ConfirmTrip> {
           //      request is unauthenticated (not the case) or there's no active
           //      trip request (not the case). In those cases, confirmTrip returns
           //      null.
-          //    waitingDriver - request succeded! We should start listening for
-          //      updates in driver position
-          //    paymentFailed, noDriversAvailable - error was thrown
-          //    lookingForDrivers - timed out looking for drivers and threw error
+          //    waitingPilot - request succeded! We should start listening for
+          //      updates in pilot position
+          //    paymentFailed, noPilotsAvailable - error was thrown
+          //    lookingForPilots - timed out looking for pilots and threw error
           SchedulerBinding.instance.addPostFrameCallback((_) async {
             // cancel stream subscription
             tripStatusSubscription.cancel();
@@ -154,19 +149,19 @@ class ConfirmTripState extends State<ConfirmTrip> {
   }
 
   // when _tripConfirming is called, status will be one of the following:
-  // paymentFailed, noDriversAvailable - error was thrown
+  // paymentFailed, noPilotsAvailable - error was thrown
   // waitingConfirmation - very unlikely. Will only throw if
   //      request is unauthenticated (not the case) or there's no active
   //      trip request (not the case)
-  // waitingDriver - request succeded! We should start listening for
-  //      updates in driver position
-  // lookingForDrivers - timed out looking for drivers and threw error
+  // waitingPilot - request succeded! We should start listening for
+  //      updates in pilot position
+  // lookingForPilots - timed out looking for pilots and threw error
   Future<void> finishConfirmation(
     BuildContext context,
     ConfirmTripResult result,
   ) async {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    DriverModel driver = Provider.of<DriverModel>(context, listen: false);
+    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
     TripModel trip = Provider.of<TripModel>(context, listen: false);
 
     // check for null result, which happens when confirmTrip throws an exception.
@@ -179,7 +174,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
         // rebuild the tree the same way as it was when we tapped confirmar.
         firebase.functions.cancelTrip();
         trip.clear(notify: false);
-        driver.clear(notify: false);
+        pilot.clear(notify: false);
         await showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -209,9 +204,9 @@ class ConfirmTripState extends State<ConfirmTrip> {
       return;
     }
 
-    if (result.tripStatus == TripStatus.waitingDriver) {
-      // populate DriverModel with information returned by confirmTrip
-      await driver.fromConfirmTripResult(context, result);
+    if (result.tripStatus == TripStatus.waitingPilot) {
+      // populate PilotModel with information returned by confirmTrip
+      await pilot.fromConfirmTripResult(context, result);
     }
 
     // update trip status

@@ -3,32 +3,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/mocks.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
-import 'package:rider_frontend/screens/rateDriver.dart';
-import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
 void main() {
   // define mocks behaviors
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    when(mockDriverModel.name).thenReturn("Fulano");
+    when(mockPilotModel.name).thenReturn("Fulano");
+    when(mockTripModel.farePrice).thenReturn("5.00");
   });
 
-  Future<void> pumpRateDriver(WidgetTester tester) async {
+  Future<void> pumpRatePilot(WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<DriverModel>(
-              create: (context) => mockDriverModel),
+          ChangeNotifierProvider<PilotModel>(
+              create: (context) => mockPilotModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
         ],
         builder: (context, child) => MaterialApp(
-          home: RateDriver(),
+          home: RatePilot(),
           navigatorObservers: [mockNavigatorObserver],
         ),
       ),
@@ -39,11 +39,11 @@ void main() {
       "state",
       () => {
             testWidgets("inits as expected", (WidgetTester tester) async {
-              // pump RateDriver to the UI
-              await pumpRateDriver(tester);
+              // pump RatePilot to the UI
+              await pumpRatePilot(tester);
 
               verify(mockNavigatorObserver.didPush(any, any));
-              expect(find.byType(RateDriver), findsOneWidget);
+              expect(find.byType(RatePilot), findsOneWidget);
 
               // rate description starts as "nota geral"
               expect(find.textContaining("nota geral"), findsOneWidget);
@@ -69,16 +69,16 @@ void main() {
           });
 
   group(
-      "rateDriver",
+      "ratePilot",
       () => {
             testWidgets("correctly updates the UI",
                 (WidgetTester tester) async {
-              // add rate driver to the UI
-              await pumpRateDriver(tester);
+              // add rate pilot to the UI
+              await pumpRatePilot(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RateDriver)) as RateDriverState;
+                  tester.state(find.byType(RatePilot)) as RatePilotState;
 
               // expect to find 0 filled and 5 empty stars
               final filledStarFinders =
@@ -183,12 +183,12 @@ void main() {
             testWidgets(
                 "sets selected feedback components to true when user gives 5-star rating",
                 (WidgetTester tester) async {
-              // add rate driver to the UI
-              await pumpRateDriver(tester);
+              // add rate pilot to the UI
+              await pumpRatePilot(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RateDriver)) as RateDriverState;
+                  tester.state(find.byType(RatePilot)) as RatePilotState;
 
               // get start findes
               final emptyStarFinders =
@@ -317,12 +317,12 @@ void main() {
             testWidgets(
                 "sets selected feedback components to false when user gives below 5-star rating",
                 (WidgetTester tester) async {
-              // add rate driver to the UI
-              await pumpRateDriver(tester);
+              // add rate pilot to the UI
+              await pumpRatePilot(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RateDriver)) as RateDriverState;
+                  tester.state(find.byType(RatePilot)) as RatePilotState;
 
               // get start findes
               final emptyStarFinders =

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -20,13 +20,13 @@ enum FeedbackComponent {
   another,
 }
 
-class RateDriver extends StatefulWidget {
-  static String routeName = "RateDriver";
+class RatePilot extends StatefulWidget {
+  static String routeName = "RatePilot";
 
-  RateDriverState createState() => RateDriverState();
+  RatePilotState createState() => RatePilotState();
 }
 
-class RateDriverState extends State<RateDriver> {
+class RatePilotState extends State<RatePilot> {
   String _rateDescription;
   int _rate;
   IconData _cleanlinessIcon;
@@ -63,7 +63,7 @@ class RateDriverState extends State<RateDriver> {
     super.dispose();
   }
 
-  void rateDriver(int rate) {
+  void ratePilot(int rate) {
     if (_lockScreen) {
       return;
     }
@@ -162,7 +162,7 @@ class RateDriverState extends State<RateDriver> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    DriverModel driver = Provider.of<DriverModel>(context);
+    PilotModel pilot = Provider.of<PilotModel>(context);
     TripModel trip = Provider.of<TripModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
@@ -212,7 +212,7 @@ class RateDriverState extends State<RateDriver> {
                   ),
                   SizedBox(height: screenHeight / 100),
                   Text(
-                    "R\$ " + trip.farePrice.toString(),
+                    "R\$ " + trip.farePrice,
                     style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w700,
@@ -227,7 +227,7 @@ class RateDriverState extends State<RateDriver> {
                   Divider(thickness: 0.1, color: Colors.black),
                   SizedBox(height: screenHeight / (_rate > 0 ? 100 : 50)),
                   Text(
-                    "Como foi a sua corrida com " + driver.name + "?",
+                    "Como foi a sua corrida com " + pilot.name + "?",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
@@ -240,9 +240,9 @@ class RateDriverState extends State<RateDriver> {
                     children: [
                       CircularImage(
                         size: screenHeight / 9,
-                        imageFile: driver.profileImage == null
+                        imageFile: pilot.profileImage == null
                             ? AssetImage("images/user_icon.png")
-                            : driver.profileImage.file,
+                            : pilot.profileImage.file,
                       ),
                       Spacer(),
                       Column(
@@ -256,7 +256,7 @@ class RateDriverState extends State<RateDriver> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               GestureDetector(
-                                onTap: () => rateDriver(1),
+                                onTap: () => ratePilot(1),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -269,7 +269,7 @@ class RateDriverState extends State<RateDriver> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => rateDriver(2),
+                                onTap: () => ratePilot(2),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -282,7 +282,7 @@ class RateDriverState extends State<RateDriver> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => rateDriver(3),
+                                onTap: () => ratePilot(3),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -295,7 +295,7 @@ class RateDriverState extends State<RateDriver> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => rateDriver(4),
+                                onTap: () => ratePilot(4),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -308,7 +308,7 @@ class RateDriverState extends State<RateDriver> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => rateDriver(5),
+                                onTap: () => ratePilot(5),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -439,9 +439,9 @@ class RateDriverState extends State<RateDriver> {
                               _showThankYouMessage = true;
                             });
 
-                            // call rate Driver
-                            firebase.functions.rateDriver(
-                              driverID: driver.id,
+                            // call rate Pilot
+                            firebase.functions.ratePilot(
+                              pilotID: pilot.id,
                               score: _rate,
                               feedbackComponents: feedbackComponents,
                               feedbackMessage: _textFieldController.text,

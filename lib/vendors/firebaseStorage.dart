@@ -41,12 +41,16 @@ extension AppFirebaseStorage on FirebaseStorage {
 
   // TODO: cache downloaded images
   // TODO: use something other than NetworkImage so it can load right away
-  Future<ProfileImage> getDriverProfilePicture(String id) async {
+  Future<ProfileImage> getPilotProfilePicture(String id) async {
     ListResult results;
+    print("getPIlotProfilePicture");
+    print(id);
     try {
       results = await this.ref().child("pilot-photos").child(id).list();
       if (results != null && results.items.length > 0) {
+        print("results != null");
         String imageURL = await results.items[0].getDownloadURL();
+        print(imageURL);
         return ProfileImage(
           file: NetworkImage(imageURL),
           name: results.items[0].name,

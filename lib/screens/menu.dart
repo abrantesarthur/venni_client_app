@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
@@ -72,6 +73,10 @@ class Menu extends StatelessWidget {
             child: Column(
               children: [
                 BorderlessButton(
+                  onTap: () {
+                    Navigator.pushNamed(context, PastTrips.routeName,
+                        arguments: PastTripsArguments(firebase));
+                  },
                   iconLeft: Icons.featured_play_list_rounded,
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Minhas Viagens",

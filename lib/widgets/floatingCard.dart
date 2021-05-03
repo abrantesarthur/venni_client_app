@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 class FloatingCard extends StatelessWidget {
   final Widget child;
   final double width;
+  final double leftPadding;
+  final double rightPadding;
 
   FloatingCard({
     this.width,
     @required this.child,
+    this.leftPadding,
+    this.rightPadding,
   });
 
   @override
@@ -15,8 +19,8 @@ class FloatingCard extends StatelessWidget {
     return Container(
       width: width ?? screenWidth,
       padding: EdgeInsets.only(
-        left: screenWidth / 15,
-        right: screenWidth / 15,
+        left: leftPadding ?? screenWidth / 15,
+        right: rightPadding ?? screenWidth / 15,
       ),
       child: Material(
         type: MaterialType.card,

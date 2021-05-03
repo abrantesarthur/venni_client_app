@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
@@ -11,7 +11,7 @@ class PilotProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    DriverModel driver = Provider.of<DriverModel>(context);
+    PilotModel pilot = Provider.of<PilotModel>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -34,13 +34,13 @@ class PilotProfile extends StatelessWidget {
             SizedBox(height: screenHeight / 15),
             CircularImage(
               size: screenWidth / 3.2,
-              imageFile: driver.profileImage == null
+              imageFile: pilot.profileImage == null
                   ? AssetImage("images/user_icon.png")
-                  : driver.profileImage.file,
+                  : pilot.profileImage.file,
             ),
             SizedBox(height: screenHeight / 50),
             Text(
-              driver.name,
+              pilot.name,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             Row(
@@ -48,7 +48,7 @@ class PilotProfile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  driver.rating.toString(),
+                  pilot.rating.toString(),
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(width: screenWidth / 100),
@@ -59,16 +59,16 @@ class PilotProfile extends StatelessWidget {
               ],
             ),
             SizedBox(height: screenHeight / 50),
-            _buildInfo(context, field: "celular", value: driver.phoneNumber),
+            _buildInfo(context, field: "celular", value: pilot.phoneNumber),
             _buildInfo(context,
                 field: "corridas realizadas",
-                value: driver.totalTrips.toString()),
+                value: pilot.totalTrips.toString()),
             _buildInfo(context,
-                field: "membro desde", value: driver.memberSince),
+                field: "membro desde", value: pilot.memberSince),
             _buildInfo(context,
                 field: "moto",
-                value: driver.vehicle.brand + " " + driver.vehicle.model),
-            _buildInfo(context, field: "placa", value: driver.vehicle.plate)
+                value: pilot.vehicle.brand + " " + pilot.vehicle.model),
+            _buildInfo(context, field: "placa", value: pilot.vehicle.plate)
           ],
         ),
       ),

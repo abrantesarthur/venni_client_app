@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rider_frontend/config/config.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +27,12 @@ import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/screens/pastTripDetail.dart';
+import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
-import 'package:rider_frontend/screens/rateDriver.dart';
+import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -55,7 +57,7 @@ class _AppState extends State<App> {
   TripModel tripModel;
   UserModel user;
   GoogleMapsModel googleMaps;
-  DriverModel driver;
+  PilotModel pilot;
   FirebaseAuth firebaseAuth;
   FirebaseDatabase firebaseDatabase;
   FirebaseStorage firebaseStorage;
@@ -180,7 +182,7 @@ class _AppState extends State<App> {
       tripModel = TripModel();
       user = UserModel();
       googleMaps = GoogleMapsModel();
-      driver = DriverModel();
+      pilot = PilotModel();
     } else {
       return Splash();
     }
@@ -201,8 +203,8 @@ class _AppState extends State<App> {
           ChangeNotifierProvider<GoogleMapsModel>(
             create: (context) => googleMaps,
           ),
-          ChangeNotifierProvider<DriverModel>(
-            create: (context) => driver,
+          ChangeNotifierProvider<PilotModel>(
+            create: (context) => pilot,
           )
         ], // pass user model down
         builder: (context, child) {
@@ -335,6 +337,27 @@ class _AppState extends State<App> {
                 });
               }
 
+              // if PastTrips is pushed
+              if (settings.name == PastTrips.routeName) {
+                final PastTripsArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return PastTrips(
+                    firebase: args.firebase,
+                  );
+                });
+              }
+
+              // if PastTripDetail is pushed
+              if (settings.name == PastTripDetail.routeName) {
+                final PastTripDetailArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return PastTripDetail(
+                    pastTrip: args.pastTrip,
+                    firebase: args.firebase,
+                  );
+                });
+              }
+
               assert(false, 'Need to implement ${settings.name}');
               return null;
             },
@@ -356,7 +379,7 @@ class _AppState extends State<App> {
               InsertNewEmail.routeName: (context) => InsertNewEmail(),
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
               PilotProfile.routeName: (context) => PilotProfile(),
-              RateDriver.routeName: (context) => RateDriver(),
+              RatePilot.routeName: (context) => RatePilot(),
             },
           );
         });

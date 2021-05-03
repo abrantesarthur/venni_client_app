@@ -200,7 +200,7 @@ class DefineRouteState extends State<DefineRoute> {
     TripModel trip = Provider.of<TripModel>(context, listen: false);
 
     // RideRequestResult result;
-    RequestTripResult result;
+    Trip result;
     if (widget.mode == DefineRouteMode.request) {
       try {
         result = await firebase.functions.requestTrip(RequestTripArguments(
@@ -226,7 +226,6 @@ class DefineRouteState extends State<DefineRoute> {
 
     // update trip with response
     trip.fromRequestTripResult(result);
-
     Navigator.pop(context);
   }
 
@@ -248,7 +247,6 @@ class DefineRouteState extends State<DefineRoute> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // TODO: render icon with higher definition
             SvgPicture.asset(
               "images/dropOffToPickUpIcon.svg",
               width: screenWidth / 36,

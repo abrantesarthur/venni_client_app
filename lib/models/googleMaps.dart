@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/driver.dart';
+import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/trip.dart';
-import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/vendors/directions.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
@@ -87,8 +86,8 @@ class GoogleMapsModel extends ChangeNotifier {
     setGoogleMapsCameraView();
   }
 
-  Future<void> drawPolylineFromDriverToDestination(BuildContext context) async {
-    // only draw polyline between the driver and origin if inProgress
+  Future<void> drawPolylineFromPilotToDestination(BuildContext context) async {
+    // only draw polyline between the pilot and origin if inProgress
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     if (trip.tripStatus != TripStatus.inProgress) {
       return;
@@ -98,11 +97,11 @@ class GoogleMapsModel extends ChangeNotifier {
     _polylines.clear();
     _undrawMarkers();
 
-    // get driver position
-    DriverModel driver = Provider.of<DriverModel>(context, listen: false);
-    LatLng driverCoordinates = LatLng(
-      driver.currentLatitude,
-      driver.currentLongitude,
+    // get pilot position
+    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+    LatLng pilotCoordinates = LatLng(
+      pilot.currentLatitude,
+      pilot.currentLongitude,
     );
 
     // get trip destination position
@@ -111,13 +110,13 @@ class GoogleMapsModel extends ChangeNotifier {
       trip.dropOffAddress.longitude,
     );
 
-    // request google directions API for encoded points between driver and destination
-    // TODO: move directions api requests to server. Request it when driver reports
+    // request google directions API for encoded points between pilot and destination
+    // TODO: move directions api requests to server. Request it when pilot reports
     // their position and, besides their coordinates, set the encoded points too.
     // Also, user placeIDs instead of coordinates whenever possible. This makes
     // markers more precise
     DirectionsResponse response = await Directions().searchByCoordinates(
-      originCoordinates: driverCoordinates,
+      originCoordinates: pilotCoordinates,
       destinationCoordinates: destinationCoordinates,
     );
 
@@ -125,9 +124,9 @@ class GoogleMapsModel extends ChangeNotifier {
       // get encodedPoints
       String encodedPoints = response.result.route.encodedPoints;
 
-      // set driver coordinates locally to what directions returns
-      driver.updateCurrentLatitude(response.result.route.originLatitude);
-      driver.updateCurrentLongitude(response.result.route.originLongitude);
+      // set pilot coordinates locally to what directions returns
+      pilot.updateCurrentLatitude(response.result.route.originLatitude);
+      pilot.updateCurrentLongitude(response.result.route.originLongitude);
 
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
@@ -143,10 +142,10 @@ class GoogleMapsModel extends ChangeNotifier {
     }
   }
 
-  Future<void> drawPolylineFromDriverToOrigin(BuildContext context) async {
-    // only draw polyline between the use and the driver if waitingDriver
+  Future<void> drawPolylineFromPilotToOrigin(BuildContext context) async {
+    // only draw polyline between the use and the pilot if waitingPilot
     TripModel trip = Provider.of<TripModel>(context, listen: false);
-    if (trip.tripStatus != TripStatus.waitingDriver) {
+    if (trip.tripStatus != TripStatus.waitingPilot) {
       return;
     }
 
@@ -154,11 +153,11 @@ class GoogleMapsModel extends ChangeNotifier {
     _polylines.clear();
     _undrawMarkers();
 
-    // get driver position
-    DriverModel driver = Provider.of<DriverModel>(context, listen: false);
-    LatLng driverCoordinates = LatLng(
-      driver.currentLatitude,
-      driver.currentLongitude,
+    // get pilot position
+    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+    LatLng pilotCoordinates = LatLng(
+      pilot.currentLatitude,
+      pilot.currentLongitude,
     );
 
     // get trip origin position
@@ -167,21 +166,21 @@ class GoogleMapsModel extends ChangeNotifier {
       trip.pickUpAddress.longitude,
     );
 
-    // request google directions API for encoded points between user and driver
-    // TODO: move directions api requests to server. Request it when driver reports
+    // request google directions API for encoded points between user and pilot
+    // TODO: move directions api requests to server. Request it when pilot reports
     // their position and, besides their coordinates, set the encoded points too.
     DirectionsResponse response = await Directions().searchByCoordinates(
       originCoordinates: originCoordinates,
-      destinationCoordinates: driverCoordinates,
+      destinationCoordinates: pilotCoordinates,
     );
 
     if (response != null && response.status == "OK") {
       // get encodedPoints
       String encodedPoints = response.result.route.encodedPoints;
 
-      // set driver coordinates locally to what directions returns
-      driver.updateCurrentLatitude(response.result.route.destinationLatitude);
-      driver.updateCurrentLongitude(response.result.route.destinationLongitude);
+      // set pilot coordinates locally to what directions returns
+      pilot.updateCurrentLatitude(response.result.route.destinationLatitude);
+      pilot.updateCurrentLongitude(response.result.route.destinationLongitude);
 
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
@@ -192,8 +191,8 @@ class GoogleMapsModel extends ChangeNotifier {
         bottomPadding: screenHeight / 4,
       );
 
-      // set driver arrival time
-      trip.updateDriverArrivalSeconds(response.result.route.durationSeconds);
+      // set pilot arrival time
+      trip.updatePilotArrivalSeconds(response.result.route.durationSeconds);
     }
   }
 
@@ -290,10 +289,10 @@ class GoogleMapsModel extends ChangeNotifier {
       icon: firstMarkerIcon,
     );
 
-    // second marker icon depends on whether user is waiting driver or in progress
+    // second marker icon depends on whether user is waiting pilot or in progress
     BitmapDescriptor secondMarkerIcon;
-    if (trip.tripStatus == TripStatus.waitingDriver) {
-      // draw pilot helmet if waiting driver
+    if (trip.tripStatus == TripStatus.waitingPilot) {
+      // draw pilot helmet if waiting pilot
       secondMarkerIcon =
           await AppBitmapDescriptor.fromIconData(Icons.sports_motorsports);
     } else {

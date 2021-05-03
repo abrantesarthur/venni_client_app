@@ -90,42 +90,42 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     return null;
   }
 
-  Future<String> getDriverID(String userUID) async {
+  Future<String> getPilotID(String userUID) async {
     try {
       DataSnapshot snapshot = await this
           .reference()
           .child("trip-requests")
           .child(userUID)
-          .child("driver_id")
+          .child("pilot_id")
           .once();
       return snapshot.value;
     } catch (_) {}
     return null;
   }
 
-  Future<Map<dynamic, dynamic>> getDriverFromID(String driverID) async {
+  Future<Map<dynamic, dynamic>> getPilotFromID(String pilotID) async {
     try {
       DataSnapshot snapshot =
-          await this.reference().child("pilots").child(driverID).once();
+          await this.reference().child("pilots").child(pilotID).once();
       return snapshot.value;
     } catch (_) {}
     return null;
   }
 
-  // onDriverUpdate subscribes onData to handle changes in the driver with uid driverID
-  StreamSubscription onDriverUpdate(
-    String driverID,
+  // onPilotUpdate subscribes onData to handle changes in the pilot with uid pilotID
+  StreamSubscription onPilotUpdate(
+    String pilotID,
     void Function(Event) onData,
   ) {
     return this
         .reference()
         .child("pilots")
-        .child(driverID)
+        .child(pilotID)
         .onValue
         .listen(onData);
   }
 
-  // onDriverUpdate subscribes onData to handle changes in the trip status of the
+  // onPilotUpdate subscribes onData to handle changes in the trip status of the
   // trip of user with id userID.
   StreamSubscription onTripStatusUpdate(
     String userID,

@@ -6,7 +6,7 @@ class TripModel extends ChangeNotifier {
   Address _currentPickUpAddress;
   Address _currentDropOffAddress;
   TripStatus _tripStatus;
-  double _farePrice;
+  String _farePrice;
   int _distanceMeters;
   String _distanceText;
   int _durationSeconds;
@@ -14,19 +14,19 @@ class TripModel extends ChangeNotifier {
   String _encodedPoints;
   DateTime _eta;
   String _etaString;
-  int _driverArrivalSeconds;
-  DateTime _driverArrival;
-  String _driverArrivalString;
+  int _pilotArrivalSeconds;
+  DateTime _pilotArrival;
+  String _pilotArrivalString;
 
   TripModel() {
     _tripStatus = TripStatus.off;
   }
 
-  // TODO: try moving driver data to driver model
+  // TODO: try moving pilot data to pilot model
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
   TripStatus get tripStatus => _tripStatus;
-  double get farePrice => _farePrice;
+  String get farePrice => _farePrice;
   int get distanceMeters => _distanceMeters;
   String get distanceText => _distanceText;
   int get durationSeconds => _durationSeconds;
@@ -34,8 +34,8 @@ class TripModel extends ChangeNotifier {
   String get encodedPoints => _encodedPoints;
   DateTime get eta => _eta;
   String get etaString => _etaString;
-  String get driverArrivalString => _driverArrivalString;
-  int get driverArrivalSeconds => _driverArrivalSeconds;
+  String get pilotArrivalString => _pilotArrivalString;
+  int get pilotArrivalSeconds => _pilotArrivalSeconds;
 
   void updatePickUpAddres(Address address) {
     _currentPickUpAddress = address;
@@ -52,10 +52,10 @@ class TripModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateDriverArrivalSeconds(int s) {
-    _driverArrivalSeconds = s;
-    _driverArrival = _calculateDriverArrival();
-    _driverArrivalString = _calculateDriverArrivalString();
+  void updatePilotArrivalSeconds(int s) {
+    _pilotArrivalSeconds = s;
+    _pilotArrival = _calculatePilotArrival();
+    _pilotArrivalString = _calculatePilotArrivalString();
     _eta = _calculateETA();
     _etaString = _calculateETAString();
     notifyListeners();
@@ -89,11 +89,11 @@ class TripModel extends ChangeNotifier {
   }
 
   DateTime _calculateETA() {
-    if (_driverArrivalSeconds == null || _durationSeconds == null) {
+    if (_pilotArrivalSeconds == null || _durationSeconds == null) {
       return null;
     }
     return DateTime.now().add(Duration(
-      seconds: _durationSeconds + _driverArrivalSeconds,
+      seconds: _durationSeconds + _pilotArrivalSeconds,
     ));
   }
 
@@ -110,26 +110,26 @@ class TripModel extends ChangeNotifier {
             : _eta.minute.toString());
   }
 
-  DateTime _calculateDriverArrival() {
-    if (_driverArrivalSeconds == null) {
+  DateTime _calculatePilotArrival() {
+    if (_pilotArrivalSeconds == null) {
       return null;
     }
     return DateTime.now().add(Duration(
-      seconds: _driverArrivalSeconds,
+      seconds: _pilotArrivalSeconds,
     ));
   }
 
-  String _calculateDriverArrivalString() {
-    if (_driverArrival == null) {
+  String _calculatePilotArrivalString() {
+    if (_pilotArrival == null) {
       return "";
     }
-    return _driverArrival.hour.toString() +
+    return _pilotArrival.hour.toString() +
         ":" +
-        _driverArrival.minute.toString();
+        _pilotArrival.minute.toString();
   }
 
   // TODO: round fare price up if payment is in money
-  void fromRequestTripResult(RequestTripResult rrr) {
+  void fromRequestTripResult(Trip rrr, {bool notify = true}) {
     if (rrr == null) {
       _tripStatus = TripStatus.off;
       _farePrice = null;
@@ -140,7 +140,9 @@ class TripModel extends ChangeNotifier {
       _encodedPoints = null;
       _eta = null;
       _etaString = null;
-      notifyListeners();
+      if (notify) {
+        notifyListeners();
+      }
     } else {
       _tripStatus = rrr.tripStatus;
       _farePrice = rrr.farePrice;
@@ -149,12 +151,15 @@ class TripModel extends ChangeNotifier {
       _durationSeconds = rrr.durationSeconds;
       _durationText = rrr.durationText;
       _encodedPoints = rrr.encodedPoints;
-      _driverArrivalSeconds = 300; // estimate driver will arrive in 5 minutes
+      _pilotArrivalSeconds = 300; // estimate pilot will arrive in 5 minutes
       _eta = _calculateETA();
       _etaString = _calculateETAString();
-      _driverArrival = _calculateDriverArrival();
-      _driverArrivalString = _calculateDriverArrivalString();
-      notifyListeners();
+      _pilotArrival = _calculatePilotArrival();
+      _pilotArrivalString = _calculatePilotArrivalString();
+      print("fromRequestTripResult set status to " + _tripStatus.toString());
+      if (notify) {
+        notifyListeners();
+      }
     }
   }
 }

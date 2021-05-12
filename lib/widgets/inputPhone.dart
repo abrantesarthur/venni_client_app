@@ -40,6 +40,7 @@ class InputPhone extends StatelessWidget {
 }
 
 /// Format incoming numeric text to fit the format of (##) #####-####
+/// TODO: use MaskedInputFormatter instead
 class _BrNumberTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

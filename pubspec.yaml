@@ -28,6 +28,8 @@ dependencies:
   permission_handler: 5.0.1+2
   flutter_polyline_points: ^0.2.4
   flutter_svg: ^0.19.3
+  encrypt: ^4.1.0
+  pointycastle: ^2.0.0
   flutter_maps_place_picker:
     git:
       url: git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git

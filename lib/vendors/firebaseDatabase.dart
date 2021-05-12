@@ -2,15 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
-
-enum DeleteReason {
-  badTripExperience,
-  badAppExperience,
-  hasAnotherAccount,
-  doesntUseService,
-  another,
-}
 
 extension AppFirebaseDatabase on FirebaseDatabase {
   Future<void> submitDeleteReasons({
@@ -62,17 +55,12 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     });
   }
 
-  Future<double> getUserRating(String uid) async {
-    double result;
+  Future<ClientInterface> getClientData(String uid) async {
+    ClientInterface result;
     try {
-      DataSnapshot snapshot = await this
-          .reference()
-          .child("clients")
-          .child(uid)
-          .child("rating")
-          .once();
-      // typecast to double if integer
-      result = double.parse(snapshot.value);
+      DataSnapshot snapshot =
+          await this.reference().child("clients").child(uid).once();
+      result = ClientInterface.fromJson(snapshot.value);
     } catch (_) {}
     return result;
   }
@@ -138,5 +126,147 @@ extension AppFirebaseDatabase on FirebaseDatabase {
         .child("trip_status")
         .onValue
         .listen(onData);
+  }
+}
+
+enum DeleteReason {
+  badTripExperience,
+  badAppExperience,
+  hasAnotherAccount,
+  doesntUseService,
+  another,
+}
+
+enum PaymentMethodName {
+  credit_card,
+  cash,
+}
+
+extension PaymentMethodNameExtension on PaymentMethodName {
+  static PaymentMethodName fromString(String s) {
+    switch (s) {
+      case "credit_card":
+        return PaymentMethodName.credit_card;
+      case "cash":
+        return PaymentMethodName.cash;
+      default:
+        return null;
+    }
+  }
+}
+
+class ClientPaymentMethod {
+  final PaymentMethodName name;
+  final String creditCardID;
+
+  ClientPaymentMethod({@required this.name, @required this.creditCardID});
+
+  factory ClientPaymentMethod.fromJson(Map json) {
+    return json != null
+        ? ClientPaymentMethod(
+            name: PaymentMethodNameExtension.fromString(json["default"]),
+            creditCardID: json["card_id"],
+          )
+        : null;
+  }
+}
+
+enum CardBrand {
+  mastercard,
+  visa,
+  elo,
+  amex,
+  discover,
+  aura,
+  jcb,
+  hipercard,
+  diners,
+}
+
+extension CardBrandExtension on CardBrand {
+  static CardBrand fromString(String brand) {
+    switch (brand) {
+      case "mastercard":
+        return CardBrand.mastercard;
+      case "visa":
+        return CardBrand.visa;
+      case "elo":
+        return CardBrand.elo;
+      case "amex":
+        return CardBrand.amex;
+      case "discover":
+        return CardBrand.discover;
+      case "aura":
+        return CardBrand.aura;
+      case "jcb":
+        return CardBrand.jcb;
+      case "hipercard":
+        return CardBrand.hipercard;
+      case "diners":
+        return CardBrand.diners;
+      default:
+        return null;
+    }
+  }
+
+  String getString() {
+    if (this != null) {
+      return this.toString().substring(10);
+    }
+    return "";
+  }
+}
+
+class CreditCard {
+  final String id;
+  final String lastDigits;
+  final CardBrand brand;
+
+  CreditCard({
+    @required this.id,
+    @required this.lastDigits,
+    @required this.brand,
+  });
+
+  factory CreditCard.fromJson(Map json) {
+    return json != null
+        ? CreditCard(
+            id: json["id"],
+            lastDigits: json["last_digits"],
+            brand: CardBrandExtension.fromString(json["brand"]),
+          )
+        : null;
+  }
+}
+
+class ClientInterface {
+  final String rating;
+  final ClientPaymentMethod defaultPaymentMethod;
+  final List<CreditCard> creditCards;
+  ClientInterface({
+    @required this.rating,
+    @required this.defaultPaymentMethod,
+    @required this.creditCards,
+  });
+
+  factory ClientInterface.fromJson(Map json) {
+    if (json == null) {
+      return null;
+    }
+
+    List<CreditCard> creditCards = [];
+    if (json["cards"] != null) {
+      json["cards"].keys.forEach((cardID) {
+        CreditCard card = CreditCard.fromJson(json["cards"][cardID]);
+        creditCards.add(card);
+      });
+    }
+
+    return ClientInterface(
+      rating: json["rating"],
+      defaultPaymentMethod:
+          ClientPaymentMethod.fromJson(json["payment_method"]),
+      creditCards: creditCards,
+    );
   }
 }

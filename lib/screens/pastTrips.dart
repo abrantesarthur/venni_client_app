@@ -175,8 +175,6 @@ Widget _buildPastTrip(
 ) {
   final screenWidth = MediaQuery.of(context).size.width;
   final screenHeight = MediaQuery.of(context).size.height;
-  GoogleMapsModel googleMaps =
-      Provider.of<GoogleMapsModel>(context, listen: false);
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
   return InkWell(
     onTap: () {

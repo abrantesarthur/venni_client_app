@@ -49,7 +49,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
 
     // as user inputs phone, check for its validity and update UI accordingly
     _controllerListener = () {
-      if (phoneNumberIsValid(phoneTextEditingController.text)) {
+      if (phoneTextEditingController.text.isValidPhoneNumber()) {
         setActiveState(
           message: "O seu navegador pode se abrir para efetuar verificações :)",
           phone: "+55 " + phoneTextEditingController.text,

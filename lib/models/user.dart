@@ -16,11 +16,17 @@ class ProfileImage {
 class UserModel extends ChangeNotifier {
   GeocodingResult _geocoding;
   ProfileImage _profileImage;
-  double _rating;
+  String _rating;
+  PaymentMethodName _defaultPaymentMethod;
+  String _defaultCreditCardID;
+  List<CreditCard> _creditCards;
 
   GeocodingResult get geocoding => _geocoding;
   ProfileImage get profileImage => _profileImage;
-  double get rating => _rating;
+  String get rating => _rating;
+  PaymentMethodName get defaultPaymentMethod => _defaultPaymentMethod;
+  String get defaultCreditCardID => _defaultCreditCardID;
+  List<CreditCard> get creditCards => _creditCards;
 
   UserModel();
 
@@ -29,17 +35,33 @@ class UserModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRating(double r) {
-    _rating = r;
-    notifyListeners();
-  }
-
   void setGeocoding(GeocodingResult g) {
     _geocoding = g;
     notifyListeners();
   }
 
-  // TODO: use cache
+  void setRating(String r) {
+    _rating = r;
+    notifyListeners();
+  }
+
+  void fromClientInterface(ClientInterface c) {
+    if (c != null) {
+      _rating = c.rating;
+      _defaultPaymentMethod = c.defaultPaymentMethod.name;
+      _defaultCreditCardID = c.defaultPaymentMethod.creditCardID;
+      _creditCards = c.creditCards;
+      notifyListeners();
+    }
+  }
+
+  void addCreditCard(CreditCard card) {
+    if (card != null) {
+      _creditCards.add(card);
+      notifyListeners();
+    }
+  }
+
   Future<void> downloadData(FirebaseModel firebase) async {
     // download user image file
     // TODO: there is aproblem with getProfileImage. it's not returning. fix it
@@ -48,9 +70,9 @@ class UserModel extends ChangeNotifier {
         .then((value) => this.setProfileImage(value));
 
     // get user rating
-    double rating =
-        await firebase.database.getUserRating(firebase.auth.currentUser.uid);
-    this.setRating(rating);
+    ClientInterface client =
+        await firebase.database.getClientData(firebase.auth.currentUser.uid);
+    this.fromClientInterface(client);
   }
 
   Future<Position> getPosition() async {

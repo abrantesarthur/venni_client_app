@@ -156,7 +156,6 @@ class TripModel extends ChangeNotifier {
       _etaString = _calculateETAString();
       _pilotArrival = _calculatePilotArrival();
       _pilotArrivalString = _calculatePilotArrivalString();
-      print("fromRequestTripResult set status to " + _tripStatus.toString());
       if (notify) {
         notifyListeners();
       }

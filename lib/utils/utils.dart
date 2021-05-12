@@ -1,4 +1,3 @@
-// phoneNumberIsValid returns true if phone has format (##) ##### ####
 // TODO: test
 import 'dart:math';
 import 'dart:ui'
@@ -9,16 +8,189 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rider_frontend/styles.dart';
 
-bool phoneNumberIsValid(String phoneNumber) {
-  if (phoneNumber == null) {
-    return false;
-  }
-  String pattern = r'^\([\d]{2}\) [\d]{5}-[\d]{4}$';
-  RegExp regExp = new RegExp(pattern);
-  if (regExp.hasMatch(phoneNumber)) {
+enum States {
+  AC,
+  AL,
+  AP,
+  AM,
+  BA,
+  CE,
+  DF,
+  ES,
+  GO,
+  MA,
+  MT,
+  MS,
+  MG,
+  PA,
+  PB,
+  PR,
+  PE,
+  PI,
+  RJ,
+  RN,
+  RS,
+  RO,
+  RR,
+  SC,
+  SP,
+  SE,
+  TO
+}
+
+// EXTENSIONS
+
+extension CPFExtension on String {
+  // expects format xxxxxxxxxxx
+  bool isValidCPF() {
+    if (this == null || this.length != 11 || this._allDigitsAreTheSame()) {
+      return false;
+    }
+
+    int sum = 0;
+    // multiply first 9 digits by decreasing sequence from 10 to 2
+    for (var i = 0; i < 9; i++) {
+      sum += int.parse(this[i]) * (10 - i);
+    }
+
+    // calculate remaining. Default to 0 if it is 10 or 11.
+    int remaining = (sum * 10) % 11;
+    remaining = (remaining == 10 || remaining == 11) ? 0 : remaining;
+
+    // remaining must equal 10th digit
+    if (remaining != int.parse(this[9])) {
+      return false;
+    }
+
+    // multiply first 10 digits by decreasing sequence from 11 to 2
+
+    sum = 0;
+    for (var i = 0; i < 10; i++) {
+      sum += int.parse(this[i]) * (11 - i);
+    }
+
+    // calculate remaining. Default to 0 if it is 10 or 11.
+
+    remaining = (sum * 10) % 11;
+    remaining = (remaining == 10 || remaining == 11) ? 0 : remaining;
+
+    // remaining must equal 11th digit
+    if (remaining != int.parse(this[10])) {
+      return false;
+    }
+
     return true;
   }
-  return false;
+
+  // get cpf in format xxx.xxx.xxx-xx and return in format xxxxxxxxxxx
+  String getCleanedCPF() {
+    if (this == null || this.length != 14) {
+      return "";
+    }
+    return this.substring(0, 3) +
+        this.substring(4, 7) +
+        this.substring(8, 11) +
+        this.substring(12);
+  }
+
+  bool _allDigitsAreTheSame() {
+    bool value = true;
+    for (var i = 0, j = 1; i < this.length - 1; i++, j++) {
+      if (this[i] != this[j]) {
+        value = false;
+        break;
+      }
+    }
+    return value;
+  }
+}
+
+extension ExpirationDateExtension on String {
+  // expirationDate has MM/YY format
+  String getCleanedExpirationDate() {
+    if (this == null || this.length != 5) {
+      return "";
+    }
+    return this.substring(0, 2) + this.substring(3);
+  }
+
+  bool isValidExpirationDate() {
+    if (this.length != 4) {
+      return false;
+    }
+
+    int month = int.parse(this.substring(0, 2));
+    int year = int.parse(this.substring(2));
+    int currYear = int.parse(DateTime.now().year.toString().substring(2, 4));
+    int currMonth = DateTime.now().month;
+
+    bool expirationMonthIsValid = month >= 1 && month <= 12;
+    bool expirationYearIsValid = year == currYear
+        ? month >= currMonth
+        : year < currYear
+            ? false
+            : true;
+    return expirationMonthIsValid && expirationYearIsValid;
+  }
+}
+
+// TODO: test
+extension CreditCardExtension on String {
+  String getCleanedCardNumber() {
+    if (this == null || this.length != 19) {
+      return "";
+    }
+    return this.substring(0, 4) +
+        this.substring(5, 9) +
+        this.substring(10, 14) +
+        this.substring(15);
+  }
+
+  // LuhnAlgorithm
+  bool isValidCardNumber() {
+    if (this.isEmpty) {
+      return false;
+    }
+
+    if (this.length < 8) {
+      // No need to even proceed with the validation if it's less than 8 characters
+      return false;
+    }
+
+    if (this._allCardDigitsAreTheSame()) {
+      return false;
+    }
+
+    int sum = 0;
+    int length = this.length;
+    for (var i = 0; i < length; i++) {
+      // get digits in reverse order
+      int digit = int.parse(this[length - i - 1]);
+
+      // every 2nd number multiply with 2
+      if (i % 2 == 1) {
+        digit *= 2;
+      }
+      sum += digit > 9 ? (digit - 9) : digit;
+    }
+
+    if (sum % 10 == 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _allCardDigitsAreTheSame() {
+    bool value = true;
+    for (var i = 0, j = 1; i < this.length - 1; i++, j++) {
+      if (this[i] != this[j]) {
+        value = false;
+        break;
+      }
+    }
+    return value;
+  }
 }
 
 extension EmailExtension on String {
@@ -53,6 +225,19 @@ extension PhoneNumberExtension on String {
         .replaceRange(0, 0, "(")
         .replaceRange(3, 3, ") ")
         .replaceRange(10, 10, "-");
+  }
+
+// isValidPhoneNumber returns true if phone has format (##) ##### ####
+  bool isValidPhoneNumber() {
+    if (this == null) {
+      return false;
+    }
+    String pattern = r'^\([\d]{2}\) [\d]{5}-[\d]{4}$';
+    RegExp regExp = new RegExp(pattern);
+    if (regExp.hasMatch(this)) {
+      return true;
+    }
+    return false;
   }
 }
 
@@ -142,5 +327,46 @@ extension AppBitmapDescriptor on BitmapDescriptor {
       ..color = color;
     canvas.drawCircle(
         Offset(_fillCircleOffset, _fillCircleOffset), _fillCircleRadius, paint);
+  }
+}
+
+// TEXTINPUTFORMATTERS
+
+// mask: whatever is not 'x' is considered a separator
+class MaskedInputFormatter extends TextInputFormatter {
+  final String mask;
+  List<int> separatorIndexes;
+
+  MaskedInputFormatter({@required this.mask}) {
+    separatorIndexes = [];
+    for (var i = 0; i < mask.length; i++) {
+      if (mask[i] != "x") {
+        separatorIndexes.add(i);
+      }
+    }
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    var newText = StringBuffer();
+    for (int i = 0, maskIndex = 0; i < newValue.text.length; i++, maskIndex++) {
+      if (separatorIndexes.contains(maskIndex)) {
+        newText.write(mask[maskIndex]);
+        maskIndex++;
+      }
+      newText.write(newValue.text[i]);
+    }
+
+    return newValue.copyWith(
+      text: newText.toString(),
+      selection: new TextSelection.collapsed(offset: newText.toString().length),
+    );
   }
 }

@@ -1,7 +1,14 @@
+import 'dart:io' as io;
+
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:encrypt/encrypt.dart';
+import 'package:encrypt/encrypt_io.dart';
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:pointycastle/asymmetric/api.dart';
+import 'package:path_provider/path_provider.dart' as pp;
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 
 extension AppFirebaseFunctions on FirebaseFunctions {
   Future<Trip> _doTrip({
@@ -131,6 +138,153 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     try {
       await this.httpsCallable("trip-rate_pilot").call(args);
     } catch (_) {}
+  }
+
+  Future<HashKey> getCardHashKey() async {
+    try {
+      HttpsCallableResult result =
+          await this.httpsCallable("payment-get_card_hash_key").call();
+      if (result != null && result.data != null) {
+        return HashKey.fromJson(result.data);
+      }
+    } catch (e) {
+      throw e;
+    }
+    return null;
+  }
+
+  // TODO: add tests to fromJson and wherever else appropriate
+  Future<CreditCard> createCard(CreateCardArguments args) async {
+    // build cardHash
+    HashKey hashKey = await getCardHashKey();
+    final cardHash = await args.calculateCardHash(hashKey);
+
+    // build data
+    Map<String, dynamic> data = {};
+    data["card_number"] = args.cardNumber;
+    data["card_expiration_date"] = args.cardExpirationDate;
+    data["card_holder_name"] = args.cardHolderName;
+    data["card_hash"] = cardHash;
+    data["cpf_number"] = args.cpfNumber;
+    data["phone_number"] = args.phoneNumber;
+    data["email"] = args.email;
+    Map<String, String> billingAddress = {};
+    billingAddress["country"] = args.billingAddress.country;
+    billingAddress["state"] = args.billingAddress.state;
+    billingAddress["city"] = args.billingAddress.city;
+    billingAddress["street"] = args.billingAddress.street;
+    billingAddress["street_number"] = args.billingAddress.streetNumber;
+    billingAddress["zipcode"] = args.billingAddress.zipcode;
+    data["billing_address"] = billingAddress;
+
+    try {
+      HttpsCallableResult result =
+          await this.httpsCallable("payment-create_card").call(data);
+      if (result != null && result.data != null) {
+        return CreditCard.fromJson(result.data);
+      }
+    } catch (e) {
+      throw e;
+    }
+    return null;
+  }
+}
+
+class HashKey {
+  final String dateCreated;
+  final int id;
+  final String ip;
+  final String publicKey;
+
+  HashKey({
+    @required this.dateCreated,
+    @required this.id,
+    @required this.ip,
+    @required this.publicKey,
+  });
+
+  factory HashKey.fromJson(Map json) {
+    return json != null
+        ? HashKey(
+            dateCreated: json["date_created"],
+            id: json["id"],
+            ip: json["ip"],
+            publicKey: json["public_key"],
+          )
+        : null;
+  }
+}
+
+class BillingAddress {
+  final String country;
+  final String state;
+  final String city;
+  final String street;
+  final String streetNumber;
+  final String zipcode;
+
+  BillingAddress({
+    @required this.country,
+    @required this.state,
+    @required this.city,
+    @required this.street,
+    @required this.streetNumber,
+    @required this.zipcode,
+  });
+}
+
+class CreateCardArguments {
+  final String cardNumber;
+  final String cardExpirationDate;
+  final String cardHolderName;
+  final String cardCvv;
+
+  final String cpfNumber;
+  final String phoneNumber;
+  final String email;
+  final BillingAddress billingAddress;
+
+  CreateCardArguments({
+    @required this.cardNumber,
+    @required this.cardExpirationDate,
+    @required this.cardHolderName,
+    @required this.cpfNumber,
+    @required this.phoneNumber,
+    @required this.email,
+    @required this.cardCvv,
+    @required this.billingAddress,
+  });
+
+  Future<String> calculateCardHash(HashKey hashKey) async {
+    String queryString = "card_number=" +
+        this.cardNumber +
+        "&card_holder_name=" +
+        this.cardHolderName.replaceAll(RegExp(' +'), "%20") +
+        "&card_expiration_date" +
+        this.cardExpirationDate +
+        "&card_cvv=" +
+        this.cardCvv;
+
+    // TODO: can I use this strategy to create a cache?
+    // store public key in '.pem' file in cache
+    final dir = await pp.getTemporaryDirectory();
+    final pkFile = await io.File(dir.path + "/public.pem")
+        .writeAsString(hashKey.publicKey);
+
+    // read publiKey from file
+    final publicKey =
+        await parseKeyFromFile<RSAPublicKey>(dir.path + "/public.pem");
+
+    final encrypter = Encrypter(RSA(publicKey: publicKey));
+
+    final encrypted = encrypter.encrypt(queryString);
+
+    final cardHash = hashKey.id.toString() + "_" + encrypted.base64;
+
+    // delete created file
+    await pkFile.delete();
+
+    return cardHash;
   }
 }
 

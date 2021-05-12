@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:rider_frontend/styles.dart';
 
 class BorderlessButton extends StatelessWidget {
@@ -7,10 +8,10 @@ class BorderlessButton extends StatelessWidget {
   final String secondaryText;
   final IconData iconLeft;
   final double iconLeftSize;
+  final Color iconLeftColor;
   final IconData iconRight;
   final double iconRightSize;
   final Color iconRightColor;
-
   final double primaryTextSize;
   final double secondaryTextSize;
   final Color primaryTextColor;
@@ -18,10 +19,13 @@ class BorderlessButton extends StatelessWidget {
   final double paddingBottom;
   final String label;
   final Color labelColor;
+  final String svgLeftPath; // has lower priority than svg left
+  final double svgLeftWidth;
 
   BorderlessButton({
     this.primaryTextColor,
     this.iconLeftSize,
+    this.iconLeftColor,
     this.iconRightSize,
     this.iconRightColor,
     this.primaryTextSize,
@@ -35,6 +39,8 @@ class BorderlessButton extends StatelessWidget {
     this.paddingTop,
     this.label,
     this.labelColor,
+    this.svgLeftPath,
+    this.svgLeftWidth,
   });
 
   @override
@@ -54,11 +60,22 @@ class BorderlessButton extends StatelessWidget {
                 ? Row(children: [
                     Icon(
                       iconLeft,
+                      color: iconLeftColor ?? Colors.black,
                       size: iconLeftSize ?? 18,
                     ),
                     SizedBox(width: screenWidth / 30),
                   ])
-                : Container(),
+                : svgLeftPath != null
+                    ? Row(
+                        children: [
+                          SvgPicture.asset(
+                            svgLeftPath,
+                            width: svgLeftWidth ?? 18,
+                          ),
+                          SizedBox(width: screenWidth / 30),
+                        ],
+                      )
+                    : Container(),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/screens/creditCard.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
@@ -29,6 +30,7 @@ import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/pastTripDetail.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
+import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
@@ -38,6 +40,7 @@ import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/places.dart';
 
 /**
@@ -380,6 +383,8 @@ class _AppState extends State<App> {
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
               PilotProfile.routeName: (context) => PilotProfile(),
               RatePilot.routeName: (context) => RatePilot(),
+              Payments.routeName: (context) => Payments(),
+              AddCreditCard.routeName: (context) => AddCreditCard(),
             },
           );
         });

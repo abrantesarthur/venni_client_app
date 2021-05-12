@@ -5,17 +5,17 @@ void main() {
   group("phoneNumberIsValid", () {
     test("return true for valid number", () {
       String validNumber = "(38) 99860-1275";
-      expect(phoneNumberIsValid(validNumber), true);
+      expect(validNumber.isValidPhoneNumber(), true);
     });
 
     test("return false for invalid number", () {
       String validNumber = "(38) 998601275";
-      expect(phoneNumberIsValid(validNumber), false);
+      expect(validNumber.isValidPhoneNumber(), false);
     });
 
     test("return false for empty number", () {
       String validNumber = "";
-      expect(phoneNumberIsValid(validNumber), false);
+      expect(validNumber.isValidPhoneNumber(), false);
     });
   });
 }

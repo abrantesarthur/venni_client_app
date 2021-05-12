@@ -128,24 +128,6 @@ void main() {
     expect(textFinder, findsOneWidget);
   });
 
-  testWidgets("AppInputText shows keyboard when tapping widget", (
-    WidgetTester tester,
-  ) async {
-    // build the widget
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: AppInputText(),
-        ),
-      ),
-    );
-
-    // Tap widget
-    await tester.tap(find.byType(AppInputText));
-
-    expect(true, tester.testTextInput.isVisible);
-  });
-
   testWidgets("AppInputText correctly calls onSubmittedCallback", (
     WidgetTester tester,
   ) async {

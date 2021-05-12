@@ -19,10 +19,6 @@ void main() {
   setUp(() async {
     await DotEnv.load(fileName: ".env");
 
-    mockTripModel = MockTripModel();
-    mockNavigatorObserver = MockNavigatorObserver();
-    mockUserModel = MockUserModel();
-
     when(mockUserGeocoding.latitude).thenReturn(-43.0);
     when(mockUserGeocoding.longitude).thenReturn(-17.0);
     when(mockTripModel.pickUpAddress).thenReturn(mockAddress);

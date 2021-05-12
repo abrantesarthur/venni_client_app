@@ -46,13 +46,14 @@ class EditPhoneState extends State<EditPhone> {
         ),
         Spacer(),
         AppButton(
-            textData: "Atualizar Telefone",
-            onTapCallBack: () async {
-              final _ = await Navigator.pushNamed(
-                context,
-                InsertNewPhone.routeName,
-              );
-            })
+          textData: "Atualizar Telefone",
+          onTapCallBack: () async {
+            final _ = await Navigator.pushNamed(
+              context,
+              InsertNewPhone.routeName,
+            );
+          },
+        )
       ],
     );
   }

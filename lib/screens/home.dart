@@ -166,8 +166,9 @@ class HomeState extends State<Home> {
                   zoomControlsEnabled: false,
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
-                    target: googleMaps.initialCameraLatLng,
-                    zoom: googleMaps.initialZoom,
+                    target: googleMaps.initialCameraLatLng ??
+                        LatLng(-17.217600, -46.874621), // defaults to paracatu
+                    zoom: googleMaps.initialZoom ?? 16.5,
                   ),
                   padding: EdgeInsets.only(
                     top: googleMaps.googleMapsTopPadding ?? screenHeight / 12,
@@ -479,8 +480,8 @@ List<Widget> _buildRemainingStackChildren({
             scaffoldKey.currentState.openDrawer();
             // trigger getUserRating so it is updated in case it's changed
             firebase.database
-                .getUserRating(firebase.auth.currentUser.uid)
-                .then((value) => user.setRating(value));
+                .getClientData(firebase.auth.currentUser.uid)
+                .then((value) => user.setRating(value.rating));
           }),
         ),
       )

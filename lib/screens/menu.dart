@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
+import 'package:rider_frontend/screens/payments.dart';
+import 'package:rider_frontend/screens/profile.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
@@ -22,48 +24,51 @@ class Menu extends StatelessWidget {
             height: screenHeight / 3.5,
             child: DrawerHeader(
               decoration: BoxDecoration(color: Colors.white),
-              child: Column(
-                children: [
-                  Spacer(flex: 2),
-                  Container(
-                    width: screenHeight / 7,
-                    height: screenHeight / 7,
-                    decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                        fit: BoxFit.cover,
-                        image: user.profileImage == null
-                            ? AssetImage("images/user_icon.png")
-                            : user.profileImage.file,
+              child: InkWell(
+                onTap: () => Navigator.pushNamed(context, Profile.routeName),
+                child: Column(
+                  children: [
+                    Spacer(flex: 2),
+                    Container(
+                      width: screenHeight / 7,
+                      height: screenHeight / 7,
+                      decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                          fit: BoxFit.cover,
+                          image: user.profileImage == null
+                              ? AssetImage("images/user_icon.png")
+                              : user.profileImage.file,
+                        ),
                       ),
                     ),
-                  ),
-                  Spacer(),
-                  Text(
-                    firebase.auth.currentUser != null
-                        ? firebase.auth.currentUser.displayName
-                        : "",
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
+                    Spacer(),
+                    Text(
+                      firebase.auth.currentUser != null
+                          ? firebase.auth.currentUser.displayName
+                          : "",
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  user.rating != null
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              user.rating.toString(),
-                              style: TextStyle(fontSize: 15.0),
-                            ),
-                            SizedBox(width: screenWidth / 80),
-                            Icon(Icons.star_rate,
-                                size: 18, color: Colors.black87),
-                          ],
-                        )
-                      : Container(),
-                  Spacer(flex: 2),
-                ],
+                    user.rating != null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                user.rating.toString(),
+                                style: TextStyle(fontSize: 15.0),
+                              ),
+                              SizedBox(width: screenWidth / 80),
+                              Icon(Icons.star_rate,
+                                  size: 18, color: Colors.black87),
+                            ],
+                          )
+                        : Container(),
+                    Spacer(flex: 2),
+                  ],
+                ),
               ),
             ),
           ),
@@ -85,6 +90,9 @@ class Menu extends StatelessWidget {
                 ),
                 Divider(thickness: 0.1, color: Colors.black),
                 BorderlessButton(
+                  onTap: () {
+                    Navigator.pushNamed(context, Payments.routeName);
+                  },
                   iconLeft: Icons.payment_rounded,
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Pagamento",

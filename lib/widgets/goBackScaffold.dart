@@ -12,6 +12,8 @@ class GoBackScaffold extends StatelessWidget {
   final bool lockScreen;
   final IconData goBackIcon;
   final TextStyle titleStyle;
+  final double paddingLeft;
+  final double paddingRight;
 
   GoBackScaffold({
     @required this.children,
@@ -21,12 +23,15 @@ class GoBackScaffold extends StatelessWidget {
     this.lockScreen,
     this.goBackIcon,
     this.titleStyle,
+    this.paddingLeft,
+    this.paddingRight,
   });
 
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset ?? false,
       body: OverallPadding(
         child: Column(

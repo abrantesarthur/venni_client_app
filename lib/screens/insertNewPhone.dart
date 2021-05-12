@@ -45,7 +45,7 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
 
     phoneController.addListener(
       () {
-        if (phoneNumberIsValid(phoneController.text)) {
+        if (phoneController.text.isValidPhoneNumber()) {
           setActiveState(
             message:
                 "O seu navegador pode se abrir para efetuar verificações :)",

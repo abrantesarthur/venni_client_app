@@ -13,7 +13,7 @@ class CancelButton extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColor.primaryPink,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             BoxShadow(
@@ -26,7 +26,7 @@ class CancelButton extends StatelessWidget {
         ),
         child: Icon(
           Icons.clear,
-          color: Colors.white,
+          color: AppColor.primaryPink,
           size: 28,
         ),
       ),

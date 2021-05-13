@@ -637,7 +637,7 @@ class AddCreditCardState extends State<AddCreditCard> {
       buttonChild = null;
     });
     // pop back if no error happened
-    Navigator.pop(context);
+    Navigator.pop(context, card);
   }
 }
 

@@ -84,6 +84,7 @@ class GoogleMapsModel extends ChangeNotifier {
 
     // reset maps camera view by showing location button and removing padding
     setGoogleMapsCameraView();
+    notifyListeners();
   }
 
   Future<void> drawPolylineFromPilotToDestination(BuildContext context) async {
@@ -217,6 +218,13 @@ class GoogleMapsModel extends ChangeNotifier {
       _polylines[polylineId] = polyline;
     }
 
+    // hide user's location details and set maps padding
+    setGoogleMapsCameraView(
+      locationButtonEnabled: false,
+      topPadding: topPadding,
+      bottomPadding: bottomPadding,
+    );
+
     // add bounds to map view
     // for some reason we have to delay computation so animateCamera works
     Future.delayed(Duration(milliseconds: 50), () async {
@@ -228,13 +236,7 @@ class GoogleMapsModel extends ChangeNotifier {
 
     // draw  markers
     await _drawMarkers(context, polyline: polyline);
-
-    // hide user's location details and set maps padding
-    setGoogleMapsCameraView(
-      locationButtonEnabled: false,
-      topPadding: topPadding,
-      bottomPadding: bottomPadding,
-    );
+    notifyListeners();
   }
 
   void setGoogleMapsCameraView({
@@ -250,7 +252,6 @@ class GoogleMapsModel extends ChangeNotifier {
     // set paddings (null by default)
     _googleMapsBottomPadding = bottomPadding;
     _googleMapsTopPadding = topPadding;
-
     notifyListeners();
   }
 

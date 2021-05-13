@@ -15,6 +15,7 @@ class BorderlessButton extends StatelessWidget {
   final double primaryTextSize;
   final double secondaryTextSize;
   final Color primaryTextColor;
+  final FontWeight primaryTextWeight;
   final double paddingTop;
   final double paddingBottom;
   final String label;
@@ -30,6 +31,7 @@ class BorderlessButton extends StatelessWidget {
     this.iconRightColor,
     this.primaryTextSize,
     this.secondaryTextSize,
+    this.primaryTextWeight,
     this.primaryText,
     this.onTap,
     this.secondaryText,
@@ -84,9 +86,9 @@ class BorderlessButton extends StatelessWidget {
                     primaryText,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: primaryTextColor ?? Colors.black,
-                      fontSize: primaryTextSize ?? 16,
-                    ),
+                        color: primaryTextColor ?? Colors.black,
+                        fontSize: primaryTextSize ?? 16,
+                        fontWeight: primaryTextWeight ?? FontWeight.normal),
                   ),
                   secondaryText != null
                       ? Container(

@@ -12,6 +12,7 @@ import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
+import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
@@ -21,6 +22,7 @@ import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/cancelButton.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
@@ -267,8 +269,8 @@ class HomeState extends State<Home> {
       await widget.googleMaps.drawPolyline(
         context: context,
         encodedPoints: trip.encodedPoints,
-        topPadding: MediaQuery.of(context).size.height / 40,
-        bottomPadding: MediaQuery.of(context).size.height / 3,
+        topPadding: MediaQuery.of(context).size.height / 9.5,
+        bottomPadding: MediaQuery.of(context).size.height / 4.8,
       );
       return;
     }
@@ -357,8 +359,8 @@ class HomeState extends State<Home> {
       await googleMaps.undrawPolyline(context);
       await Navigator.pushNamed(context, RatePilot.routeName);
       // important: don't notify listeneres when clearing models. This may cause
-      // null exceptions because there may still be widgets from RatePilot
-      //  that use the values from the models.
+      // null exceptions because there may still be widgets from the previous
+      // screen RatePilot that use the values from the models.
       pilot.clear(notify: false);
       trip.clear(notify: false);
       return;
@@ -404,7 +406,7 @@ class HomeState extends State<Home> {
             return AlertDialog(
               title: Text("O pagamento falhou :("),
               content: Text(
-                "Escolha outra forma de pagamento",
+                "Escolha outra forma de pagamento e tente novamente.",
                 style: TextStyle(color: AppColor.disabled),
               ),
               actions: [
@@ -422,9 +424,14 @@ class HomeState extends State<Home> {
                       fontSize: 18,
                     ),
                   ),
-                  // TODO: substitute for pushing the payment screen and then updating
-                  // user's payment method which will reflect on floating card selection
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () async {
+                    await Navigator.pushNamed(
+                      context,
+                      Payments.routeName,
+                      arguments: PaymentsArguments(mode: PaymentsMode.pick),
+                    );
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             );
@@ -435,17 +442,6 @@ class HomeState extends State<Home> {
     }
     return;
   }
-}
-
-Future<void> _pushDefineRoute(
-    BuildContext context, DefineRouteMode mode) async {
-  Navigator.pushNamed(
-    context,
-    DefineRoute.routeName,
-    arguments: DefineRouteArguments(
-      mode: mode,
-    ),
-  );
 }
 
 List<Widget> _buildRemainingStackChildren({
@@ -469,7 +465,13 @@ List<Widget> _buildRemainingStackChildren({
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
             onTapCallBack: () {
-              _pushDefineRoute(context, DefineRouteMode.request);
+              Navigator.pushNamed(
+                context,
+                DefineRoute.routeName,
+                arguments: DefineRouteArguments(
+                  mode: DefineRouteMode.request,
+                ),
+              );
             },
           ),
         ),
@@ -496,12 +498,12 @@ List<Widget> _buildRemainingStackChildren({
     // has already confirmed but received a paymentFailed, give them the
     // option of trying again.
     return [
-      _buildCancelRideButton(context, trip),
+      _buildCancelTripButton(context, trip),
+      _buildEditRouteButton(context, trip),
       Column(
         children: [
           Spacer(),
-          _buildRideSummaryFloatingCard(context, trip),
-          _buildEditAndConfirmButtons(context, trip),
+          _buildTripSummaryFloatingCard(context, trip, user),
         ],
       ),
     ];
@@ -509,7 +511,7 @@ List<Widget> _buildRemainingStackChildren({
 
   if (trip.tripStatus == TripStatus.waitingPilot) {
     return [
-      _buildCancelRideButton(context, trip,
+      _buildCancelTripButton(context, trip,
           // TODO: decide on final fee
           content:
               "Atenção: como alguém já está a caminho, será cobrada uma taxa de R\$2,00,"),
@@ -531,7 +533,7 @@ List<Widget> _buildRemainingStackChildren({
       Column(
         children: [
           Spacer(),
-          _buildTripSummaryFloatingCard(
+          _buildETAFloatingCard(
             context,
             trip: trip,
             user: user,
@@ -543,7 +545,7 @@ List<Widget> _buildRemainingStackChildren({
   return [];
 }
 
-Widget _buildTripSummaryFloatingCard(
+Widget _buildETAFloatingCard(
   BuildContext context, {
   @required TripModel trip,
   @required UserModel user,
@@ -722,48 +724,132 @@ Widget _buildPilotSummaryFloatingCard(
   );
 }
 
-Widget _buildCancelRideButton(
+Widget _buildCancelTripButton(
   BuildContext context,
   TripModel trip, {
   String title,
   String content,
 }) {
+  final screenWidth = MediaQuery.of(context).size.width;
+
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
   PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
-  GoogleMapsModel googleMaps =
-      Provider.of<GoogleMapsModel>(context, listen: false);
   return Positioned(
-    right: 0,
+    left: 0,
     child: OverallPadding(
-      child: CancelButton(onPressed: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return YesNoDialog(
-              title: title ?? "Cancelar Pedido?",
-              content: content,
-              onPressedYes: () {
-                // TODO: charge fee if necessary
-                // cancel trip and update trip and pilot models once it succeeds
-                firebase.functions.cancelTrip();
-                // update models
-                trip.clear(status: TripStatus.canceledByClient);
-                pilot.clear();
-                Navigator.pop(context);
-              },
-            );
-          },
-        );
-      }),
+      left: screenWidth / 30,
+      child: CancelButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return YesNoDialog(
+                title: title ?? "Cancelar Pedido?",
+                content: content,
+                onPressedYes: () {
+                  // TODO: charge fee if necessary
+                  // cancel trip and update trip and pilot models once it succeeds
+                  firebase.functions.cancelTrip();
+                  // update models
+                  trip.clear(status: TripStatus.canceledByClient);
+                  pilot.clear();
+                  Navigator.pop(context);
+                },
+              );
+            },
+          );
+        },
+      ),
     ),
   );
 }
 
-Widget _buildRideSummaryFloatingCard(BuildContext context, TripModel trip) {
+Widget _buildEditRouteButton(
+  BuildContext context,
+  TripModel trip,
+) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
+  TripModel trip = Provider.of<TripModel>(context, listen: false);
+
+  return Positioned(
+    right: 0,
+    child: FloatingCard(
+      leftMargin: screenWidth / 4.5,
+      rightMargin: screenWidth / 30,
+      leftPadding: screenWidth / 20,
+      topMargin: screenHeight / 15,
+      borderRadius: 25,
+      child: InkWell(
+        onTap: () async {
+          Navigator.pushNamed(
+            context,
+            DefineRoute.routeName,
+            arguments: DefineRouteArguments(
+              mode: DefineRouteMode.edit,
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: screenWidth / 2,
+                  child: BorderlessButton(
+                    svgLeftPath: "images/pickUpIcon.svg",
+                    svgLeftWidth: 10,
+                    primaryText: trip.pickUpAddress.mainText,
+                    primaryTextWeight: FontWeight.bold,
+                    primaryTextSize: 13,
+                    primaryTextColor: AppColor.disabled,
+                  ),
+                ),
+                SizedBox(height: screenHeight / 150),
+                Container(
+                  width: screenWidth / 2,
+                  child: BorderlessButton(
+                    svgLeftPath: "images/dropOffIcon.svg",
+                    svgLeftWidth: 10,
+                    primaryText: trip.dropOffAddress.mainText,
+                    primaryTextWeight: FontWeight.bold,
+                    primaryTextSize: 13,
+                    primaryTextColor: AppColor.disabled,
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              flex: 1,
+              child: Text(
+                "Alterar",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColor.disabled,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildTripSummaryFloatingCard(
+  BuildContext context,
+  TripModel trip,
+  UserModel user,
+) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
   return FloatingCard(
+    leftMargin: 0,
+    rightMargin: 0,
     child: Column(
       children: [
         SizedBox(height: screenHeight / 200),
@@ -780,7 +866,7 @@ Widget _buildRideSummaryFloatingCard(BuildContext context, TripModel trip) {
             ),
           ],
         ),
-        SizedBox(height: screenHeight / 200),
+        SizedBox(height: screenHeight / 100),
         Row(
           children: [
             Text(
@@ -797,127 +883,110 @@ Widget _buildRideSummaryFloatingCard(BuildContext context, TripModel trip) {
         SizedBox(height: screenHeight / 200),
         Divider(thickness: 0.1, color: Colors.black),
         SizedBox(height: screenHeight / 200),
-        Text(
-          "Escolha a forma de pagamento",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        SizedBox(height: screenHeight / 75),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            GestureDetector(
-              child: Material(
-                type: MaterialType.card,
-                elevation: 4.0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    side: BorderSide(
-                        color: AppColor.secondaryGreen) // TODO: make dynamic
-                    ),
-                child: Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.money,
-                        size: 40,
-                        color: AppColor.secondaryGreen, // TODO: make dynamic
-                      ),
-                      SizedBox(width: screenWidth / 50),
-                      Text(
-                        "Dinheiro",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppColor.secondaryGreen, // TODO: make dynamic
-                        ),
-                      ),
-                    ],
-                  ),
+        Padding(
+          padding: const EdgeInsets.only(
+            bottom: 40,
+            left: 5,
+            right: 5,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: BorderlessButton(
+                  svgLeftPath: user.getPaymentMethodSvgPath(context),
+                  svgLeftWidth: 28,
+                  primaryText: user.getPaymentMethodDescription(context),
+                  primaryTextWeight: FontWeight.bold,
+                  iconRight: Icons.keyboard_arrow_right,
+                  iconRightColor: Colors.black,
+                  paddingTop: screenHeight / 200,
+                  paddingBottom: screenHeight / 200,
+                  onTap: () async {
+                    await Navigator.pushNamed(
+                      context,
+                      Payments.routeName,
+                      arguments: PaymentsArguments(mode: PaymentsMode.pick),
+                    );
+                  },
                 ),
               ),
-            ),
-            GestureDetector(
-              child: Material(
-                type: MaterialType.card,
-                elevation: 4.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+              Spacer(flex: 1),
+              AppButton(
+                textData: "Confirmar",
+                borderRadius: 30.0,
+                height: screenHeight / 15,
+                width: screenWidth / 2.5,
+                textStyle: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Padding(
-                  padding: EdgeInsets.all(5),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.credit_card,
-                        size: 40,
-                        color: Colors.black, // TODO: make dynamic
-                      ),
-                      SizedBox(width: screenWidth / 50),
-                      Text(
-                        "Cartão",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black, // TODO: make dynamic
-                        ),
-                      ),
-                      Icon(Icons.arrow_right),
-                    ],
-                  ),
-                ),
+                onTapCallBack: () =>
+                    confirmTripCallback(context, trip, firebase, user),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        SizedBox(height: screenHeight / 200),
       ],
     ),
   );
 }
 
-Widget _buildEditAndConfirmButtons(BuildContext context, TripModel trip) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-
-  return OverallPadding(
-    bottom: screenHeight / 20,
-    top: screenHeight / 40,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        AppButton(
-          textData: "Editar Rota",
-          borderRadius: 10.0,
-          height: screenHeight / 15,
-          width: screenWidth / 2.5,
-          buttonColor: Colors.grey[900],
-          textStyle: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+Future<void> confirmTripCallback(BuildContext context, TripModel trip,
+    FirebaseModel firebase, UserModel user) async {
+  // alert user in case they're paying with cash
+  if (user.defaultPaymentMethod.type == PaymentMethodType.cash) {
+    final useCard = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmar pagamento em dinheiro?"),
+          content: Text(
+            "Considere pagar com cartão de crédito. É prático e seguro.",
+            style: TextStyle(color: AppColor.disabled),
           ),
-          onTapCallBack: () async {
-            await _pushDefineRoute(context, DefineRouteMode.edit);
-          },
-        ),
-        AppButton(
-            textData: "Confirmar",
-            borderRadius: 10.0,
-            height: screenHeight / 15,
-            width: screenWidth / 2.5,
-            textStyle: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          actions: [
+            TextButton(
+              child: Text(
+                "usar cartão",
+                style: TextStyle(fontSize: 18),
+              ),
+              onPressed: () => Navigator.pop(context, true),
             ),
-            onTapCallBack: () async {
-              await Navigator.pushNamed(context, ConfirmTrip.routeName,
-                  arguments: ConfirmTripArguments(
-                    firebase: firebase,
-                    trip: trip,
-                  ));
-            }),
-      ],
+            TextButton(
+              child: Text(
+                "confirmar",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 18,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+          ],
+        );
+      },
+    ) as bool;
+    // push payments screen if user decides to pick a card
+    if (useCard) {
+      await Navigator.pushNamed(
+        context,
+        Payments.routeName,
+        arguments: PaymentsArguments(mode: PaymentsMode.pick),
+      );
+      print(user.defaultPaymentMethod.type);
+      return;
+    }
+  }
+
+  // push confirmation screen if user picks a card or decides to continue cash payment
+  await Navigator.pushNamed(
+    context,
+    ConfirmTrip.routeName,
+    arguments: ConfirmTripArguments(
+      firebase: firebase,
+      trip: trip,
     ),
   );
 }

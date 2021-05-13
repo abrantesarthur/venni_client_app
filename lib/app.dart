@@ -363,13 +363,21 @@ class _AppState extends State<App> {
                 });
               }
 
-              // if CreditCardDetal is pushed
+              // if CreditCardDetail is pushed
               if (settings.name == CreditCardDetail.routeName) {
                 final CreditCardDetailArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return CreditCardDetail(
                     creditCard: args.creditCard,
                   );
+                });
+              }
+
+              // if Payments is pushed
+              if (settings.name == Payments.routeName) {
+                final PaymentsArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return Payments(mode: args.mode);
                 });
               }
 
@@ -395,7 +403,6 @@ class _AppState extends State<App> {
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
               PilotProfile.routeName: (context) => PilotProfile(),
               RatePilot.routeName: (context) => RatePilot(),
-              Payments.routeName: (context) => Payments(),
               AddCreditCard.routeName: (context) => AddCreditCard(),
               CashDetail.routeName: (context) => CashDetail(),
             },

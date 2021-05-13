@@ -11,6 +11,7 @@ import 'package:rider_frontend/widgets/goBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
+// TODO: allow user to set as default
 class CreditCardDetailArguments {
   final CreditCard creditCard;
 

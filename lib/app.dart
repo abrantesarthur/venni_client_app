@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/screens/cashDetail.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -396,6 +397,7 @@ class _AppState extends State<App> {
               RatePilot.routeName: (context) => RatePilot(),
               Payments.routeName: (context) => Payments(),
               AddCreditCard.routeName: (context) => AddCreditCard(),
+              CashDetail.routeName: (context) => CashDetail(),
             },
           );
         });

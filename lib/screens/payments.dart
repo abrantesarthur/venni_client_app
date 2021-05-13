@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/addCreditCard.dart';
+import 'package:rider_frontend/screens/cashDetail.dart';
 import 'package:rider_frontend/screens/creditCardDetail.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
@@ -34,7 +35,9 @@ class PaymentsState extends State<Payments> {
               iconRightSize: 15,
               primaryText: "Dinheiro",
               paddingBottom: screenHeight / 200,
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, CashDetail.routeName);
+              },
             ),
             Divider(thickness: 0.1, color: Colors.black),
             user.creditCards != null && user.creditCards.length > 0

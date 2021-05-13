@@ -219,12 +219,18 @@ extension CardBrandExtension on CardBrand {
 
 class CreditCard {
   final String id;
+  final String holderName;
+  final String firstDigits;
   final String lastDigits;
+  final String expirationDate;
   final CardBrand brand;
 
   CreditCard({
     @required this.id,
+    @required this.holderName,
+    @required this.firstDigits,
     @required this.lastDigits,
+    @required this.expirationDate,
     @required this.brand,
   });
 
@@ -232,7 +238,10 @@ class CreditCard {
     return json != null
         ? CreditCard(
             id: json["id"],
+            holderName: json["holder_name"],
+            firstDigits: json["first_digits"],
             lastDigits: json["last_digits"],
+            expirationDate: json["expiration_date"],
             brand: CardBrandExtension.fromString(json["brand"]),
           )
         : null;

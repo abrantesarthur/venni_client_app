@@ -27,6 +27,7 @@ class AppInputText extends StatelessWidget {
   final Color backgroundColor;
   final Color fontColor;
   final bool hasBorders;
+  final CrossAxisAlignment crossAxisAlignment;
 
   AppInputText({
     this.maxLines,
@@ -52,13 +53,14 @@ class AppInputText extends StatelessWidget {
     this.backgroundColor,
     this.fontColor,
     this.hasBorders,
+    this.crossAxisAlignment,
   });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.start,
       children: [
         title != null
             ? Text(
@@ -93,6 +95,10 @@ class AppInputText extends StatelessWidget {
                   : Container(),
               Expanded(
                 child: TextField(
+                  textAlign: crossAxisAlignment != null &&
+                          crossAxisAlignment == CrossAxisAlignment.end
+                      ? TextAlign.end
+                      : TextAlign.start,
                   onTap: onTapCallback,
                   maxLines: maxLines,
                   enabled: enabled,

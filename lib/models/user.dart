@@ -62,6 +62,13 @@ class UserModel extends ChangeNotifier {
     }
   }
 
+  void removeCreditCardByID(String cardID) {
+    if (cardID != null) {
+      this._creditCards.removeWhere((card) => card.id == cardID);
+      notifyListeners();
+    }
+  }
+
   Future<void> downloadData(FirebaseModel firebase) async {
     // download user image file
     // TODO: there is aproblem with getProfileImage. it's not returning. fix it

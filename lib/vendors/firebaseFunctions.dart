@@ -188,6 +188,14 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     }
     return null;
   }
+
+  Future<void> deleteCard(String cardID) async {
+    try {
+      await this.httpsCallable("payment-delete_card").call({"card_id": cardID});
+    } catch (e) {
+      throw e;
+    }
+  }
 }
 
 class HashKey {

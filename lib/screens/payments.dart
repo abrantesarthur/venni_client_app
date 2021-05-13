@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/user.dart';
-import 'package:rider_frontend/screens/creditCard.dart';
+import 'package:rider_frontend/screens/addCreditCard.dart';
+import 'package:rider_frontend/screens/creditCardDetail.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
@@ -59,7 +60,15 @@ class PaymentsState extends State<Payments> {
                                     user.creditCards[index].lastDigits,
                                 paddingTop: screenHeight / 200,
                                 paddingBottom: screenHeight / 200,
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    CreditCardDetail.routeName,
+                                    arguments: CreditCardDetailArguments(
+                                      creditCard: user.creditCards[index],
+                                    ),
+                                  );
+                                },
                               );
                             },
                             separatorBuilder: (context, index) {

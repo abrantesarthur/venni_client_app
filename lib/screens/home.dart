@@ -737,22 +737,23 @@ Widget _buildCancelRideButton(
     child: OverallPadding(
       child: CancelButton(onPressed: () {
         showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return YesNoDialog(
-                title: title ?? "Cancelar Pedido?",
-                content: content,
-                onPressedYes: () {
-                  // TODO: charge fee if necessary
-                  // cancel trip and update trip and pilot models once it succeeds
-                  firebase.functions.cancelTrip();
-                  // update models
-                  trip.clear(status: TripStatus.canceledByClient);
-                  pilot.clear();
-                  Navigator.pop(context);
-                },
-              );
-            });
+          context: context,
+          builder: (BuildContext context) {
+            return YesNoDialog(
+              title: title ?? "Cancelar Pedido?",
+              content: content,
+              onPressedYes: () {
+                // TODO: charge fee if necessary
+                // cancel trip and update trip and pilot models once it succeeds
+                firebase.functions.cancelTrip();
+                // update models
+                trip.clear(status: TripStatus.canceledByClient);
+                pilot.clear();
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
       }),
     ),
   );

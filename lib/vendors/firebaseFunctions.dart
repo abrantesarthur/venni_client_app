@@ -196,6 +196,18 @@ extension AppFirebaseFunctions on FirebaseFunctions {
       throw e;
     }
   }
+
+  Future<void> setDefaultPaymentMethod({String cardID}) async {
+    Map<String, dynamic> data = {};
+    if (cardID != null) {
+      data["card_id"] = cardID;
+    }
+    try {
+      await this.httpsCallable("payment-set_default_payment_method").call(data);
+    } catch (e) {
+      throw e;
+    }
+  }
 }
 
 class HashKey {

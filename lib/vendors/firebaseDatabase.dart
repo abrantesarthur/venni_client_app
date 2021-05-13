@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 
 extension AppFirebaseDatabase on FirebaseDatabase {
@@ -55,6 +54,7 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     });
   }
 
+  // TODO: make sure this still works correctly. Print results and write tests
   Future<ClientInterface> getClientData(String uid) async {
     ClientInterface result;
     try {
@@ -137,18 +137,18 @@ enum DeleteReason {
   another,
 }
 
-enum PaymentMethodName {
+enum PaymentMethodType {
   credit_card,
   cash,
 }
 
-extension PaymentMethodNameExtension on PaymentMethodName {
-  static PaymentMethodName fromString(String s) {
+extension PaymentMethodTypeExtension on PaymentMethodType {
+  static PaymentMethodType fromString(String s) {
     switch (s) {
       case "credit_card":
-        return PaymentMethodName.credit_card;
+        return PaymentMethodType.credit_card;
       case "cash":
-        return PaymentMethodName.cash;
+        return PaymentMethodType.cash;
       default:
         return null;
     }
@@ -156,15 +156,15 @@ extension PaymentMethodNameExtension on PaymentMethodName {
 }
 
 class ClientPaymentMethod {
-  final PaymentMethodName name;
+  final PaymentMethodType type;
   final String creditCardID;
 
-  ClientPaymentMethod({@required this.name, @required this.creditCardID});
+  ClientPaymentMethod({@required this.type, this.creditCardID});
 
   factory ClientPaymentMethod.fromJson(Map json) {
     return json != null
         ? ClientPaymentMethod(
-            name: PaymentMethodNameExtension.fromString(json["default"]),
+            type: PaymentMethodTypeExtension.fromString(json["default"]),
             creditCardID: json["card_id"],
           )
         : null;

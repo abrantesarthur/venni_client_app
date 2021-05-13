@@ -91,7 +91,11 @@ class Menu extends StatelessWidget {
                 Divider(thickness: 0.1, color: Colors.black),
                 BorderlessButton(
                   onTap: () {
-                    Navigator.pushNamed(context, Payments.routeName);
+                    Navigator.pushNamed(
+                      context,
+                      Payments.routeName,
+                      arguments: PaymentsArguments(mode: PaymentsMode.display),
+                    );
                   },
                   iconLeft: Icons.payment_rounded,
                   iconRight: Icons.keyboard_arrow_right,

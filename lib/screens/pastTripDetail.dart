@@ -163,8 +163,8 @@ Widget _buildPilotRatingDetail({
     children: [
       Spacer(),
       FloatingCard(
-        leftPadding: screenWidth / 50,
-        rightPadding: screenWidth / 50,
+        leftMargin: screenWidth / 50,
+        rightMargin: screenWidth / 50,
         child: Column(
           children: [
             SizedBox(height: screenHeight / 200),

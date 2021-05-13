@@ -12,8 +12,6 @@ class GoBackScaffold extends StatelessWidget {
   final bool lockScreen;
   final IconData goBackIcon;
   final TextStyle titleStyle;
-  final double paddingLeft;
-  final double paddingRight;
 
   GoBackScaffold({
     @required this.children,
@@ -23,8 +21,6 @@ class GoBackScaffold extends StatelessWidget {
     this.lockScreen,
     this.goBackIcon,
     this.titleStyle,
-    this.paddingLeft,
-    this.paddingRight,
   });
 
   @override

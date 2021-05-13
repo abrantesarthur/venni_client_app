@@ -595,8 +595,6 @@ class AddCreditCardState extends State<AddCreditCard> {
         ),
       );
     } on FirebaseFunctionsException catch (e) {
-      print(e);
-
       // unlock screen and hide circular progress indicator
       setState(() {
         lockScreen = false;

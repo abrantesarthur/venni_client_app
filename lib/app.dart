@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
-import 'package:rider_frontend/screens/creditCard.dart';
+import 'package:rider_frontend/screens/addCreditCard.dart';
+import 'package:rider_frontend/screens/creditCardDetail.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
@@ -357,6 +358,16 @@ class _AppState extends State<App> {
                   return PastTripDetail(
                     pastTrip: args.pastTrip,
                     firebase: args.firebase,
+                  );
+                });
+              }
+
+              // if CreditCardDetal is pushed
+              if (settings.name == CreditCardDetail.routeName) {
+                final CreditCardDetailArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return CreditCardDetail(
+                    creditCard: args.creditCard,
                   );
                 });
               }

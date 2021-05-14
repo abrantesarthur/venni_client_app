@@ -110,16 +110,14 @@ class PastTripsState extends State<PastTrips> {
                   ],
                 ),
                 SizedBox(height: screenHeight / 15),
-                Column(children: [
-                  Text(
-                    "Minhas viagens",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black),
-                  ),
-                  SizedBox(height: screenHeight / 30),
-                ]),
+                Text(
+                  "Minhas viagens",
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black),
+                ),
+                SizedBox(height: screenHeight / 30),
                 Expanded(
                   child: snapshot.connectionState == ConnectionState.waiting
                       ? Container(
@@ -133,23 +131,28 @@ class PastTripsState extends State<PastTrips> {
                           context: context,
                           removeTop: true,
                           removeBottom: true,
-                          child: ListView.separated(
-                            controller: scrollController,
-                            physics: AlwaysScrollableScrollPhysics(),
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              return _buildPastTrip(
-                                context,
-                                pastTrips[index],
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return Divider(
-                                  thickness: 0.1, color: Colors.black);
-                            },
-                            itemCount: pastTrips.length,
-                          ),
+                          child: pastTrips.length == 0
+                              ? Text(
+                                  "Você ainda não fez nenhuma corrida.",
+                                  style: TextStyle(color: AppColor.disabled),
+                                )
+                              : ListView.separated(
+                                  controller: scrollController,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    return _buildPastTrip(
+                                      context,
+                                      pastTrips[index],
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) {
+                                    return Divider(
+                                        thickness: 0.1, color: Colors.black);
+                                  },
+                                  itemCount: pastTrips.length,
+                                ),
                         ),
                 ),
                 Container(

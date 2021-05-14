@@ -264,7 +264,11 @@ class InsertPasswordState extends State<InsertPassword> {
         // user has tapped to register, and we are waiting for registration to finish
         if (snapshot.connectionState == ConnectionState.waiting) {
           // show loading screen
-          return Splash(text: "Criando conta");
+          return Splash(
+              text: "Criando conta",
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ));
         }
 
         // error cases and default: show password screen

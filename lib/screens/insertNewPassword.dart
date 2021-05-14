@@ -293,17 +293,21 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
                           ? registrationWarnings
                           : Container(),
                       Spacer(),
-                      AppButton(
-                        textData: "Atualizar Senha",
-                        child: buttonChild,
-                        buttonColor: appButtonColor,
-                        onTapCallBack: appButtonCallback == null || lockScreen
-                            ? () {}
-                            : () => appButtonCallback(
-                                  context,
-                                  newPasswordTextEditingController.text,
-                                ),
-                      ),
+                      !newPasswordFocusNode.hasFocus &&
+                              !oldPasswordFocusNode.hasFocus
+                          ? AppButton(
+                              textData: "Atualizar Senha",
+                              child: buttonChild,
+                              buttonColor: appButtonColor,
+                              onTapCallBack: appButtonCallback == null ||
+                                      lockScreen
+                                  ? () {}
+                                  : () => appButtonCallback(
+                                        context,
+                                        newPasswordTextEditingController.text,
+                                      ),
+                            )
+                          : Container(),
                     ],
                   ),
                 ),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
 class Splash extends StatelessWidget {
   final String text;
   final Widget button;
+  final Widget child;
   final VoidCallback onTap;
 
-  Splash({this.text, this.button, this.onTap});
+  Splash({this.text, this.button, this.onTap, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +26,7 @@ class Splash extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Spacer(),
                     Image(
                       image: AssetImage("images/icon-white.png"),
                       width: 0.25 * width,
@@ -47,6 +48,9 @@ class Splash extends StatelessWidget {
                         : Container(),
                     SizedBox(height: height / 20),
                     button != null ? button : Container(),
+                    Spacer(),
+                    child != null ? child : Container(),
+                    SizedBox(height: height / 40),
                   ],
                 ),
               ),

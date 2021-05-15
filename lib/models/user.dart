@@ -153,7 +153,6 @@ class UserModel extends ChangeNotifier {
       notify: false,
     );
     firebase.functions.setDefaultPaymentMethod();
-    print("getPaymentMethodSvgPath udpated to cash");
     return "images/money.svg";
   }
 
@@ -180,7 +179,6 @@ class UserModel extends ChangeNotifier {
       notify: false,
     );
     firebase.functions.setDefaultPaymentMethod();
-    print("getPaymentMethodDescription udpated to cash");
 
     return "Dinheiro";
   }

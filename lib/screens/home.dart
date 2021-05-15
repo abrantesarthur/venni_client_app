@@ -330,7 +330,7 @@ class HomeState extends State<Home> {
               // from pilot to destination
               trip.updateStatus(newTripStatus);
               googleMaps.drawPolylineFromPilotToDestination(context);
-            } else if (trip.tripStatus != newTripStatus) {
+            } else if (newTripStatus != trip.tripStatus) {
               // otherwise, do something only if local trip status has not
               // been already updated to newTripStatus by some other code path
               // (i.e., user canceled the trip request, which immediately updates
@@ -875,7 +875,8 @@ Widget _buildTripSummaryFloatingCard(
             ),
             Spacer(),
             Text(
-              "R\$ " + trip.farePrice,
+              // TODO: make sure this workd
+              "R\$ " + (trip.farePrice / 100).toString(),
               style: TextStyle(fontSize: 18),
             ),
           ],
@@ -975,7 +976,6 @@ Future<void> confirmTripCallback(BuildContext context, TripModel trip,
         Payments.routeName,
         arguments: PaymentsArguments(mode: PaymentsMode.pick),
       );
-      print(user.defaultPaymentMethod.type);
       return;
     }
   }
@@ -987,6 +987,7 @@ Future<void> confirmTripCallback(BuildContext context, TripModel trip,
     arguments: ConfirmTripArguments(
       firebase: firebase,
       trip: trip,
+      user: user,
     ),
   );
 }

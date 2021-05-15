@@ -209,7 +209,7 @@ Widget _buildPastTrip(
             ),
             Spacer(),
             Text(
-              "R\$ " + trip.farePrice,
+              "R\$ " + (trip.farePrice / 100).toString(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,

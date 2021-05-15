@@ -6,7 +6,7 @@ class TripModel extends ChangeNotifier {
   Address _currentPickUpAddress;
   Address _currentDropOffAddress;
   TripStatus _tripStatus;
-  String _farePrice;
+  int _farePrice;
   int _distanceMeters;
   String _distanceText;
   int _durationSeconds;
@@ -26,7 +26,7 @@ class TripModel extends ChangeNotifier {
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
   TripStatus get tripStatus => _tripStatus;
-  String get farePrice => _farePrice;
+  int get farePrice => _farePrice;
   int get distanceMeters => _distanceMeters;
   String get distanceText => _distanceText;
   int get durationSeconds => _durationSeconds;
@@ -47,9 +47,11 @@ class TripModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateStatus(TripStatus tripStatus) {
+  void updateStatus(TripStatus tripStatus, {bool notify = true}) {
     _tripStatus = tripStatus;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void updatePilotArrivalSeconds(int s) {

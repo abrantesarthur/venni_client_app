@@ -214,6 +214,7 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.white,
       body: LayoutBuilder(
         builder: (
           BuildContext context,
@@ -275,39 +276,36 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
                                   isValid: passwordChecks[0],
                                   message: "Precisa ter no mínimo 8 caracteres",
                                 ),
-                                SizedBox(height: screenHeight / 80),
+                                SizedBox(height: screenHeight / 200),
                                 PasswordWarning(
                                   isValid: passwordChecks[1],
                                   message: "Precisa ter pelo menos uma letra",
                                 ),
-                                SizedBox(height: screenHeight / 80),
+                                SizedBox(height: screenHeight / 200),
                                 PasswordWarning(
                                   isValid: passwordChecks[2],
                                   message: "Precisa ter pelo menos um dígito",
                                 ),
-                                SizedBox(height: screenHeight / 80),
+                                SizedBox(height: screenHeight / 200),
                               ],
                             )
                           : Container(),
                       registrationWarnings != null
                           ? registrationWarnings
                           : Container(),
+                      SizedBox(height: screenHeight / 100),
                       Spacer(),
-                      !newPasswordFocusNode.hasFocus &&
-                              !oldPasswordFocusNode.hasFocus
-                          ? AppButton(
-                              textData: "Atualizar Senha",
-                              child: buttonChild,
-                              buttonColor: appButtonColor,
-                              onTapCallBack: appButtonCallback == null ||
-                                      lockScreen
-                                  ? () {}
-                                  : () => appButtonCallback(
-                                        context,
-                                        newPasswordTextEditingController.text,
-                                      ),
-                            )
-                          : Container(),
+                      AppButton(
+                        textData: "Atualizar Senha",
+                        child: buttonChild,
+                        buttonColor: appButtonColor,
+                        onTapCallBack: appButtonCallback == null || lockScreen
+                            ? () {}
+                            : () => appButtonCallback(
+                                  context,
+                                  newPasswordTextEditingController.text,
+                                ),
+                      )
                     ],
                   ),
                 ),

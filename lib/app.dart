@@ -328,6 +328,7 @@ class _AppState extends State<App> {
                   return ConfirmTrip(
                     firebase: args.firebase,
                     trip: args.trip,
+                    user: args.user,
                   );
                 });
               }

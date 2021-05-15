@@ -8,6 +8,7 @@ import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/styles.dart';
 import "package:rider_frontend/vendors/firebaseFunctions.dart";
@@ -18,15 +19,25 @@ import 'package:rider_frontend/vendors/geocoding.dart';
 class ConfirmTripArguments {
   final FirebaseModel firebase;
   final TripModel trip;
-  ConfirmTripArguments({@required this.firebase, @required this.trip});
+  final UserModel user;
+  ConfirmTripArguments({
+    @required this.firebase,
+    @required this.trip,
+    @required this.user,
+  });
 }
 
 class ConfirmTrip extends StatefulWidget {
   static String routeName = "ConfirmTrip";
   final FirebaseModel firebase;
   final TripModel trip;
+  final UserModel user;
 
-  ConfirmTrip({@required this.firebase, @required this.trip});
+  ConfirmTrip({
+    @required this.firebase,
+    @required this.trip,
+    @required this.user,
+  });
 
   @override
   ConfirmTripState createState() => ConfirmTripState();
@@ -106,7 +117,13 @@ class ConfirmTripState extends State<ConfirmTrip> {
       }
     }
 
-    return await widget.firebase.functions.confirmTrip();
+    // call confirmTrip with cardID if payment method is credit_card
+    String cardID;
+    if (widget.user.defaultPaymentMethod.type ==
+        PaymentMethodType.credit_card) {
+      cardID = widget.user.defaultPaymentMethod.creditCardID;
+    }
+    return await widget.firebase.functions.confirmTrip(cardID: cardID);
   }
 
   @override
@@ -173,15 +190,15 @@ class ConfirmTripState extends State<ConfirmTrip> {
         // cancel trip and show failure message . Otherwise, we would
         // rebuild the tree the same way as it was when we tapped confirmar.
         firebase.functions.cancelTrip();
-        trip.clear(notify: false);
-        pilot.clear(notify: false);
+        trip.clear();
+        pilot.clear();
         await showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text("Algo deu errado."),
               content: Text(
-                "Tente novamente",
+                "Tente novamente!",
                 style: TextStyle(color: AppColor.disabled),
               ),
               actions: [

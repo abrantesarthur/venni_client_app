@@ -212,7 +212,7 @@ class RatePilotState extends State<RatePilot> {
                   ),
                   SizedBox(height: screenHeight / 100),
                   Text(
-                    "R\$ " + trip.farePrice,
+                    "R\$ " + (trip.farePrice / 100).toString(),
                     style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.w700,

@@ -245,6 +245,8 @@ void main() {
       expect(state.registrationWarnings, isNull);
 
       // tap AppButton
+      final appButtonFinder = find.byType(AppButton);
+      expect(appButtonFinder, findsOneWidget);
       await tester.tap(find.byType(AppButton));
       await tester.pump();
 

@@ -275,7 +275,7 @@ Widget _buildPilotRatingDetail({
                     ),
                     Spacer(),
                     Text(
-                      "R\$ " + pastTrip.farePrice,
+                      "R\$ " + (pastTrip.farePrice / 100).toString() ,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,

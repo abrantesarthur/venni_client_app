@@ -14,7 +14,7 @@ void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
     when(mockPilotModel.name).thenReturn("Fulano");
-    when(mockTripModel.farePrice).thenReturn("5.00");
+    when(mockTripModel.farePrice).thenReturn(500);
   });
 
   Future<void> pumpRatePilot(WidgetTester tester) async {

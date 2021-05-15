@@ -54,10 +54,14 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return this._doTrip(functionName: "trip-client_cancel");
   }
 
-  Future<ConfirmTripResult> confirmTrip() async {
+  Future<ConfirmTripResult> confirmTrip({String cardID}) async {
+    Map data = {};
+    if (cardID != null) {
+      data["card_id"] = cardID;
+    }
     try {
       HttpsCallableResult result =
-          await this.httpsCallable("trip-confirm").call();
+          await this.httpsCallable("trip-confirm").call(data);
       if (result != null && result.data != null) {
         return ConfirmTripResult.fromJson(result.data);
       }
@@ -344,7 +348,7 @@ class Trip {
   final TripStatus tripStatus;
   final String originPlaceID;
   final String destinationPlaceID;
-  final String farePrice;
+  final int farePrice;
   final int distanceMeters;
   final String distanceText;
   final int durationSeconds;

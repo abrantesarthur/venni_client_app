@@ -56,12 +56,15 @@ class GoogleMapsModel extends ChangeNotifier {
   @override
   void dispose() {
     if (_googleMapController != null) {
+      print("dispose controller");
       _googleMapController.dispose();
     }
     super.dispose();
   }
 
   void onMapCreatedCallback(GoogleMapController c) async {
+    print("onMapCreatedCallback called and Controlelr is null?");
+    print(c == null);
     await c.setMapStyle(_mapStyle);
     _googleMapController = c;
   }

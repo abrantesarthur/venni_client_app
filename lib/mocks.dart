@@ -8,6 +8,7 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/places.dart';
 
@@ -41,6 +42,8 @@ class MockAddress extends Mock implements Address {}
 
 class MockPlaces extends Mock implements Places {}
 
+class MockClientPaymentMethod extends Mock implements ClientPaymentMethod {}
+
 MockFirebaseModel mockFirebaseModel = MockFirebaseModel();
 MockFirebaseAuth mockFirebaseAuth = MockFirebaseAuth();
 MockFirebaseDatabase mockFirebaseDatabase = MockFirebaseDatabase();
@@ -55,3 +58,4 @@ MockGeocodingResult mockGeocodingResult = MockGeocodingResult();
 MockGeocodingResult mockUserGeocoding = MockGeocodingResult();
 MockAddress mockAddress = MockAddress();
 MockPlaces mockPlaces = MockPlaces();
+MockClientPaymentMethod mockClientPaymentMethod = MockClientPaymentMethod();

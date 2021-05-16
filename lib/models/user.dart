@@ -68,6 +68,15 @@ class UserModel extends ChangeNotifier {
     }
   }
 
+  CreditCard getCreditCardByID(String cardID) {
+    for (var i = 0; i < this._creditCards.length; i++) {
+      if (this._creditCards[i].id == cardID) {
+        return this._creditCards[i];
+      }
+      return null;
+    }
+  }
+
   void removeCreditCardByID(String cardID) {
     if (cardID != null) {
       // remove card from client's list of cards

@@ -98,7 +98,7 @@ void main() {
     // add widget to the UI
     await pumpWidget(tester);
 
-    // before tapping to send email, codeSent is false and no 'código enviado' is displayed
+    // before tapping to send email, codeSent is false and no 'email enviado' is displayed
     EditEmailState editEmailState = tester.state(find.byType(EditEmail));
     final textFinder = find.byType(Text);
     expect(editEmailState.codeSent, isFalse);
@@ -116,7 +116,7 @@ void main() {
     await tester.tap(warningFinder);
     await tester.pumpAndSettle();
 
-    // expect code sent to be true and 'código enviado' to be true
+    // expect code sent to be true and 'email enviado' to be true
     expect(editEmailState.codeSent, isTrue);
     expect(
         tester.widget(textFinder.at(2)),
@@ -124,7 +124,7 @@ void main() {
             (t) => t.data,
             "data",
             equals(
-              "Código enviado. Cheque o seu email.",
+              "Email enviado. Cheque o seu email.",
             )));
   });
 
@@ -141,7 +141,7 @@ void main() {
     // add widget to the UI
     await pumpWidget(tester);
 
-    // before tapping to send email, codeSent is false and no 'código enviado' is displayed
+    // before tapping to send email, codeSent is false and no 'email enviado' is displayed
     EditEmailState editEmailState = tester.state(find.byType(EditEmail));
     final textFinder = find.byType(Text);
     expect(editEmailState.codeSent, isFalse);

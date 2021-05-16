@@ -6,15 +6,15 @@ class TripModel extends ChangeNotifier {
   Address _currentPickUpAddress;
   Address _currentDropOffAddress;
   TripStatus _tripStatus;
-  int _farePrice;
-  int _distanceMeters;
+  num _farePrice;
+  num _distanceMeters;
   String _distanceText;
-  int _durationSeconds;
+  num _durationSeconds;
   String _durationText;
   String _encodedPoints;
   DateTime _eta;
   String _etaString;
-  int _pilotArrivalSeconds;
+  num _pilotArrivalSeconds;
   DateTime _pilotArrival;
   String _pilotArrivalString;
 
@@ -26,16 +26,16 @@ class TripModel extends ChangeNotifier {
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
   TripStatus get tripStatus => _tripStatus;
-  int get farePrice => _farePrice;
-  int get distanceMeters => _distanceMeters;
+  num get farePrice => _farePrice;
+  num get distanceMeters => _distanceMeters;
   String get distanceText => _distanceText;
-  int get durationSeconds => _durationSeconds;
+  num get durationSeconds => _durationSeconds;
   String get durationText => _durationText;
   String get encodedPoints => _encodedPoints;
   DateTime get eta => _eta;
   String get etaString => _etaString;
   String get pilotArrivalString => _pilotArrivalString;
-  int get pilotArrivalSeconds => _pilotArrivalSeconds;
+  num get pilotArrivalSeconds => _pilotArrivalSeconds;
 
   void updatePickUpAddres(Address address) {
     _currentPickUpAddress = address;
@@ -44,6 +44,7 @@ class TripModel extends ChangeNotifier {
 
   void updateDropOffAddres(Address address) {
     _currentDropOffAddress = address;
+
     notifyListeners();
   }
 

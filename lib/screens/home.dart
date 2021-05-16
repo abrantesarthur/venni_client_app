@@ -394,6 +394,10 @@ class HomeState extends State<Home> {
           },
         );
       });
+      // change trip status locally so AlertDialog is not shown twice. This could
+      // happen, for example, if UI is rebuilt againt because TripModel notified
+      // listeners after user updated route.
+      trip.updateStatus(TripStatus.waitingConfirmation);
       return;
     }
 

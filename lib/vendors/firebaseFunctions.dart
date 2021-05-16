@@ -5,7 +5,6 @@ import 'package:encrypt/encrypt.dart';
 import 'package:encrypt/encrypt_io.dart';
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/screens/ratePilot.dart';
-import 'package:rider_frontend/screens/ratePilot.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
@@ -23,7 +22,6 @@ extension AppFirebaseFunctions on FirebaseFunctions {
       };
     }
 
-    // TODO: should I add a timeout?
     HttpsCallable callable = this.httpsCallable(functionName);
     try {
       HttpsCallableResult result = await callable.call(data);
@@ -348,18 +346,20 @@ class Trip {
   final TripStatus tripStatus;
   final String originPlaceID;
   final String destinationPlaceID;
-  final int farePrice;
-  final int distanceMeters;
+  final num farePrice;
+  final num distanceMeters;
   final String distanceText;
-  final int durationSeconds;
+  final num durationSeconds;
   final String durationText;
   final String encodedPoints;
-  final int requestTime;
+  final num requestTime;
   final String originAddress;
   final String destinationAddress;
   final String pilotPastTripRefKey;
   final String pilotID;
-
+  final PaymentMethodType paymentMethod;
+  final CreditCard creditCard;
+  final String transactionID;
   Trip({
     @required this.uid,
     @required this.tripStatus,
@@ -376,11 +376,21 @@ class Trip {
     @required this.destinationAddress,
     @required this.pilotPastTripRefKey,
     @required this.pilotID,
+    this.paymentMethod,
+    this.creditCard,
+    this.transactionID,
   });
 
+  // TODO: test the shit out of this and all other fromJson functions!!!
   factory Trip.fromJson(Map<dynamic, dynamic> json) {
     if (json == null || json.isEmpty) return null;
     TripStatus status = getTripStatusFromString(json["trip_status"]);
+    PaymentMethodType paymentMethod = json["payment_method"] != null
+        ? PaymentMethodTypeExtension.fromString(json["payment_method"])
+        : null;
+    CreditCard creditCard = json["credit_card"] != null
+        ? CreditCard.fromJson(json["credit_card"])
+        : null;
     return Trip(
       uid: json["uid"],
       tripStatus: status,
@@ -397,6 +407,9 @@ class Trip {
       destinationAddress: json["destination_address"],
       pilotPastTripRefKey: json["pilot_past_trip_ref_key"],
       pilotID: json["pilot_id"],
+      paymentMethod: paymentMethod,
+      creditCard: creditCard,
+      transactionID: json["transaction_id"],
     );
   }
 }

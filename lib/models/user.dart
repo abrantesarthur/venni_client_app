@@ -57,6 +57,9 @@ class UserModel extends ChangeNotifier {
       _rating = c.rating;
       _defaultPaymentMethod = c.defaultPaymentMethod;
       _creditCards = c.creditCards;
+      _creditCards.forEach((element) {
+        print(element.id);
+      });
       notifyListeners();
     }
   }
@@ -73,8 +76,8 @@ class UserModel extends ChangeNotifier {
       if (this._creditCards[i].id == cardID) {
         return this._creditCards[i];
       }
-      return null;
     }
+    return null;
   }
 
   void removeCreditCardByID(String cardID) {

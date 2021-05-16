@@ -56,7 +56,6 @@ class GoogleMapsModel extends ChangeNotifier {
   @override
   void dispose() {
     if (_googleMapController != null) {
-      print("dispose controller");
       _googleMapController.dispose();
     }
     super.dispose();

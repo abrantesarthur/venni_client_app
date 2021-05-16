@@ -171,10 +171,12 @@ class RatePilotState extends State<RatePilot> {
 
     String lastDigits = "";
     if (user.defaultPaymentMethod.type == PaymentMethodType.credit_card) {
+      print("search for card");
+      print(user.defaultPaymentMethod.creditCardID);
       CreditCard creditCard = user.getCreditCardByID(
         user.defaultPaymentMethod.creditCardID,
       );
-      lastDigits = creditCard.lastDigits;
+      lastDigits = creditCard != null ? creditCard.lastDigits : "";
     }
 
     return Scaffold(

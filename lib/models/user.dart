@@ -57,9 +57,6 @@ class UserModel extends ChangeNotifier {
       _rating = c.rating;
       _defaultPaymentMethod = c.defaultPaymentMethod;
       _creditCards = c.creditCards;
-      _creditCards.forEach((element) {
-        print(element.id);
-      });
       notifyListeners();
     }
   }

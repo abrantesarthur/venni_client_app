@@ -62,8 +62,6 @@ class GoogleMapsModel extends ChangeNotifier {
   }
 
   void onMapCreatedCallback(GoogleMapController c) async {
-    print("onMapCreatedCallback called and Controlelr is null?");
-    print(c == null);
     await c.setMapStyle(_mapStyle);
     _googleMapController = c;
   }

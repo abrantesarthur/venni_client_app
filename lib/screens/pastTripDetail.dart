@@ -7,6 +7,7 @@ import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
@@ -275,7 +276,7 @@ Widget _buildPilotRatingDetail({
                     ),
                     Spacer(),
                     Text(
-                      "R\$ " + (pastTrip.farePrice / 100).toString() ,
+                      "R\$ " + (pastTrip.farePrice / 100).toString(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -301,7 +302,9 @@ Widget _buildPilotRatingDetail({
                     ),
                     Spacer(flex: 1),
                     Text(
-                      "Cartão •••• 8705", // TODO: make dynamic
+                      pastTrip.paymentMethod == PaymentMethodType.cash
+                          ? "Dinheiro"
+                          : "Cartão •••• " + pastTrip.creditCard.lastDigits,
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColor.disabled,

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/pastTripDetail.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/goBackButton.dart';
@@ -235,7 +236,9 @@ Widget _buildPastTrip(
             ),
             Spacer(flex: 1),
             Text(
-              "Cartão •••• 8705", // TODO: make dynamic
+              trip.paymentMethod == PaymentMethodType.cash
+                  ? "Dinheiro"
+                  : "Cartão •••• " + trip.creditCard.lastDigits,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColor.disabled,

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/styles.dart';
@@ -164,7 +166,16 @@ class RatePilotState extends State<RatePilot> {
     final screenWidth = MediaQuery.of(context).size.width;
     PilotModel pilot = Provider.of<PilotModel>(context);
     TripModel trip = Provider.of<TripModel>(context);
+    UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
+    String lastDigits = "";
+    if (user.defaultPaymentMethod.type == PaymentMethodType.credit_card) {
+      CreditCard creditCard = user.getCreditCardByID(
+        user.defaultPaymentMethod.creditCardID,
+      );
+      lastDigits = creditCard.lastDigits;
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -214,14 +225,30 @@ class RatePilotState extends State<RatePilot> {
                   Text(
                     "R\$ " + (trip.farePrice / 100).toString(),
                     style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black),
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      color: user.defaultPaymentMethod.type ==
+                              PaymentMethodType.cash
+                          ? AppColor.primaryPink
+                          : Colors.black,
+                    ),
                   ),
                   SizedBox(height: screenHeight / 200),
                   Text(
-                    "Pago com cartão •••• 8709", // TODO: make dynamic
-                    style: TextStyle(fontSize: 15, color: Colors.green),
+                    user.defaultPaymentMethod.type == PaymentMethodType.cash
+                        ? "Efetue o pagamento em dinheiro"
+                        : "Pago com cartão •••• " + lastDigits,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: user.defaultPaymentMethod.type ==
+                              PaymentMethodType.cash
+                          ? 20
+                          : 15,
+                      color: user.defaultPaymentMethod.type ==
+                              PaymentMethodType.cash
+                          ? AppColor.primaryPink
+                          : Colors.green,
+                    ),
                   ),
                   SizedBox(height: screenHeight / (_rate > 0 ? 100 : 50)),
                   Divider(thickness: 0.1, color: Colors.black),

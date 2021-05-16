@@ -6,7 +6,9 @@ import 'package:rider_frontend/mocks.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
 void main() {
@@ -15,6 +17,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     when(mockPilotModel.name).thenReturn("Fulano");
     when(mockTripModel.farePrice).thenReturn(500);
+    when(mockUserModel.defaultPaymentMethod)
+        .thenReturn(mockClientPaymentMethod);
+    when(mockClientPaymentMethod.type).thenReturn(PaymentMethodType.cash);
   });
 
   Future<void> pumpRatePilot(WidgetTester tester) async {
@@ -26,6 +31,7 @@ void main() {
           ChangeNotifierProvider<PilotModel>(
               create: (context) => mockPilotModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel)
         ],
         builder: (context, child) => MaterialApp(
           home: RatePilot(),
@@ -71,6 +77,16 @@ void main() {
   group(
       "ratePilot",
       () => {
+            testWidgets("displays warning if payment is cash",
+                (WidgetTester tester) async {
+              // add rate pilot to the UI (mockUser retur)
+              await pumpRatePilot(tester);
+
+              // mockUser returns payment in cash by default
+              // so we expect to find the following warning
+              final textFinder = find.text("Efetue o pagamento em dinheiro");
+              expect(textFinder, findsOneWidget);
+            }),
             testWidgets("correctly updates the UI",
                 (WidgetTester tester) async {
               // add rate pilot to the UI

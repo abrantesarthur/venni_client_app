@@ -9,7 +9,6 @@ import 'package:rider_frontend/widgets/warning.dart';
 
 import '../models/firebase.dart';
 
-
 class EditEmail extends StatefulWidget {
   static const String routeName = "EditEmail";
 
@@ -97,7 +96,7 @@ class EditEmailState extends State<EditEmail> {
                         ],
                       )
                     : Text(
-                        "Código enviado. Cheque o seu email.",
+                        "Email enviado. Cheque o seu email.",
                         style: TextStyle(
                           fontSize: 16,
                           color: AppColor.disabled,

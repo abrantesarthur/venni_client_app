@@ -29,7 +29,6 @@ class Payments extends StatefulWidget {
   PaymentsState createState() => PaymentsState();
 }
 
-// TODO: use this same screen so user can select payment
 class PaymentsState extends State<Payments> {
   @override
   Widget build(BuildContext context) {

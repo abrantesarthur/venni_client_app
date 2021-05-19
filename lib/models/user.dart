@@ -21,12 +21,14 @@ class UserModel extends ChangeNotifier {
   String _rating;
   ClientPaymentMethod _defaultPaymentMethod;
   List<CreditCard> _creditCards;
+  Trip _unpaidTrip;
 
   GeocodingResult get geocoding => _geocoding;
   ProfileImage get profileImage => _profileImage;
   String get rating => _rating;
   ClientPaymentMethod get defaultPaymentMethod => _defaultPaymentMethod;
   List<CreditCard> get creditCards => _creditCards;
+  Trip get unpaidTrip => _unpaidTrip;
 
   UserModel();
 
@@ -57,6 +59,7 @@ class UserModel extends ChangeNotifier {
       _rating = c.rating;
       _defaultPaymentMethod = c.defaultPaymentMethod;
       _creditCards = c.creditCards;
+      _unpaidTrip = c.unpaidTrip;
       notifyListeners();
     }
   }
@@ -100,8 +103,7 @@ class UserModel extends ChangeNotifier {
         .then((value) => this.setProfileImage(value));
 
     // get user rating
-    ClientInterface client =
-        await firebase.database.getClientData(firebase.auth.currentUser.uid);
+    ClientInterface client = await firebase.database.getClientData(firebase);
     this.fromClientInterface(client);
   }
 

@@ -486,7 +486,7 @@ List<Widget> _buildRemainingStackChildren({
             scaffoldKey.currentState.openDrawer();
             // trigger getUserRating so it is updated in case it's changed
             firebase.database
-                .getClientData(firebase.auth.currentUser.uid)
+                .getClientData(firebase)
                 .then((value) => user.setRating(value.rating));
           }),
         ),

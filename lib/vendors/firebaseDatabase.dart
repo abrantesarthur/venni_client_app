@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 
 extension AppFirebaseDatabase on FirebaseDatabase {
@@ -55,12 +56,20 @@ extension AppFirebaseDatabase on FirebaseDatabase {
   }
 
   // TODO: make sure this still works correctly. Print results and write tests
-  Future<ClientInterface> getClientData(String uid) async {
+  Future<ClientInterface> getClientData(FirebaseModel firebase) async {
+    String uid = firebase.auth.currentUser.uid;
     ClientInterface result;
     try {
       DataSnapshot snapshot =
           await this.reference().child("clients").child(uid).once();
       result = ClientInterface.fromJson(snapshot.value);
+
+      // if pilot has upaid trip
+      if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
+        // download unpaid trip and add it to result
+        Trip unpaidTrip = await firebase.functions.getPastTrip(result.unpaidTripID);
+        result.setUnpaidTrip(unpaidTrip);
+      }
     } catch (_) {}
     return result;
   }
@@ -252,11 +261,18 @@ class ClientInterface {
   final String rating;
   final ClientPaymentMethod defaultPaymentMethod;
   final List<CreditCard> creditCards;
+  final String unpaidTripID;
+  Trip unpaidTrip;
   ClientInterface({
     @required this.rating,
     @required this.defaultPaymentMethod,
     @required this.creditCards,
+    @required this.unpaidTripID,
   });
+
+  void setUnpaidTrip(Trip unpaidTrip) {
+    this.unpaidTrip = unpaidTrip;
+  }
 
   factory ClientInterface.fromJson(Map json) {
     if (json == null) {
@@ -276,6 +292,7 @@ class ClientInterface {
       defaultPaymentMethod:
           ClientPaymentMethod.fromJson(json["payment_method"]),
       creditCards: creditCards,
+      unpaidTripID: json["unpaid_past_trip_id"],
     );
   }
 }

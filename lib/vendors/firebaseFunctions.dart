@@ -92,6 +92,20 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
+  Future<Trip> getPastTrip(String pastTripID) async {
+    Map data = {"past_trip_id": pastTripID};
+    try {
+      HttpsCallableResult result =
+          await this.httpsCallable("trip-client_get_past_trip").call(data);
+      if (result != null && result.data != null) {
+        return Trip.fromJson(result.data);
+      }
+    } catch (e) {
+      throw e;
+    }
+    return null;
+  }
+
   Future<int> pilotGetTripRating(PilotGetTripRatingArguments args) async {
     Map<String, String> data = {};
     data["pilot_id"] = args.pilotID;

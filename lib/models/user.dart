@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +19,7 @@ class ProfileImage {
 
 class UserModel extends ChangeNotifier {
   GeocodingResult _geocoding;
+  StreamSubscription _positionSubscription;
   ProfileImage _profileImage;
   String _rating;
   ClientPaymentMethod _defaultPaymentMethod;
@@ -124,6 +127,30 @@ class UserModel extends ChangeNotifier {
     return userPos;
   }
 
+  // cancel position subscription if it exists
+  void cancelPositionChangeSubscription() {
+    if (_positionSubscription != null) {
+      _positionSubscription.cancel();
+    }
+  }
+
+  // updates user geocoding whenever they move at least 50 meters
+  void updateGeocodingOnPositionChange() {
+    try {
+      Stream<Position> userPositionStream = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.best,
+        distanceFilter: 50,
+      );
+      // cancel previous subscription if it exists
+      cancelPositionChangeSubscription();
+      // subscribe to changes in position, updating geocoding on changes
+      _positionSubscription = userPositionStream.listen((position) {
+        getGeocoding(pos: position);
+      });
+    } catch (_) {}
+  }
+
+  // getGeocoding updates _geocoding. On failure, _geocoding is set to null.
   Future<void> getGeocoding({Position pos}) async {
     Position userPos = pos;
     if (userPos == null) {

@@ -67,7 +67,8 @@ extension AppFirebaseDatabase on FirebaseDatabase {
       // if pilot has upaid trip
       if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
         // download unpaid trip and add it to result
-        Trip unpaidTrip = await firebase.functions.getPastTrip(result.unpaidTripID);
+        Trip unpaidTrip =
+            await firebase.functions.getPastTrip(result.unpaidTripID);
         result.setUnpaidTrip(unpaidTrip);
       }
     } catch (_) {}

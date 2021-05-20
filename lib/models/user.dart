@@ -54,6 +54,13 @@ class UserModel extends ChangeNotifier {
     }
   }
 
+  void setUnpaidTrip(Trip t, {bool notify = true}) {
+    _unpaidTrip = t;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
   void fromClientInterface(ClientInterface c) {
     if (c != null) {
       _rating = c.rating;

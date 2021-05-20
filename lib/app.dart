@@ -32,6 +32,7 @@ import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/pastTripDetail.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
+import 'package:rider_frontend/screens/payTrip.dart';
 import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/screens/pilotProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
@@ -379,6 +380,17 @@ class _AppState extends State<App> {
                 final PaymentsArguments args = settings.arguments;
                 return MaterialPageRoute(builder: (context) {
                   return Payments(mode: args.mode);
+                });
+              }
+
+              // if PayTrip is pushed
+              if (settings.name == PayTrip.routeName) {
+                final PayTripArguments args = settings.arguments;
+                return MaterialPageRoute(builder: (context) {
+                  return PayTrip(
+                    firebase: args.firebase,
+                    cardID: args.cardID,
+                  );
                 });
               }
 

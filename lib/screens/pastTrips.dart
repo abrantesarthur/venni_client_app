@@ -143,7 +143,7 @@ class PastTripsState extends State<PastTrips> {
                                   scrollDirection: Axis.vertical,
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) {
-                                    return _buildPastTrip(
+                                    return buildPastTrip(
                                       context,
                                       pastTrips[index],
                                     );
@@ -173,7 +173,7 @@ class PastTripsState extends State<PastTrips> {
   }
 }
 
-Widget _buildPastTrip(
+Widget buildPastTrip(
   BuildContext context,
   Trip trip,
 ) {

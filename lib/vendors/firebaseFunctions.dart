@@ -69,6 +69,20 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
+  Future<bool> captureUnpaidTrip(String cardID) async {
+    Map data = {"card_id": cardID};
+    try {
+      HttpsCallableResult result =
+          await this.httpsCallable("payment-capture_unpaid_trip").call(data);
+      if (result != null) {
+        return result.data;
+      }
+    } catch (e) {
+      throw e;
+    }
+    return false;
+  }
+
   Future<Trips> getPastTrips({GetPastTripsArguments args}) async {
     Map<String, int> data = {};
     if (args != null) {

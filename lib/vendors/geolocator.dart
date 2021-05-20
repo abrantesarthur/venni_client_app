@@ -24,6 +24,7 @@ Future<Position> determineUserPosition() async {
     }
   }
 
+  // if permission is still denied (i.e., on iOS user tapped "ask next time")
   if (permission == LocationPermission.denied) {
     // ask for permission
     permission = await Geolocator.requestPermission();

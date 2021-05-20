@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
@@ -64,18 +65,42 @@ class Home extends StatefulWidget {
   HomeState createState() => HomeState();
 }
 
-class HomeState extends State<Home> {
+class HomeState extends State<Home> with WidgetsBindingObserver {
   Future<bool> finishedDownloadingUserData;
   GlobalKey<ScaffoldState> _scaffoldKey;
   StreamSubscription pilotSubscription;
   StreamSubscription tripSubscription;
-  StreamSubscription userPositionSubscription;
   var _firebaseListener;
   var _tripListener;
 
+  // didChangeAppLifecycleState is notified whenever the system puts the app in
+  // the background or returns the app to the foreground
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    // Try getting user position. If it returns null, it's because user stopped
+    // sharing location. getPosition() will automatically handle that case, asking
+    // the user to share again and preventing them from using the app if they
+    // don't.
+    Position pos = await widget.user.getPosition();
+    if (pos != null) {
+      // if we could get position, make sure to resubscribe to position changes
+      // again, as subscription may have been cancelled if user stopped sharing
+      // location.
+      widget.user.updateGeocodingOnPositionChange();
+    }
+  }
+
   @override
   void initState() {
+    print("init state");
     super.initState();
+
+    // HomeState uses WidgetsBindingObserver as a mixin. Thus, we can pass it as
+    // argument to WidgetsBinding.addObserver. The didChangeAppLifecycleState that
+    // we override, is notified whenever an application even occurs (e.g., system
+    // puts app in background).
+    WidgetsBinding.instance.addObserver(this);
 
     _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -112,11 +137,10 @@ class HomeState extends State<Home> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.firebase.removeListener(_firebaseListener);
     widget.trip.removeListener(_tripListener);
-    if (userPositionSubscription != null) {
-      userPositionSubscription.cancel();
-    }
+    widget.user.cancelPositionChangeSubscription();
     if (pilotSubscription != null) {
       pilotSubscription.cancel();
     }
@@ -199,23 +223,13 @@ class HomeState extends State<Home> {
   }
 
   Future<bool> _downloadUserData() async {
-    // get user address
+    // get user geocoding, returning false if fails
     await widget.user.getGeocoding();
     if (widget.user.geocoding == null) {
       return false;
     }
     await widget.user.downloadData(widget.firebase);
-    try {
-      // update position whenever it changes 100 meters or every 10 seconds
-      Stream<Position> userPositionStream = Geolocator.getPositionStream(
-        desiredAccuracy: LocationAccuracy.best,
-        distanceFilter: 100,
-        intervalDuration: Duration(seconds: 10),
-      );
-      userPositionSubscription = userPositionStream.listen((position) {
-        widget.user.getGeocoding(pos: position);
-      });
-    } catch (_) {}
+    widget.user.updateGeocodingOnPositionChange();
     return true;
   }
 

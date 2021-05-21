@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -26,6 +27,7 @@ void main() {
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
     when(mockUser.phoneNumber).thenReturn(oldNumber);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
     when(mockUser.updatePhoneNumber(any)).thenAnswer((_) {
       // update phone number to +5538999999999
       when(mockUser.phoneNumber).thenReturn(newNumber);
@@ -41,6 +43,9 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<TripModel>(
             create: (context) => mockTripModel,
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
           )
         ],
         builder: (context, child) => MaterialApp(

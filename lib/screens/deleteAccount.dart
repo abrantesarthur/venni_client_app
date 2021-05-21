@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
@@ -75,9 +76,25 @@ class DeleteAccountState extends State<DeleteAccount> {
     super.dispose();
   }
 
-  void _buttonCallback(BuildContext context) {
-    final FirebaseModel firebase =
-        Provider.of<FirebaseModel>(context, listen: false);
+  void _buttonCallback(BuildContext context) async {
+    // ensure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(
+        context,
+        message: "Conecte-se à internet para deletar a sua conta.",
+      );
+      return;
+    }
+
+    final FirebaseModel firebase = Provider.of<FirebaseModel>(
+      context,
+      listen: false,
+    );
+
     showDialog(
       context: context,
       builder: (BuildContext context) {

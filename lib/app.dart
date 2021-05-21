@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rider_frontend/config/config.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/cashDetail.dart';
@@ -62,6 +63,7 @@ class _AppState extends State<App> {
   FirebaseModel firebaseModel;
   TripModel tripModel;
   UserModel user;
+  ConnectivityModel connectivity;
   GoogleMapsModel googleMaps;
   PilotModel pilot;
   FirebaseAuth firebaseAuth;
@@ -189,6 +191,7 @@ class _AppState extends State<App> {
       user = UserModel();
       googleMaps = GoogleMapsModel();
       pilot = PilotModel();
+      connectivity = ConnectivityModel();
     } else {
       return Splash();
     }
@@ -211,7 +214,10 @@ class _AppState extends State<App> {
           ),
           ChangeNotifierProvider<PilotModel>(
             create: (context) => pilot,
-          )
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => connectivity,
+          ),
         ], // pass user model down
         builder: (context, child) {
           FirebaseModel firebase = Provider.of<FirebaseModel>(
@@ -235,6 +241,7 @@ class _AppState extends State<App> {
                     trip: args.trip,
                     user: args.user,
                     googleMaps: args.googleMaps,
+                    connectivity: args.connectivity,
                   );
                 });
               }
@@ -350,6 +357,7 @@ class _AppState extends State<App> {
                 return MaterialPageRoute(builder: (context) {
                   return PastTrips(
                     firebase: args.firebase,
+                    connectivity: args.connectivity,
                   );
                 });
               }
@@ -403,6 +411,7 @@ class _AppState extends State<App> {
                     trip: tripModel,
                     user: user,
                     googleMaps: googleMaps,
+                    connectivity: connectivity,
                   ),
               Start.routeName: (context) => Start(),
               Settings.routeName: (context) => Settings(),

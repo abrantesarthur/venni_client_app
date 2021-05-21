@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
@@ -32,6 +32,7 @@ void main() {
     when(mockUserModel.geocoding).thenReturn(mockGeocodingResult);
     when(mockGeocodingResult.latitude).thenReturn(0);
     when(mockGeocodingResult.longitude).thenReturn(0);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 
   void setVerifyPhoneNumberMock({
@@ -107,7 +108,10 @@ void main() {
               create: (context) => mockGoogleMapsModel),
           ChangeNotifierProvider<TripModel>(
             create: (context) => mockTripModel,
-          )
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
+          ),
         ],
         builder: (context, child) => MaterialApp(
           home: InsertNewPhone(),
@@ -392,7 +396,10 @@ void main() {
                 create: (context) => mockUserModel),
             ChangeNotifierProvider<TripModel>(
               create: (context) => mockTripModel,
-            )
+            ),
+            ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel,
+            ),
           ],
           builder: (context, child) => MaterialApp(
             home: InsertNewPhone(),

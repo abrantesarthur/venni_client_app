@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/mocks.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -31,6 +32,7 @@ void main() {
     when(mockGoogleMapsModel.initialCameraLatLng).thenReturn(LatLng(10, 10));
     when(mockGoogleMapsModel.initialZoom).thenReturn(30);
     when(mockGoogleMapsModel.polylines).thenReturn({});
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 
   Future<void> pumpWidget(WidgetTester tester) async {
@@ -42,7 +44,10 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
           ChangeNotifierProvider<GoogleMapsModel>(
-              create: (context) => mockGoogleMapsModel)
+              create: (context) => mockGoogleMapsModel),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
+          ),
         ],
         builder: (context, child) => MaterialApp(
           home: InsertPassword(
@@ -57,6 +62,7 @@ void main() {
                   user: mockUserModel,
                   trip: mockTripModel,
                   googleMaps: mockGoogleMapsModel,
+                  connectivity: mockConnectivityModel,
                 ),
             Start.routeName: (context) => Start(),
           },

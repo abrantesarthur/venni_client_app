@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -18,6 +19,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 
   Future<void> pumpWidget(WidgetTester tester) async {
@@ -152,6 +154,8 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<GoogleMapsModel>(
               create: (context) => mockGoogleMapsModel),
+          ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel),
         ],
         child: MaterialApp(
           home: InsertName(

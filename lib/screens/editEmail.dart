@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/screens/insertNewEmail.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
@@ -32,6 +33,7 @@ class EditEmailState extends State<EditEmail> {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
 
     return GoBackScaffold(
       title: "Alterar Email",
@@ -75,6 +77,15 @@ class EditEmailState extends State<EditEmail> {
                             message: "Reenviar email de verificação",
                             color: AppColor.secondaryPurple,
                             onTapCallback: (context) async {
+                              // ensure user is connected to the internet
+                              if (!connectivity.hasConnection) {
+                                await connectivity.alertWhenOffline(
+                                  context,
+                                  message:
+                                      "Conecte-se à internet para reenviar o email.",
+                                );
+                                return;
+                              }
                               try {
                                 await firebase.auth.currentUser
                                     .sendEmailVerification();
@@ -106,9 +117,18 @@ class EditEmailState extends State<EditEmail> {
         AppButton(
             textData: "Alterar Email",
             onTapCallBack: () async {
-              final response =
-                  await Navigator.pushNamed(context, InsertNewEmail.routeName)
-                      as UpdateEmailResponse;
+              // ensure user is connected to the internet
+              if (!connectivity.hasConnection) {
+                await connectivity.alertWhenOffline(
+                  context,
+                  message: "Conecte-se à internet para alterar o email.",
+                );
+                return;
+              }
+              final response = await Navigator.pushNamed(
+                context,
+                InsertNewEmail.routeName,
+              ) as UpdateEmailResponse;
               if (response != null && response.successful) {
                 setState(() {
                   warning = Warning(

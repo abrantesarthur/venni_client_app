@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/mocks.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -35,6 +36,7 @@ void main() {
     when(mockGoogleMapsModel.initialCameraLatLng).thenReturn(LatLng(10, 10));
     when(mockGoogleMapsModel.initialZoom).thenReturn(30);
     when(mockGoogleMapsModel.polylines).thenReturn({});
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 
   void setupFirebaseMocks({
@@ -138,7 +140,10 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<TripModel>(
             create: (context) => mockTripModel,
-          )
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
+          ),
         ],
         builder: (context, child) => MaterialApp(home: InsertPhone()),
       ));
@@ -266,7 +271,10 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
           ChangeNotifierProvider<GoogleMapsModel>(
-              create: (context) => mockGoogleMapsModel)
+              create: (context) => mockGoogleMapsModel),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
+          ),
         ],
         builder: (context, child) => MaterialApp(
           home: InsertPhone(),
@@ -276,6 +284,7 @@ void main() {
                   user: mockUserModel,
                   trip: mockTripModel,
                   googleMaps: mockGoogleMapsModel,
+                  connectivity: mockConnectivityModel,
                 ),
             InsertEmail.routeName: (context) => InsertEmail(
                   userCredential: mockUserCredential,
@@ -412,7 +421,10 @@ void main() {
         await tester.pumpWidget(MultiProvider(
           providers: [
             ChangeNotifierProvider<FirebaseModel>(
-                create: (context) => mockFirebaseModel)
+                create: (context) => mockFirebaseModel),
+            ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel,
+            ),
           ],
           builder: (context, child) => MaterialApp(
             home: InsertPhone(),
@@ -477,6 +489,9 @@ void main() {
           providers: [
             ChangeNotifierProvider<FirebaseModel>(
                 create: (context) => mockFirebaseModel),
+            ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel,
+            ),
           ],
           child: MaterialApp(
             home: InsertPhone(),

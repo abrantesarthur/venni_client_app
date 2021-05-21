@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/screens/insertNewPhone.dart';
 import 'package:rider_frontend/styles.dart';
@@ -26,6 +27,7 @@ class EditPhoneState extends State<EditPhone> {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
     return GoBackScaffold(
       title: "Atualizar número de telefone",
       children: [
@@ -48,6 +50,14 @@ class EditPhoneState extends State<EditPhone> {
         AppButton(
           textData: "Atualizar Telefone",
           onTapCallBack: () async {
+            // ensure user is connected to the internet
+            if (!connectivity.hasConnection) {
+              await connectivity.alertWhenOffline(
+                context,
+                message: "Conecte-se à internet para deletar o cartão.",
+              );
+              return;
+            }
             final _ = await Navigator.pushNamed(
               context,
               InsertNewPhone.routeName,

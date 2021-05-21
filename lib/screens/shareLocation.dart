@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -56,7 +57,8 @@ class ShareLocationState extends State<ShareLocation> {
               borderRadius: 10.0,
               textData: "Abrir Configurações",
               onTapCallBack: () async {
-                await user.getGeocoding();
+                Position userPos = await user.getPosition();
+                await user.getGeocoding(userPos);
                 setState(() {
                   reload = true;
                 });

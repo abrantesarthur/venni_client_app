@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
-import 'package:rider_frontend/widgets/yesNoDialog.dart';
-
-import '../models/firebase.dart';
 
 class Privacy extends StatefulWidget {
   static const String routeName = "Privacy";
@@ -17,15 +15,21 @@ class Privacy extends StatefulWidget {
 class PrivacyState extends State<Privacy> {
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final FirebaseModel firebase = Provider.of<FirebaseModel>(context);
-
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
     return GoBackScaffold(
       resizeToAvoidBottomInset: false,
       title: "Privacidade",
       children: [
         BorderlessButton(
-          onTap: () {
+          onTap: () async {
+            // ensure user is connected to the internet
+            if (!connectivity.hasConnection) {
+              await connectivity.alertWhenOffline(
+                context,
+                message: "Conecte-se à internet para excluir a sua conta.",
+              );
+              return;
+            }
             Navigator.pushNamed(context, DeleteAccount.routeName);
           },
           primaryText: "Excluir minha conta",

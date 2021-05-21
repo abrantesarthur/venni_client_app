@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
@@ -10,7 +11,7 @@ import 'package:rider_frontend/vendors/geocoding.dart';
 
 Widget buildPlacePicker({
   @required BuildContext context,
-  @required GeocodingResult userGeocoding,
+  @required Position userPosition,
   Address initialAddress,
   @required bool isDropOff,
 }) {
@@ -19,7 +20,7 @@ Widget buildPlacePicker({
       await _moveCameraToAddress(c, initialAddress);
     },
     apiKey: AppConfig.env.values.googleMapsApiKey,
-    initialPosition: LatLng(userGeocoding.latitude, userGeocoding.longitude),
+    initialPosition: LatLng(userPosition.latitude, userPosition.longitude),
     useCurrentLocation: false,
     enableMyLocationButton: false,
     enableMapTypeButton: false,

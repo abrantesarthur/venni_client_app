@@ -14,7 +14,11 @@ class GoogleWebService {
 
   @protected
   Future<http.Response> doGet(String params) async {
-    return await http.get(_buildUrl(params));
+    http.Response response;
+    try {
+      response = await http.get(_buildUrl(params));
+    } catch (_) {}
+    return response;
   }
 
   String _buildUrl(String params) {

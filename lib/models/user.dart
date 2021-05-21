@@ -19,6 +19,7 @@ class ProfileImage {
 
 class UserModel extends ChangeNotifier {
   GeocodingResult _geocoding;
+  Position _position;
   StreamSubscription _positionSubscription;
   ProfileImage _profileImage;
   String _rating;
@@ -27,6 +28,7 @@ class UserModel extends ChangeNotifier {
   Trip _unpaidTrip;
 
   GeocodingResult get geocoding => _geocoding;
+  Position get position => _position;
   ProfileImage get profileImage => _profileImage;
   String get rating => _rating;
   ClientPaymentMethod get defaultPaymentMethod => _defaultPaymentMethod;
@@ -37,11 +39,6 @@ class UserModel extends ChangeNotifier {
 
   void setProfileImage(ProfileImage img) {
     _profileImage = img;
-    notifyListeners();
-  }
-
-  void setGeocoding(GeocodingResult g) {
-    _geocoding = g;
     notifyListeners();
   }
 
@@ -117,14 +114,19 @@ class UserModel extends ChangeNotifier {
     this.fromClientInterface(client);
   }
 
-  Future<Position> getPosition() async {
+  Future<Position> getPosition({bool notify = true}) async {
     Position userPos;
     try {
       userPos = await determineUserPosition();
     } catch (_) {
-      return null;
+      _position = null;
     }
-    return userPos;
+    _position = userPos;
+    if (notify) {
+      notifyListeners();
+    }
+
+    return _position;
   }
 
   // cancel position subscription if it exists
@@ -143,27 +145,25 @@ class UserModel extends ChangeNotifier {
       );
       // cancel previous subscription if it exists
       cancelPositionChangeSubscription();
-      // subscribe to changes in position, updating geocoding on changes
-      _positionSubscription = userPositionStream.listen((position) {
-        getGeocoding(pos: position);
+      // subscribe to changes in position, updating position and gocoding on changes
+      _positionSubscription = userPositionStream.listen((position) async {
+        _position = position;
+        await getGeocoding(position, notify: false);
+        notifyListeners();
       });
     } catch (_) {}
   }
 
   // getGeocoding updates _geocoding. On failure, _geocoding is set to null.
-  Future<void> getGeocoding({Position pos}) async {
-    Position userPos = pos;
-    if (userPos == null) {
-      // get user position
-      userPos = await getPosition();
-      if (userPos == null) {
-        // don't update geocoding if fail to get position.
-        return;
-      }
+  Future<void> getGeocoding(Position pos, {bool notify = true}) async {
+    if (pos == null) {
+      // don't update geocoding position is null
+      return;
     }
 
     // get user geocoding
-    GeocodingResponse geocoding = await Geocoding().searchByPosition(userPos);
+    GeocodingResponse geocoding;
+    geocoding = await Geocoding().searchByPosition(pos);
     GeocodingResult geocodingResult;
     if (geocoding != null &&
         geocoding.results != null &&
@@ -171,7 +171,10 @@ class UserModel extends ChangeNotifier {
       geocodingResult = geocoding.results[0];
     }
     // set user position
-    setGeocoding(geocodingResult);
+    _geocoding = geocodingResult;
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   // getPaymentMethodSvgPath returns defaultPaymentMethod's svg path

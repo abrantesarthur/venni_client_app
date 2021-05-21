@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -233,8 +234,14 @@ class InsertPasswordState extends State<InsertPassword> {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     UserModel user = Provider.of<UserModel>(context, listen: false);
-    GoogleMapsModel googleMaps =
-        Provider.of<GoogleMapsModel>(context, listen: false);
+    GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(
+      context,
+      listen: false,
+    );
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
 
     return FutureBuilder(
       future: successfullyRegisteredUser,
@@ -255,6 +262,7 @@ class InsertPasswordState extends State<InsertPassword> {
                 trip: trip,
                 user: user,
                 googleMaps: googleMaps,
+                connectivity: connectivity,
               ),
             );
           });

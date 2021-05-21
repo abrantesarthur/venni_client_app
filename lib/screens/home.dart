@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
@@ -38,12 +39,14 @@ class HomeArguments {
   final TripModel trip;
   final UserModel user;
   final GoogleMapsModel googleMaps;
+  final ConnectivityModel connectivity;
 
   HomeArguments({
     @required this.firebase,
     @required this.trip,
     @required this.user,
     @required this.googleMaps,
+    @required this.connectivity,
   });
 }
 
@@ -53,12 +56,14 @@ class Home extends StatefulWidget {
   final TripModel trip;
   final UserModel user;
   final GoogleMapsModel googleMaps;
+  final ConnectivityModel connectivity;
 
   Home({
     @required this.firebase,
     @required this.trip,
     @required this.user,
     @required this.googleMaps,
+    @required this.connectivity,
   });
 
   @override
@@ -66,10 +71,11 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> with WidgetsBindingObserver {
-  Future<bool> finishedDownloadingUserData;
+  Future<Position> userPositionFuture;
   GlobalKey<ScaffoldState> _scaffoldKey;
   StreamSubscription pilotSubscription;
   StreamSubscription tripSubscription;
+  bool _hasConnection;
   var _firebaseListener;
   var _tripListener;
 
@@ -78,22 +84,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
-    // Try getting user position. If it returns null, it's because user stopped
-    // sharing location. getPosition() will automatically handle that case, asking
-    // the user to share again and preventing them from using the app if they
-    // don't.
-    Position pos = await widget.user.getPosition();
-    if (pos != null) {
-      // if we could get position, make sure to resubscribe to position changes
-      // again, as subscription may have been cancelled if user stopped sharing
-      // location.
-      widget.user.updateGeocodingOnPositionChange();
-    }
+    // if user stopped sharing location, _getUserPosition asks them to reshare
+    await _getUserPosition();
   }
 
   @override
   void initState() {
-    print("init state");
     super.initState();
 
     // HomeState uses WidgetsBindingObserver as a mixin. Thus, we can pass it as
@@ -104,23 +100,24 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
     _scaffoldKey = GlobalKey<ScaffoldState>();
 
-    // trigger download user data
-    finishedDownloadingUserData = _downloadUserData();
+    // trigger _getUserPosition
+    userPositionFuture = _getUserPosition();
 
-    // after finishing download, user retrieved lat and lng to set maps camera view
-    finishedDownloadingUserData.then(
-      (_) => {
-        if (widget.user.geocoding != null)
-          {
-            widget.googleMaps.initialCameraLatLng = LatLng(
-                widget.user.geocoding?.latitude,
-                widget.user.geocoding?.longitude),
-          }
-      },
-    );
+    _hasConnection = widget.connectivity.hasConnection;
 
     // add listeners after tree is built and we have context
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // after finishing _getUserPosition,
+      userPositionFuture.then((position) async {
+        if (position != null) {
+          // user retrieved lat and lng to set maps camera view
+          widget.googleMaps.initialCameraLatLng = LatLng(
+            widget.user.position?.latitude,
+            widget.user.position?.longitude,
+          );
+        }
+      });
+
       // add listener to FirebaseModel so user is redirected to Start when logs out
       _firebaseListener = () {
         _signOut(context);
@@ -159,78 +156,96 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(context);
     UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context);
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
+
+    // if connectivity has changed
+    if (_hasConnection != connectivity.hasConnection) {
+      // update _hasConnectivity
+      _hasConnection = connectivity.hasConnection;
+      // if connectivity changed from offline to online
+      if (connectivity.hasConnection) {
+        // download user data
+        user.downloadData(firebase);
+      }
+    }
 
     // provide GoogleMapsModel
     return FutureBuilder(
-        initialData: false,
-        future: finishedDownloadingUserData,
-        builder: (
-          BuildContext context,
-          AsyncSnapshot<bool> snapshot,
-        ) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // show loading screen while waiting for download to succeed
-            return Splash(
-                text: "Muito bom ter você de volta, " +
-                    firebase.auth.currentUser.displayName.split(" ").first +
-                    "!");
-          }
+      initialData: null,
+      future: userPositionFuture,
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<Position> snapshot,
+      ) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // show loading screen while waiting for download to succeed
+          return Splash(
+              text: "Muito bom ter você de volta, " +
+                  firebase.auth.currentUser.displayName.split(" ").first +
+                  "!");
+        }
 
-          // make sure we successfully got user position
-          if (snapshot.data == false) {
-            return ShareLocation(push: Home.routeName);
-          }
+        // make sure we successfully got user position
+        if (snapshot.data == null) {
+          return ShareLocation(push: Home.routeName);
+        }
 
-          // user data download finished: show home screen
-          return Scaffold(
-            key: _scaffoldKey,
-            drawer: Menu(),
-            body: Stack(
-              children: [
-                GoogleMap(
-                  myLocationButtonEnabled: googleMaps.myLocationButtonEnabled,
-                  myLocationEnabled: googleMaps.myLocationEnabled,
-                  trafficEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapType: MapType.normal,
-                  initialCameraPosition: CameraPosition(
-                    target: googleMaps.initialCameraLatLng ??
-                        LatLng(-17.217600, -46.874621), // defaults to paracatu
-                    zoom: googleMaps.initialZoom ?? 16.5,
-                  ),
-                  padding: EdgeInsets.only(
-                    top: googleMaps.googleMapsTopPadding ?? screenHeight / 12,
-                    bottom: googleMaps.googleMapsBottomPadding ??
-                        screenHeight / 8.5,
-                    left: screenWidth / 20,
-                    right: screenWidth / 20,
-                  ),
-                  onMapCreated: googleMaps.onMapCreatedCallback,
-                  polylines: Set<Polyline>.of(googleMaps.polylines.values),
-                  markers: googleMaps.markers,
+        // user data download finished: show home screen
+        return Scaffold(
+          key: _scaffoldKey,
+          drawer: Menu(),
+          body: Stack(
+            children: [
+              GoogleMap(
+                myLocationButtonEnabled: googleMaps.myLocationButtonEnabled,
+                myLocationEnabled: googleMaps.myLocationEnabled,
+                trafficEnabled: false,
+                zoomControlsEnabled: false,
+                mapType: MapType.normal,
+                initialCameraPosition: CameraPosition(
+                  target: googleMaps.initialCameraLatLng ??
+                      LatLng(-17.217600, -46.874621), // defaults to paracatu
+                  zoom: googleMaps.initialZoom ?? 16.5,
                 ),
-                for (var child in _buildRemainingStackChildren(
-                  context: context,
-                  scaffoldKey: _scaffoldKey,
-                  trip: trip,
-                  user: user,
-                ))
-                  child
-              ],
-            ),
-          );
-        });
+                padding: EdgeInsets.only(
+                  top: googleMaps.googleMapsTopPadding ?? screenHeight / 12,
+                  bottom:
+                      googleMaps.googleMapsBottomPadding ?? screenHeight / 8.5,
+                  left: screenWidth / 20,
+                  right: screenWidth / 20,
+                ),
+                onMapCreated: googleMaps.onMapCreatedCallback,
+                polylines: Set<Polyline>.of(googleMaps.polylines.values),
+                markers: googleMaps.markers,
+              ),
+              for (var child in _buildRemainingStackChildren(
+                context: context,
+                scaffoldKey: _scaffoldKey,
+                trip: trip,
+                user: user,
+              ))
+                child
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  Future<bool> _downloadUserData() async {
-    // get user geocoding, returning false if fails
-    await widget.user.getGeocoding();
-    if (widget.user.geocoding == null) {
-      return false;
+  Future<Position> _getUserPosition() async {
+    // Try getting user position. If it returns null, it's because user stopped
+    // sharing location. getPosition() will automatically handle that case, asking
+    // the user to share again and preventing them from using the app if they
+    // don't.
+    Position pos = await widget.user.getPosition(notify: false);
+    if (pos == null) {
+      return null;
     }
-    await widget.user.downloadData(widget.firebase);
+    // if we could get position, make sure to resubscribe to position changes
+    // again, as the subscription may have been cancelled if user stopped
+    // sharing location.
     widget.user.updateGeocodingOnPositionChange();
-    return true;
+    return pos;
   }
 
   // push start screen when user logs out
@@ -471,6 +486,10 @@ List<Widget> _buildRemainingStackChildren({
   @required UserModel user,
 }) {
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+    context,
+    listen: false,
+  );
 
   // lock trip request if user has pending payments
   if (user.unpaidTrip != null) {
@@ -508,7 +527,11 @@ List<Widget> _buildRemainingStackChildren({
             borderRadius: 10.0,
             iconLeft: Icons.near_me,
             textData: "Para onde vamos?",
-            onTapCallBack: () {
+            onTapCallBack: () async {
+              if (!connectivity.hasConnection) {
+                await connectivity.alertWhenOffline(context);
+                return;
+              }
               Navigator.pushNamed(
                 context,
                 DefineRoute.routeName,
@@ -783,17 +806,38 @@ Widget _buildCancelTripButton(
     child: OverallPadding(
       left: screenWidth / 30,
       child: CancelButton(
-        onPressed: () {
+        onPressed: () async {
+          // make sure user is connected to the internet
+          ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+            context,
+            listen: false,
+          );
+          if (!connectivity.hasConnection) {
+            await connectivity.alertWhenOffline(
+              context,
+              message: "Conecte-se à internet para cancelar o pedido,",
+            );
+            return;
+          }
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return YesNoDialog(
                 title: title ?? "Cancelar Pedido?",
                 content: content,
-                onPressedYes: () {
+                onPressedYes: () async {
+                  if (!connectivity.hasConnection) {
+                    await connectivity.alertWhenOffline(
+                      context,
+                      message: "Conecte-se à internet para cancelar o pedido,",
+                    );
+                    return;
+                  }
                   // TODO: charge fee if necessary
                   // cancel trip and update trip and pilot models once it succeeds
-                  firebase.functions.cancelTrip();
+                  try {
+                    firebase.functions.cancelTrip();
+                  } catch (_) {}
                   // update models
                   trip.clear(status: TripStatus.canceledByClient);
                   pilot.clear();
@@ -978,8 +1022,21 @@ Widget _buildTripSummaryFloatingCard(
   );
 }
 
-Future<void> confirmTripCallback(BuildContext context, TripModel trip,
-    FirebaseModel firebase, UserModel user) async {
+Future<void> confirmTripCallback(
+  BuildContext context,
+  TripModel trip,
+  FirebaseModel firebase,
+  UserModel user,
+) async {
+  // make sure user is connected to the internet
+  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+    context,
+    listen: false,
+  );
+  if (!connectivity.hasConnection) {
+    await connectivity.alertWhenOffline(context);
+    return;
+  }
   // alert user in case they're paying with cash
   if (user.defaultPaymentMethod.type == PaymentMethodType.cash) {
     final useCard = await showDialog(
@@ -1119,6 +1176,15 @@ Future<void> payTripCallback(
   Trip trip,
   UserModel user,
 ) async {
+  // make sure user is connected to the internet
+  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+    context,
+    listen: false,
+  );
+  if (!connectivity.hasConnection) {
+    await connectivity.alertWhenOffline(context);
+    return;
+  }
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
   // alert user in case they're paying with cash

@@ -100,8 +100,8 @@ class PastTripDetailState extends State<PastTripDetail> {
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
                     target: LatLng(
-                      user.geocoding?.latitude,
-                      user.geocoding?.longitude,
+                      user.position?.latitude,
+                      user.position?.longitude,
                     ),
                     zoom: googleMaps.initialZoom,
                   ),

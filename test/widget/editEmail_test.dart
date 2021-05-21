@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -17,6 +18,7 @@ void main() {
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 
   Future<void> pumpWidget(WidgetTester tester) async {
@@ -28,7 +30,10 @@ void main() {
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
           ChangeNotifierProvider<TripModel>(
             create: (context) => mockTripModel,
-          )
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
+          ),
         ],
         builder: (context, child) => MaterialApp(
           home: EditEmail(),

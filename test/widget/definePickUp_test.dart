@@ -5,6 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/definePickUp.dart';
@@ -31,6 +32,10 @@ void main() {
     when(mockAddress.latitude).thenReturn(-17);
     when(mockAddress.longitude).thenReturn(-42);
     when(mockUserModel.geocoding).thenReturn(mockUserGeocoding);
+    when(mockUserModel.position).thenReturn(mockUserPosition);
+    when(mockUserPosition.latitude).thenReturn(-17);
+    when(mockUserPosition.longitude).thenReturn(-42);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
     when(mockPlaces.findAddressPredictions(
       placeName: anyNamed("placeName"),
       latitude: anyNamed("latitude"),
@@ -275,6 +280,9 @@ void main() {
           ),
           ChangeNotifierProvider<TripModel>(
             create: (context) => mockTripModel,
+          ),
+          ChangeNotifierProvider<ConnectivityModel>(
+            create: (context) => mockConnectivityModel,
           ),
         ],
         builder: (context, child) {

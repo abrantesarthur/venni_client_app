@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
 import 'package:rider_frontend/vendors/places.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -49,7 +49,7 @@ class DefineDropOffState extends State<DefineDropOff> {
       // suggest locations as user searches locations
       dropOffTextEditingController.addListener(() async {
         // TODO: FIX BUG
-        await textFieldListener(true, user.geocoding);
+        await textFieldListener(true, user.position);
       });
     });
   }
@@ -60,8 +60,7 @@ class DefineDropOffState extends State<DefineDropOff> {
     super.dispose();
   }
 
-  Future<void> textFieldListener(
-      bool isDropOff, GeocodingResult clientGeocoding) async {
+  Future<void> textFieldListener(bool isDropOff, Position userPosition) async {
     String location = dropOffTextEditingController.text ?? "";
     if (location.length == 0) {
       if (this.mounted) {
@@ -73,8 +72,8 @@ class DefineDropOffState extends State<DefineDropOff> {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
-        latitude: clientGeocoding.latitude,
-        longitude: clientGeocoding.longitude,
+        latitude: userPosition.latitude,
+        longitude: userPosition.longitude,
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
@@ -168,7 +167,7 @@ class DefineDropOffState extends State<DefineDropOff> {
               : Expanded(
                   child: buildPlacePicker(
                     context: context,
-                    userGeocoding: user.geocoding,
+                    userPosition: user.position,
                     isDropOff: true,
                     initialAddress: trip.dropOffAddress,
                   ),

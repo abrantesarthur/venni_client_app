@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -81,9 +82,9 @@ class DefineRouteState extends State<DefineRoute> {
       final userLatitude = _user.geocoding?.latitude;
       final userLongitude = _user.geocoding?.longitude;
       // change pick up text field only if it's different from user location
-      if (userLatitude != pickUpAddress.latitude ||
-          userLongitude != pickUpAddress.longitude) {
-        pickUpController.text = pickUpAddress.mainText;
+      if (userLatitude != pickUpAddress?.latitude ||
+          userLongitude != pickUpAddress?.longitude) {
+        pickUpController.text = pickUpAddress?.mainText;
       }
 
       // set button state
@@ -158,6 +159,10 @@ class DefineRouteState extends State<DefineRoute> {
       listen: false,
     );
     TripModel route = Provider.of<TripModel>(context, listen: false);
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
 
     // define variables based on whether we're choosing dropOff or not
     FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
@@ -168,6 +173,12 @@ class DefineRouteState extends State<DefineRoute> {
 
     // unfocus text fields to make it behave like a button
     focusNode.unfocus();
+
+    // make sure user is connected to the internet
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(context);
+      return;
+    }
 
     // push screen to allow user to select an address
     await Navigator.pushNamed(context, routeName);
@@ -188,6 +199,16 @@ class DefineRouteState extends State<DefineRoute> {
   // buttonCallback enriches pickUp and dropOff addresses with coordinates before
   // returning to previous screen
   void buttonCallback(BuildContext context) async {
+    // make sure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(context);
+      return;
+    }
+
     // show loading icon and lock screen
     setState(() {
       buttonChild = CircularProgressIndicator(

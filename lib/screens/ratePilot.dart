@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -168,6 +169,7 @@ class RatePilotState extends State<RatePilot> {
     TripModel trip = Provider.of<TripModel>(context);
     UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
 
     String lastDigits = "";
     if (user.defaultPaymentMethod.type == PaymentMethodType.credit_card) {
@@ -460,6 +462,16 @@ class RatePilotState extends State<RatePilot> {
                     onTapCallBack: (!activateButton || _lockScreen)
                         ? () {}
                         : () async {
+                            // ensure user is connected to the internet
+                            if (!connectivity.hasConnection) {
+                              await connectivity.alertWhenOffline(
+                                context,
+                                message:
+                                    "Conecte-se à internet para avaliar o piloto.",
+                              );
+                              return;
+                            }
+
                             // lock screen and show message
                             setState(() {
                               _lockScreen = true;
@@ -473,6 +485,7 @@ class RatePilotState extends State<RatePilot> {
                               feedbackComponents: feedbackComponents,
                               feedbackMessage: _textFieldController.text,
                             );
+
                             // wait 3 seconds then pop back
                             await Future.delayed(Duration(seconds: 3));
                             Navigator.pop(context);

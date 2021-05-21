@@ -5,6 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineDropOff.dart';
@@ -19,13 +20,17 @@ void main() {
   setUp(() async {
     await DotEnv.load(fileName: ".env");
 
-    when(mockUserGeocoding.latitude).thenReturn(-43.0);
-    when(mockUserGeocoding.longitude).thenReturn(-17.0);
     when(mockTripModel.pickUpAddress).thenReturn(mockAddress);
     when(mockTripModel.dropOffAddress).thenReturn(mockAddress);
     when(mockAddress.latitude).thenReturn(-17);
     when(mockAddress.longitude).thenReturn(-42);
     when(mockUserModel.geocoding).thenReturn(mockUserGeocoding);
+    when(mockUserGeocoding.latitude).thenReturn(-43.0);
+    when(mockUserGeocoding.longitude).thenReturn(-17.0);
+    when(mockUserModel.position).thenReturn(mockUserPosition);
+    when(mockUserPosition.latitude).thenReturn(-17);
+    when(mockUserPosition.longitude).thenReturn(-42);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
     when(mockPlaces.findAddressPredictions(
       placeName: anyNamed("placeName"),
       latitude: anyNamed("latitude"),
@@ -277,6 +282,9 @@ void main() {
             ),
             ChangeNotifierProvider<TripModel>(
               create: (context) => mockTripModel,
+            ),
+            ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel,
             ),
           ],
           builder: (context, child) {

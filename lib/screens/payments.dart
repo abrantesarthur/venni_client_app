@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -35,6 +36,7 @@ class PaymentsState extends State<Payments> {
     UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     final screenHeight = MediaQuery.of(context).size.height;
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
 
     return GoBackScaffold(
       title: widget.mode == PaymentsMode.display
@@ -143,8 +145,18 @@ class PaymentsState extends State<Payments> {
                     paddingTop: screenHeight / 200,
                     paddingBottom: screenHeight / 200,
                     onTap: () async {
+                      if (!connectivity.hasConnection) {
+                        await connectivity.alertWhenOffline(
+                          context,
+                          message:
+                              "Conecte-se à internet para adicionar um cartão.",
+                        );
+                        return;
+                      }
                       final addedCard = await Navigator.pushNamed(
-                          context, AddCreditCard.routeName) as CreditCard;
+                        context,
+                        AddCreditCard.routeName,
+                      ) as CreditCard;
 
                       // if we are in pick mode
                       if (widget.mode == PaymentsMode.pick) {
@@ -155,8 +167,9 @@ class PaymentsState extends State<Payments> {
                             creditCardID: addedCard.id,
                           ),
                         );
-                        firebase.functions
-                            .setDefaultPaymentMethod(cardID: addedCard.id);
+                        firebase.functions.setDefaultPaymentMethod(
+                          cardID: addedCard.id,
+                        );
                         // pop back
                         Navigator.pop(context);
                       }

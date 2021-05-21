@@ -4,6 +4,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
@@ -561,6 +562,18 @@ class AddCreditCardState extends State<AddCreditCard> {
   }
 
   Future<void> buttonCallback(BuildContext context) async {
+    // ensure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(
+        context,
+        message: "Conecte-se à internet para adicionar o cartão.",
+      );
+      return;
+    }
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     UserModel user = Provider.of<UserModel>(context, listen: false);
 

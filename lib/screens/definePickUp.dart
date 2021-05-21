@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/placePicker.dart';
 import 'package:rider_frontend/vendors/places.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
@@ -48,7 +48,7 @@ class DefinePickUpState extends State<DefinePickUp> {
 
       // suggest locations as user searches locations
       pickUpTextEditingController.addListener(() async {
-        await textFieldListener(false, user.geocoding);
+        await textFieldListener(false, user.position);
       });
     });
   }
@@ -59,8 +59,7 @@ class DefinePickUpState extends State<DefinePickUp> {
     super.dispose();
   }
 
-  Future<void> textFieldListener(
-      bool isDropOff, GeocodingResult userGeocoding) async {
+  Future<void> textFieldListener(bool isDropOff, Position userPosition) async {
     String location = pickUpTextEditingController.text ?? "";
     if (location.length == 0) {
       if (this.mounted) {
@@ -72,8 +71,8 @@ class DefinePickUpState extends State<DefinePickUp> {
       // get drop off address predictions
       List<Address> predictions = await widget.places.findAddressPredictions(
         placeName: location,
-        latitude: userGeocoding.latitude,
-        longitude: userGeocoding.longitude,
+        latitude: userPosition.latitude,
+        longitude: userPosition.longitude,
         sessionToken: sessionToken,
         isDropOff: isDropOff,
       );
@@ -167,7 +166,7 @@ class DefinePickUpState extends State<DefinePickUp> {
               : Expanded(
                   child: buildPlacePicker(
                   context: context,
-                  userGeocoding: user.geocoding,
+                  userPosition: user.position,
                   isDropOff: false,
                   initialAddress: trip.pickUpAddress,
                 ))

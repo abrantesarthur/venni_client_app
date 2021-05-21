@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
@@ -133,6 +134,18 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
 
   // buttonCallback tries signing user up by adding remainig data to its credential
   Future<void> buttonCallback(BuildContext context, String newPassword) async {
+    // ensure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(
+        context,
+        message: "Conecte-se à internet para alterar a senha.",
+      );
+      return;
+    }
     final screenHeight = MediaQuery.of(context).size.height;
     final FirebaseModel firebase = Provider.of<FirebaseModel>(
       context,

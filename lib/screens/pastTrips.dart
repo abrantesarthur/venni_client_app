@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
-import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/pastTripDetail.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions.dart';
@@ -13,15 +13,17 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 
 class PastTripsArguments {
   final FirebaseModel firebase;
+  final ConnectivityModel connectivity;
 
-  PastTripsArguments(this.firebase);
+  PastTripsArguments(this.firebase, this.connectivity);
 }
 
 class PastTrips extends StatefulWidget {
   static String routeName = "PastTrips";
   final FirebaseModel firebase;
+  final ConnectivityModel connectivity;
 
-  PastTrips({@required this.firebase});
+  PastTrips({@required this.firebase, @required this.connectivity});
 
   @override
   PastTripsState createState() => PastTripsState();
@@ -32,12 +34,14 @@ class PastTripsState extends State<PastTrips> {
   Future<Trips> getPastTripsResult;
   bool isLoading;
   ScrollController scrollController;
+  bool _hasConnection;
 
   @override
   void initState() {
     super.initState();
     pastTrips = [];
     isLoading = false;
+    _hasConnection = widget.connectivity.hasConnection;
 
     // create scroll controller that triggers getMorePastTrips once user
     // scrolls all the way down to the bottom of the past trips list
@@ -67,17 +71,28 @@ class PastTripsState extends State<PastTrips> {
 
   Future<void> getMorePastTrips() async {
     //  least recent trip is the last in chronologically sorted pastTrips
-    Trip leastRecentTrip = pastTrips[pastTrips.length - 1];
+    Trip leastRecentTrip;
+    if (pastTrips.isNotEmpty) {
+      leastRecentTrip = pastTrips[pastTrips.length - 1];
+    }
 
     // get 10 trips that happened before least recent trip
-    int maxRequestTime = leastRecentTrip.requestTime - 1;
+    int maxRequestTime;
+    if (leastRecentTrip != null) {
+      maxRequestTime = leastRecentTrip.requestTime - 1;
+    }
     GetPastTripsArguments args = GetPastTripsArguments(
       pageSize: 10,
       maxRequestTime: maxRequestTime,
     );
-    Trips result = await widget.firebase.functions.getPastTrips(args: args);
+    Trips result;
+    try {
+      result = await widget.firebase.functions.getPastTrips(args: args);
+    } catch (_) {}
     setState(() {
-      pastTrips.addAll(result.items);
+      if (result != null) {
+        pastTrips.addAll(result.items);
+      }
       isLoading = false;
     });
   }
@@ -85,6 +100,16 @@ class PastTripsState extends State<PastTrips> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
+
+    // get more past trips whenever connection changes from offline to online
+    if (_hasConnection != connectivity.hasConnection) {
+      _hasConnection = connectivity.hasConnection;
+      if (connectivity.hasConnection) {
+        getMorePastTrips();
+      }
+    }
+
     return FutureBuilder(
       future: getPastTripsResult,
       builder: (BuildContext context, AsyncSnapshot<Trips> snapshot) {
@@ -133,10 +158,17 @@ class PastTripsState extends State<PastTrips> {
                           removeTop: true,
                           removeBottom: true,
                           child: pastTrips.length == 0
-                              ? Text(
-                                  "Você ainda não fez nenhuma corrida.",
-                                  style: TextStyle(color: AppColor.disabled),
-                                )
+                              ? !connectivity.hasConnection
+                                  ? Text(
+                                      "Você está offline.",
+                                      style:
+                                          TextStyle(color: AppColor.disabled),
+                                    )
+                                  : Text(
+                                      "Você ainda não fez nenhuma corrida.",
+                                      style:
+                                          TextStyle(color: AppColor.disabled),
+                                    )
                               : ListView.separated(
                                   controller: scrollController,
                                   physics: AlwaysScrollableScrollPhysics(),

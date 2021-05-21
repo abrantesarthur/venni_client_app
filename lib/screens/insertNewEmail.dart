@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputPassword.dart';
@@ -9,7 +10,6 @@ import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
-
 
 import '../models/firebase.dart';
 import '../widgets/warning.dart';
@@ -73,6 +73,18 @@ class InsertNewEmailState extends State<InsertNewEmail> {
   }
 
   Future<void> buttonCallback(BuildContext context) async {
+    // ensure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(
+        context,
+        message: "Conecte-se à internet para redefinir o email.",
+      );
+      return;
+    }
     final FirebaseModel firebase =
         Provider.of<FirebaseModel>(context, listen: false);
 

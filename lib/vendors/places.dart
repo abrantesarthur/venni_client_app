@@ -35,8 +35,12 @@ class Places {
           "strictbounds&" +
           "language=pt-BR";
 
-      var autocompleteResponse = await http.get(autoCompleteUrl);
-      if (autocompleteResponse.statusCode < 300) {
+      var autocompleteResponse;
+      try {
+        autocompleteResponse = await http.get(autoCompleteUrl);
+      } catch (_) {}
+      if (autocompleteResponse != null &&
+          autocompleteResponse.statusCode < 300) {
         var autocompleteJson = jsonDecode(autocompleteResponse.body);
         if (autocompleteJson["status"] == "OK") {
           var predictions = autocompleteJson["predictions"];

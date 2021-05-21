@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -32,6 +33,10 @@ extension AppFirebaseAuth on FirebaseAuth {
           Provider.of<GoogleMapsModel>(context, listen: false);
       UserModel user = Provider.of<UserModel>(context, listen: false);
       TripModel trip = Provider.of<TripModel>(context, listen: false);
+      ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+        context,
+        listen: false,
+      );
       if (firebase.isRegistered) {
         // redirect to Home screen
         Navigator.pushNamed(
@@ -42,6 +47,7 @@ extension AppFirebaseAuth on FirebaseAuth {
             trip: trip,
             user: user,
             googleMaps: googleMaps,
+            connectivity: connectivity,
           ),
         );
       } else {

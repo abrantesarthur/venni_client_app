@@ -29,6 +29,7 @@ import GoogleMaps
     if(googleMapsApiKeyNameAndValue.count > 1) {
       googleMapsApiKey = googleMapsApiKeyNameAndValue[1]
     }
+    // provide API key so google Maps SDK works for iOS
     GMSServices.provideAPIKey(googleMapsApiKey)
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

@@ -78,7 +78,6 @@ class _AppState extends State<App> {
   }
 
   @override
-  @override
   void dispose() {
     if (googleMaps != null) {
       googleMaps.dispose();

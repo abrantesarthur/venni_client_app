@@ -44,7 +44,6 @@ import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/vendors/places.dart';
 
 /**

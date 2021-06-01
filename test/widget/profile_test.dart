@@ -12,8 +12,7 @@ import 'package:rider_frontend/screens/insertNewPassword.dart';
 import 'package:rider_frontend/screens/profile.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/utils/utils.dart';
-
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   // define mocks behaviors

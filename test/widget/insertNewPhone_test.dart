@@ -19,7 +19,7 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   // define mockers behaviors

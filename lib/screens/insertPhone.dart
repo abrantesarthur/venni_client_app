@@ -13,7 +13,6 @@ import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-// TODO: when user clicks the button, he no longer can edit the phone number!!!
 // TODO: allow user to sign in with email, specially if limit of phone verifications was reached
 
 class InsertPhone extends StatefulWidget {

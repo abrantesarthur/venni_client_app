@@ -17,7 +17,7 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   testWidgets("phone is succesfully edited", (WidgetTester tester) async {

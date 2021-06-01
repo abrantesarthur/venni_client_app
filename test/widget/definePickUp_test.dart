@@ -12,7 +12,7 @@ import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
 void main() {

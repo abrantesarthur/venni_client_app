@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/mocks.dart';
+import 'file:///Users/Arthur/Documents/venni/rider_app/test/mocks.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/addCreditCard.dart';
 import 'package:rider_frontend/styles.dart';

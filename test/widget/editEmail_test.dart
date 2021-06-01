@@ -10,7 +10,7 @@ import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/editEmail.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   setUp(() {

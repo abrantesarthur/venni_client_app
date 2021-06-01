@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/mocks.dart';
+import 'file:///Users/Arthur/Documents/venni/rider_app/test/mocks.dart';
 import 'package:rider_frontend/models/pilot.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';

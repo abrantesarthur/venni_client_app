@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/mocks.dart';
+import 'file:///Users/Arthur/Documents/venni/rider_app/test/mocks.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';

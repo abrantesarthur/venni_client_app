@@ -12,7 +12,7 @@ import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   setUp(() {

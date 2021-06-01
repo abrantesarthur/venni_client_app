@@ -15,7 +15,7 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   // define mockers behaviors

@@ -14,7 +14,7 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
-import '../../lib/mocks.dart';
+import '../mocks.dart';
 
 void main() {
   setUp(() async {

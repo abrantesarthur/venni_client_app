@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/editEmail.dart';
@@ -12,13 +11,11 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
-import 'package:rider_frontend/widgets/yesNoDialog.dart';
 import 'dart:io' as dartIo;
 import 'package:path/path.dart' as path;
 
 import '../models/firebase.dart';
 
-// TODO: move _pickFromGallery and _pickFromCamera logic to its own file
 // TODO: write comments
 // TODO: fix image overflow
 // TODO: change default avatar
@@ -43,49 +40,6 @@ class ProfileState extends State<Profile> {
     super.initState();
   }
 
-  Future<PickedFile> _showDialog(BuildContext context) {
-    return showDialog<PickedFile>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Escolher Foto"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: [
-                Divider(color: Colors.black, thickness: 0.1),
-                ListTile(
-                  onTap: () async {
-                    // get image from gallery
-                    PickedFile img = await pickImageFromGallery(context);
-                    Navigator.pop(context, img);
-                  },
-                  title: Text("Galeria"),
-                  leading: Icon(
-                    Icons.photo_album,
-                    color: AppColor.primaryPink,
-                  ),
-                ),
-                Divider(color: Colors.black, thickness: 0.1),
-                ListTile(
-                  onTap: () async {
-                    // get image from camera
-                    PickedFile img = await pickImageFromCamera(context);
-                    Navigator.pop(context, img);
-                  },
-                  title: Text("Câmera"),
-                  leading: Icon(
-                    Icons.camera_alt,
-                    color: AppColor.primaryPink,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -101,7 +55,7 @@ class ProfileState extends State<Profile> {
             Spacer(),
             GestureDetector(
               onTap: () async {
-                PickedFile img = await _showDialog(context);
+                PickedFile img = await pickImage(context);
                 if (img != null) {
                   // push image to firebase
                   firebase.storage.putProfileImage(

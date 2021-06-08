@@ -7,6 +7,7 @@ import 'package:rider_frontend/screens/editEmail.dart';
 import 'package:rider_frontend/screens/editPhone.dart';
 import 'package:rider_frontend/screens/insertNewPassword.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/vendors/imagePicker.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/utils/utils.dart';
@@ -17,6 +18,7 @@ import 'package:path/path.dart' as path;
 
 import '../models/firebase.dart';
 
+// TODO: move _pickFromGallery and _pickFromCamera logic to its own file
 // TODO: write comments
 // TODO: fix image overflow
 // TODO: change default avatar
@@ -41,67 +43,6 @@ class ProfileState extends State<Profile> {
     super.initState();
   }
 
-  Future<void> _askPermission(
-    BuildContext context,
-    String description,
-  ) async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return YesNoDialog(
-            title: description,
-            onPressedYes: () async {
-              await openAppSettings();
-              Navigator.pop(context);
-            });
-      },
-    );
-  }
-
-  Future<PickedFile> _pickFromGallery(BuildContext context) async {
-    // try to get image
-    try {
-      PickedFile pickedFile = await ImagePicker().getImage(
-        source: ImageSource.gallery,
-      );
-      return pickedFile;
-    } catch (e) {
-      // ask user to update permission in app settings
-      await _askPermission(
-        context,
-        "Permitir Acesso às Fotos",
-      );
-    }
-    return null;
-  }
-
-  Future<PickedFile> _pickFromCamera(BuildContext context) async {
-    // request permission
-    PermissionStatus status = await Permission.camera.request();
-
-    // if permission was denied
-    if (status == PermissionStatus.permanentlyDenied ||
-        status == PermissionStatus.restricted ||
-        status == PermissionStatus.denied) {
-      // ask user to update permission in app settings
-      await _askPermission(
-        context,
-        "Permitir Acesso à Câmera",
-      );
-      return null;
-    }
-
-    // if permission was greanted
-    if (status == PermissionStatus.granted) {
-      // get image
-      return await ImagePicker().getImage(
-        source: ImageSource.camera,
-      );
-    }
-
-    return null;
-  }
-
   Future<PickedFile> _showDialog(BuildContext context) {
     return showDialog<PickedFile>(
       context: context,
@@ -115,7 +56,7 @@ class ProfileState extends State<Profile> {
                 ListTile(
                   onTap: () async {
                     // get image from gallery
-                    PickedFile img = await _pickFromGallery(context);
+                    PickedFile img = await pickImageFromGallery(context);
                     Navigator.pop(context, img);
                   },
                   title: Text("Galeria"),
@@ -128,7 +69,7 @@ class ProfileState extends State<Profile> {
                 ListTile(
                   onTap: () async {
                     // get image from camera
-                    PickedFile img = await _pickFromCamera(context);
+                    PickedFile img = await pickImageFromCamera(context);
                     Navigator.pop(context, img);
                   },
                   title: Text("Câmera"),

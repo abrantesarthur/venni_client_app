@@ -43,7 +43,6 @@ Future<PickedFile> pickImageFromGallery(BuildContext context) async {
   return _pickImageFrom(context, ImageSource.gallery);
 }
 
-// TODO: update it to be like pickImageFromGallery
 Future<PickedFile> pickImageFromCamera(BuildContext context) async {
   return _pickImageFrom(context, ImageSource.camera);
 }

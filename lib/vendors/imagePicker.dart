@@ -21,12 +21,13 @@ Future<void> _askPermission(
   );
 }
 
-Future<PickedFile> pickImageFromGallery(BuildContext context) async {
+Future<PickedFile> _pickImageFrom(
+  BuildContext context,
+  ImageSource source,
+) async {
   // try to get image
   try {
-    PickedFile pickedFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-    );
+    PickedFile pickedFile = await ImagePicker().getImage(source: source);
     return pickedFile;
   } catch (e) {
     // ask user to update permission in app settings
@@ -38,31 +39,13 @@ Future<PickedFile> pickImageFromGallery(BuildContext context) async {
   return null;
 }
 
+Future<PickedFile> pickImageFromGallery(BuildContext context) async {
+  return _pickImageFrom(context, ImageSource.gallery);
+}
+
+// TODO: update it to be like pickImageFromGallery
 Future<PickedFile> pickImageFromCamera(BuildContext context) async {
-  // request permission
-  PermissionStatus status = await Permission.camera.request();
-
-  // if permission was denied
-  if (status == PermissionStatus.permanentlyDenied ||
-      status == PermissionStatus.restricted ||
-      status == PermissionStatus.denied) {
-    // ask user to update permission in app settings
-    await _askPermission(
-      context,
-      "Permitir Acesso à Câmera",
-    );
-    return null;
-  }
-
-  // if permission was greanted
-  if (status == PermissionStatus.granted) {
-    // get image
-    return await ImagePicker().getImage(
-      source: ImageSource.camera,
-    );
-  }
-
-  return null;
+  return _pickImageFrom(context, ImageSource.camera);
 }
 
 Future<PickedFile> pickImage(BuildContext context) {

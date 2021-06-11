@@ -55,6 +55,7 @@ class ProfileState extends State<Profile> {
             Spacer(),
             GestureDetector(
               onTap: () async {
+                // TODO: do it just like in partner app
                 PickedFile img = await pickImage(context);
                 if (img != null) {
                   // push image to firebase

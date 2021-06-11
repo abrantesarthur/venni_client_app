@@ -51,10 +51,11 @@ class Settings extends StatelessWidget {
                 context: context,
                 builder: (BuildContext context) {
                   return YesNoDialog(
-                      title: "Deseja sair?",
-                      onPressedYes: () {
-                        firebase.auth.signOut();
-                      });
+                    title: "Deseja sair?",
+                    onPressedYes: () async {
+                      await firebase.auth.signOut();
+                    },
+                  );
                 },
               );
             },

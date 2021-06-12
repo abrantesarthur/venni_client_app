@@ -4,7 +4,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:encrypt/encrypt_io.dart';
 import 'package:flutter/material.dart';
-import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
@@ -120,17 +120,17 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
-  Future<int> pilotGetTripRating(PilotGetTripRatingArguments args) async {
+  Future<int> partnerGetTripRating(PartnerGetTripRatingArguments args) async {
     Map<String, String> data = {};
-    data["pilot_id"] = args.pilotID;
+    data["partner_id"] = args.partnerID;
     data["past_trip_ref_key"] = args.pastTripRefKey;
     try {
       HttpsCallableResult result =
-          await this.httpsCallable("trip-pilot_get_trip_rating").call(data);
+          await this.httpsCallable("trip-partner_get_trip_rating").call(data);
       if (result != null &&
           result.data != null &&
-          result.data["pilot_rating"] != null) {
-        return result.data["pilot_rating"];
+          result.data["partner_rating"] != null) {
+        return result.data["partner_rating"];
       }
     } catch (e) {
       throw e;
@@ -138,15 +138,15 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
-  Future<void> ratePilot({
-    @required String pilotID,
+  Future<void> ratePartner({
+    @required String partnerID,
     @required int score,
     Map<FeedbackComponent, bool> feedbackComponents,
     String feedbackMessage,
   }) async {
     // build argument
     Map<String, dynamic> args = {
-      "pilot_id": pilotID,
+      "partner_id": partnerID,
       "score": score,
     };
     if (feedbackComponents != null) {
@@ -166,7 +166,7 @@ extension AppFirebaseFunctions on FirebaseFunctions {
       args["feedback"] = feedbackMessage;
     }
     try {
-      await this.httpsCallable("trip-rate_pilot").call(args);
+      await this.httpsCallable("trip-rate_partner").call(args);
     } catch (_) {}
   }
 
@@ -338,12 +338,12 @@ class CreateCardArguments {
   }
 }
 
-class PilotGetTripRatingArguments {
-  String pilotID;
+class PartnerGetTripRatingArguments {
+  String partnerID;
   String pastTripRefKey;
 
-  PilotGetTripRatingArguments({
-    @required this.pilotID,
+  PartnerGetTripRatingArguments({
+    @required this.partnerID,
     @required this.pastTripRefKey,
   });
 }
@@ -383,8 +383,8 @@ class Trip {
   final num requestTime;
   final String originAddress;
   final String destinationAddress;
-  final String pilotPastTripRefKey;
-  final String pilotID;
+  final String partnerPastTripRefKey;
+  final String partnerID;
   final PaymentMethodType paymentMethod;
   final CreditCard creditCard;
   final String transactionID;
@@ -402,8 +402,8 @@ class Trip {
     @required this.requestTime,
     @required this.originAddress,
     @required this.destinationAddress,
-    @required this.pilotPastTripRefKey,
-    @required this.pilotID,
+    @required this.partnerPastTripRefKey,
+    @required this.partnerID,
     this.paymentMethod,
     this.creditCard,
     this.transactionID,
@@ -433,8 +433,8 @@ class Trip {
       requestTime: int.parse(json["request_time"]),
       originAddress: json["origin_address"],
       destinationAddress: json["destination_address"],
-      pilotPastTripRefKey: json["pilot_past_trip_ref_key"],
-      pilotID: json["pilot_id"],
+      partnerPastTripRefKey: json["partner_past_trip_ref_key"],
+      partnerID: json["partner_id"],
       paymentMethod: paymentMethod,
       creditCard: creditCard,
       transactionID: json["transaction_id"],
@@ -467,61 +467,61 @@ class Vehicle {
 }
 
 class ConfirmTripResult {
-  final String pilotID;
-  final String pilotName;
-  final String pilotLastName;
-  final int pilotTotalTrips;
-  final int pilotMemberSince;
-  final String pilotPhoneNumber;
-  final String pilotCurrentClientID;
-  final double pilotCurrentLatitude;
-  final double pilotCurrentLongitude;
-  final String pilotCurrentZone;
-  final PilotStatus pilotStatus;
+  final String partnerID;
+  final String partnerName;
+  final String partnerLastName;
+  final int partnerTotalTrips;
+  final int partnerMemberSince;
+  final String partnerPhoneNumber;
+  final String partnerCurrentClientID;
+  final double partnerCurrentLatitude;
+  final double partnerCurrentLongitude;
+  final String partnerCurrentZone;
+  final PartnerStatus partnerStatus;
   final TripStatus tripStatus;
-  final Vehicle pilotVehicle;
-  final int pilotIdleSince;
-  final double pilotRating;
+  final Vehicle partnerVehicle;
+  final int partnerIdleSince;
+  final double partnerRating;
 
   ConfirmTripResult({
-    @required this.pilotID,
-    @required this.pilotName,
-    @required this.pilotLastName,
-    @required this.pilotTotalTrips,
-    @required this.pilotMemberSince,
-    @required this.pilotPhoneNumber,
-    @required this.pilotCurrentClientID,
-    @required this.pilotCurrentLatitude,
-    @required this.pilotCurrentLongitude,
-    @required this.pilotCurrentZone,
-    @required this.pilotStatus,
+    @required this.partnerID,
+    @required this.partnerName,
+    @required this.partnerLastName,
+    @required this.partnerTotalTrips,
+    @required this.partnerMemberSince,
+    @required this.partnerPhoneNumber,
+    @required this.partnerCurrentClientID,
+    @required this.partnerCurrentLatitude,
+    @required this.partnerCurrentLongitude,
+    @required this.partnerCurrentZone,
+    @required this.partnerStatus,
     @required this.tripStatus,
-    @required this.pilotVehicle,
-    @required this.pilotIdleSince,
-    @required this.pilotRating,
+    @required this.partnerVehicle,
+    @required this.partnerIdleSince,
+    @required this.partnerRating,
   });
 
   factory ConfirmTripResult.fromJson(Map<dynamic, dynamic> json) {
     if (json == null || json.isEmpty) return null;
-    PilotStatus pilotStatus = getPilotStatusFromString(json["pilot_status"]);
+    PartnerStatus partnerStatus = getPartnerStatusFromString(json["partner_status"]);
     TripStatus tripStatus = getTripStatusFromString(json["trip_status"]);
     return ConfirmTripResult(
-      pilotID: json["pilot_id"],
-      pilotName: json["pilot_name"],
-      pilotLastName: json["pilot_last_name"],
-      pilotTotalTrips: int.parse(json["pilot_total_trips"]),
-      pilotMemberSince: int.parse(json["pilot_member_since"]),
-      pilotPhoneNumber: json["pilot_phone_number"],
-      pilotCurrentClientID: json["current_client_uid"],
-      pilotCurrentLatitude: double.parse(json["pilot_current_latitude"]),
-      pilotCurrentLongitude: double.parse(json["pilot_current_longitude"]),
-      pilotCurrentZone: json["pilot_current_zone"],
-      pilotStatus: pilotStatus,
+      partnerID: json["partner_id"],
+      partnerName: json["partner_name"],
+      partnerLastName: json["partner_last_name"],
+      partnerTotalTrips: int.parse(json["partner_total_trips"]),
+      partnerMemberSince: int.parse(json["partner_member_since"]),
+      partnerPhoneNumber: json["partner_phone_number"],
+      partnerCurrentClientID: json["current_client_uid"],
+      partnerCurrentLatitude: double.parse(json["partner_current_latitude"]),
+      partnerCurrentLongitude: double.parse(json["partner_current_longitude"]),
+      partnerCurrentZone: json["partner_current_zone"],
+      partnerStatus: partnerStatus,
       tripStatus: tripStatus,
-      pilotVehicle: Vehicle.fromJson(json["pilot_vehicle"]),
-      pilotIdleSince: int.parse(json["pilot_idle_since"]),
-      pilotRating:
-          double.parse(double.parse(json["pilot_rating"]).toStringAsFixed(2)),
+      partnerVehicle: Vehicle.fromJson(json["partner_vehicle"]),
+      partnerIdleSince: int.parse(json["partner_idle_since"]),
+      partnerRating:
+          double.parse(double.parse(json["partner_rating"]).toStringAsFixed(2)),
     );
   }
 }
@@ -546,7 +546,7 @@ class EditTripArguments extends RequestTripArguments {
         );
 }
 
-enum PilotStatus {
+enum PartnerStatus {
   available,
   unavailable,
   requested,
@@ -554,21 +554,21 @@ enum PilotStatus {
   offline,
 }
 
-PilotStatus getPilotStatusFromString(String status) {
+PartnerStatus getPartnerStatusFromString(String status) {
   if (status == "available") {
-    return PilotStatus.available;
+    return PartnerStatus.available;
   }
   if (status == "unavailable") {
-    return PilotStatus.unavailable;
+    return PartnerStatus.unavailable;
   }
   if (status == "requested") {
-    return PilotStatus.requested;
+    return PartnerStatus.requested;
   }
   if (status == "busy") {
-    return PilotStatus.busy;
+    return PartnerStatus.busy;
   }
   if (status == "offline") {
-    return PilotStatus.offline;
+    return PartnerStatus.offline;
   }
   return null;
 }
@@ -576,12 +576,12 @@ PilotStatus getPilotStatusFromString(String status) {
 enum TripStatus {
   waitingConfirmation,
   waitingPayment,
-  waitingPilot,
-  lookingForPilot,
-  noPilotsAvailable,
+  waitingPartner,
+  lookingForPartner,
+  noPartnersAvailable,
   inProgress,
   completed,
-  canceledByPilot,
+  canceledByPartner,
   canceledByClient,
   paymentFailed,
   off,
@@ -594,14 +594,14 @@ TripStatus getTripStatusFromString(String status) {
   if (status == "waiting-payment") {
     return TripStatus.waitingPayment;
   }
-  if (status == "waiting-pilot") {
-    return TripStatus.waitingPilot;
+  if (status == "waiting-partner") {
+    return TripStatus.waitingPartner;
   }
-  if (status == "looking-for-pilot") {
-    return TripStatus.lookingForPilot;
+  if (status == "looking-for-partner") {
+    return TripStatus.lookingForPartner;
   }
-  if (status == "no-pilots-available") {
-    return TripStatus.noPilotsAvailable;
+  if (status == "no-partners-available") {
+    return TripStatus.noPartnersAvailable;
   }
   if (status == "in-progress") {
     return TripStatus.inProgress;
@@ -609,8 +609,8 @@ TripStatus getTripStatusFromString(String status) {
   if (status == "completed") {
     return TripStatus.completed;
   }
-  if (status == "cancelled-by-pilot") {
-    return TripStatus.canceledByPilot;
+  if (status == "cancelled-by-partner") {
+    return TripStatus.canceledByPartner;
   }
   if (status == "cancelled-by-client") {
     return TripStatus.canceledByClient;

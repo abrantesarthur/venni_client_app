@@ -5,7 +5,7 @@ import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/models/user.dart';
 
-class PilotModel extends ChangeNotifier {
+class PartnerModel extends ChangeNotifier {
   ProfileImage _profileImage;
   String _id;
   String _name;
@@ -32,7 +32,7 @@ class PilotModel extends ChangeNotifier {
   int get totalTrips => _totalTrips;
   String get memberSince => _memberSince;
 
-  PilotModel();
+  PartnerModel();
 
   void clear({
     TripStatus status = TripStatus.off,
@@ -75,18 +75,18 @@ class PilotModel extends ChangeNotifier {
       return Future.value();
     }
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    _id = result.pilotID;
-    _name = result.pilotName;
-    _lastName = result.pilotLastName;
-    _phoneNumber = result.pilotPhoneNumber;
-    _vehicle = result.pilotVehicle;
-    _rating = result.pilotRating;
-    _currentLatitude = result.pilotCurrentLatitude;
-    _currentLongitude = result.pilotCurrentLongitude;
-    _totalTrips = result.pilotTotalTrips;
-    _memberSinceDate = result.pilotMemberSince == null
+    _id = result.partnerID;
+    _name = result.partnerName;
+    _lastName = result.partnerLastName;
+    _phoneNumber = result.partnerPhoneNumber;
+    _vehicle = result.partnerVehicle;
+    _rating = result.partnerRating;
+    _currentLatitude = result.partnerCurrentLatitude;
+    _currentLongitude = result.partnerCurrentLongitude;
+    _totalTrips = result.partnerTotalTrips;
+    _memberSinceDate = result.partnerMemberSince == null
         ? null
-        : (DateTime.fromMillisecondsSinceEpoch(result.pilotMemberSince));
+        : (DateTime.fromMillisecondsSinceEpoch(result.partnerMemberSince));
     _memberSince = _memberSinceDate == null
         ? null
         : (_memberSinceDate.day < 10
@@ -99,9 +99,9 @@ class PilotModel extends ChangeNotifier {
             "/" +
             _memberSinceDate.year.toString();
 
-    // download pilot profile picture
+    // download partner profile picture
     ProfileImage img =
-        await firebase.storage.getPilotProfilePicture(result.pilotID);
+        await firebase.storage.getPartnerProfilePicture(result.partnerID);
     this._profileImage = img;
   }
 }

@@ -40,9 +40,9 @@ class PastTripDetail extends StatefulWidget {
 }
 
 class PastTripDetailState extends State<PastTripDetail> {
-  Future<bool> doneGettingPilotInfo;
-  int pilotRating;
-  ProfileImage pilotImage;
+  Future<bool> doneGettingPartnerInfo;
+  int partnerRating;
+  ProfileImage partnerImage;
   GoogleMapsModel googleMaps;
 
   @override
@@ -51,24 +51,24 @@ class PastTripDetailState extends State<PastTripDetail> {
 
     googleMaps = GoogleMapsModel();
 
-    doneGettingPilotInfo = getPilotInfo();
+    doneGettingPartnerInfo = getPartnerInfo();
   }
 
-  Future<bool> getPilotInfo() async {
-    // get pilot rating
+  Future<bool> getPartnerInfo() async {
+    // get partner rating
     int rating = await widget.firebase.functions
-        .pilotGetTripRating(PilotGetTripRatingArguments(
-      pilotID: widget.pastTrip.pilotID,
-      pastTripRefKey: widget.pastTrip.pilotPastTripRefKey,
+        .partnerGetTripRating(PartnerGetTripRatingArguments(
+      partnerID: widget.pastTrip.partnerID,
+      pastTripRefKey: widget.pastTrip.partnerPastTripRefKey,
     ));
 
-    // get pilot profile image
+    // get partner profile image
     ProfileImage img = await widget.firebase.storage
-        .getPilotProfilePicture(widget.pastTrip.pilotID);
+        .getPartnerProfilePicture(widget.pastTrip.partnerID);
 
     setState(() {
-      pilotRating = rating;
-      pilotImage = img;
+      partnerRating = rating;
+      partnerImage = img;
     });
 
     return true;
@@ -87,7 +87,7 @@ class PastTripDetailState extends State<PastTripDetail> {
     UserModel user = Provider.of<UserModel>(context, listen: false);
 
     return FutureBuilder(
-        future: doneGettingPilotInfo,
+        future: doneGettingPartnerInfo,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           return Scaffold(
             body: Stack(
@@ -137,11 +137,11 @@ class PastTripDetailState extends State<PastTripDetail> {
                     ],
                   ),
                 ),
-                _buildPilotRatingDetail(
+                _buildPartnerRatingDetail(
                   context: context,
                   pastTrip: widget.pastTrip,
-                  pilotRating: pilotRating,
-                  pilotImage: pilotImage,
+                  partnerRating: partnerRating,
+                  partnerImage: partnerImage,
                   snapshot: snapshot,
                 ),
               ],
@@ -151,11 +151,11 @@ class PastTripDetailState extends State<PastTripDetail> {
   }
 }
 
-Widget _buildPilotRatingDetail({
+Widget _buildPartnerRatingDetail({
   @required BuildContext context,
   @required Trip pastTrip,
-  @required int pilotRating,
-  @required ProfileImage pilotImage,
+  @required int partnerRating,
+  @required ProfileImage partnerImage,
   @required AsyncSnapshot<bool> snapshot,
 }) {
   final screenWidth = MediaQuery.of(context).size.width;
@@ -174,9 +174,9 @@ Widget _buildPilotRatingDetail({
               children: [
                 CircularImage(
                   size: screenHeight / 12,
-                  imageFile: pilotImage == null
+                  imageFile: partnerImage == null
                       ? AssetImage("images/user_icon.png")
-                      : pilotImage.file,
+                      : partnerImage.file,
                 ),
                 SizedBox(width: screenWidth / 30),
                 snapshot.connectionState == ConnectionState.waiting
@@ -191,7 +191,7 @@ Widget _buildPilotRatingDetail({
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            getRateDescription(pilotRating),
+                            getRateDescription(partnerRating),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700),
                           ),
@@ -202,7 +202,7 @@ Widget _buildPilotRatingDetail({
                                 padding:
                                     EdgeInsets.only(right: screenWidth / 200),
                                 child: Icon(
-                                  pilotRating != null && pilotRating >= 1
+                                  partnerRating != null && partnerRating >= 1
                                       ? Icons.star_sharp
                                       : Icons.star_border_sharp,
                                   size: 25,
@@ -212,7 +212,7 @@ Widget _buildPilotRatingDetail({
                                 padding:
                                     EdgeInsets.only(right: screenWidth / 200),
                                 child: Icon(
-                                  pilotRating != null && pilotRating >= 2
+                                  partnerRating != null && partnerRating >= 2
                                       ? Icons.star_sharp
                                       : Icons.star_border_sharp,
                                   size: 25,
@@ -222,7 +222,7 @@ Widget _buildPilotRatingDetail({
                                 padding:
                                     EdgeInsets.only(right: screenWidth / 200),
                                 child: Icon(
-                                  pilotRating != null && pilotRating >= 3
+                                  partnerRating != null && partnerRating >= 3
                                       ? Icons.star_sharp
                                       : Icons.star_border_sharp,
                                   size: 25,
@@ -232,7 +232,7 @@ Widget _buildPilotRatingDetail({
                                 padding:
                                     EdgeInsets.only(right: screenWidth / 200),
                                 child: Icon(
-                                  pilotRating != null && pilotRating >= 4
+                                  partnerRating != null && partnerRating >= 4
                                       ? Icons.star_sharp
                                       : Icons.star_border_sharp,
                                   size: 25,
@@ -242,7 +242,7 @@ Widget _buildPilotRatingDetail({
                                 padding:
                                     EdgeInsets.only(right: screenWidth / 200),
                                 child: Icon(
-                                  pilotRating != null && pilotRating >= 5
+                                  partnerRating != null && partnerRating >= 5
                                       ? Icons.star_sharp
                                       : Icons.star_border_sharp,
                                   size: 25,

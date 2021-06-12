@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -78,9 +78,9 @@ class ConfirmTripState extends State<ConfirmTrip> {
         splashMessage = "Processando pagamento...";
       });
     }
-    if (tripStatus == TripStatus.lookingForPilot) {
+    if (tripStatus == TripStatus.lookingForPartner) {
       setState(() {
-        splashMessage = "Encontrando o melhor piloto...";
+        splashMessage = "Encontrando o melhor partnero...";
       });
     }
   }
@@ -145,10 +145,10 @@ class ConfirmTripState extends State<ConfirmTrip> {
           //      request is unauthenticated (not the case) or there's no active
           //      trip request (not the case). In those cases, confirmTrip returns
           //      null.
-          //    waitingPilot - request succeded! We should start listening for
-          //      updates in pilot position
-          //    paymentFailed, noPilotsAvailable - error was thrown
-          //    lookingForPilots - timed out looking for pilots and threw error
+          //    waitingPartner - request succeded! We should start listening for
+          //      updates in partner position
+          //    paymentFailed, noPartnersAvailable - error was thrown
+          //    lookingForPartners - timed out looking for partners and threw error
           SchedulerBinding.instance.addPostFrameCallback((_) async {
             // cancel stream subscription
             tripStatusSubscription.cancel();
@@ -166,19 +166,19 @@ class ConfirmTripState extends State<ConfirmTrip> {
   }
 
   // when _tripConfirming is called, status will be one of the following:
-  // paymentFailed, noPilotsAvailable - error was thrown
+  // paymentFailed, noPartnersAvailable - error was thrown
   // waitingConfirmation - very unlikely. Will only throw if
   //      request is unauthenticated (not the case) or there's no active
   //      trip request (not the case)
-  // waitingPilot - request succeded! We should start listening for
-  //      updates in pilot position
-  // lookingForPilots - timed out looking for pilots and threw error
+  // waitingPartner - request succeded! We should start listening for
+  //      updates in partner position
+  // lookingForPartners - timed out looking for partners and threw error
   Future<void> finishConfirmation(
     BuildContext context,
     ConfirmTripResult result,
   ) async {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+    PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
     TripModel trip = Provider.of<TripModel>(context, listen: false);
 
     // check for null result, which happens when confirmTrip throws an exception.
@@ -191,7 +191,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
         // rebuild the tree the same way as it was when we tapped confirmar.
         firebase.functions.cancelTrip();
         trip.clear();
-        pilot.clear();
+        partner.clear();
         await showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -221,9 +221,9 @@ class ConfirmTripState extends State<ConfirmTrip> {
       return;
     }
 
-    if (result.tripStatus == TripStatus.waitingPilot) {
-      // populate PilotModel with information returned by confirmTrip
-      await pilot.fromConfirmTripResult(context, result);
+    if (result.tripStatus == TripStatus.waitingPartner) {
+      // populate PartnerModel with information returned by confirmTrip
+      await partner.fromConfirmTripResult(context, result);
     }
 
     // TODO: update trip not only its status but also with other info returned

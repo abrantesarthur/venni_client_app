@@ -64,7 +64,7 @@ extension AppFirebaseDatabase on FirebaseDatabase {
           await this.reference().child("clients").child(uid).once();
       result = ClientInterface.fromJson(snapshot.value);
 
-      // if pilot has upaid trip
+      // if partner has upaid trip
       if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
         // download unpaid trip and add it to result
         Trip unpaidTrip =
@@ -88,42 +88,42 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     return null;
   }
 
-  Future<String> getPilotID(String userUID) async {
+  Future<String> getPartnerID(String userUID) async {
     try {
       DataSnapshot snapshot = await this
           .reference()
           .child("trip-requests")
           .child(userUID)
-          .child("pilot_id")
+          .child("partner_id")
           .once();
       return snapshot.value;
     } catch (_) {}
     return null;
   }
 
-  Future<Map<dynamic, dynamic>> getPilotFromID(String pilotID) async {
+  Future<Map<dynamic, dynamic>> getPartnerFromID(String partnerID) async {
     try {
       DataSnapshot snapshot =
-          await this.reference().child("pilots").child(pilotID).once();
+          await this.reference().child("partners").child(partnerID).once();
       return snapshot.value;
     } catch (_) {}
     return null;
   }
 
-  // onPilotUpdate subscribes onData to handle changes in the pilot with uid pilotID
-  StreamSubscription onPilotUpdate(
-    String pilotID,
+  // onPartnerUpdate subscribes onData to handle changes in the partner with uid partnerID
+  StreamSubscription onPartnerUpdate(
+    String partnerID,
     void Function(Event) onData,
   ) {
     return this
         .reference()
-        .child("pilots")
-        .child(pilotID)
+        .child("partners")
+        .child(partnerID)
         .onValue
         .listen(onData);
   }
 
-  // onPilotUpdate subscribes onData to handle changes in the trip status of the
+  // onPartnerUpdate subscribes onData to handle changes in the trip status of the
   // trip of user with id userID.
   StreamSubscription onTripStatusUpdate(
     String userID,

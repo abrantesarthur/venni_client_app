@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -16,8 +16,8 @@ import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/screens/payTrip.dart';
 import 'package:rider_frontend/screens/payments.dart';
-import 'package:rider_frontend/screens/pilotProfile.dart';
-import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:rider_frontend/screens/partnerProfile.dart';
+import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
@@ -72,7 +72,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> with WidgetsBindingObserver {
   Future<Position> userPositionFuture;
   GlobalKey<ScaffoldState> _scaffoldKey;
-  StreamSubscription pilotSubscription;
+  StreamSubscription partnerSubscription;
   StreamSubscription tripSubscription;
   bool _hasConnection;
   var _firebaseListener;
@@ -137,8 +137,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     widget.firebase.removeListener(_firebaseListener);
     widget.trip.removeListener(_tripListener);
     widget.user.cancelPositionChangeSubscription();
-    if (pilotSubscription != null) {
-      pilotSubscription.cancel();
+    if (partnerSubscription != null) {
+      partnerSubscription.cancel();
     }
     if (tripSubscription != null) {
       tripSubscription.cancel();
@@ -254,11 +254,11 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
   }
 
-  void _cancelPilotSubscription() {
-    if (pilotSubscription != null) {
-      pilotSubscription.cancel();
+  void _cancelPartnerSubscription() {
+    if (partnerSubscription != null) {
+      partnerSubscription.cancel();
     }
-    pilotSubscription = null;
+    partnerSubscription = null;
   }
 
   void _cancelTripSubscription() {
@@ -269,7 +269,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   }
 
   void _cancelSubscriptions() {
-    _cancelPilotSubscription();
+    _cancelPartnerSubscription();
     _cancelTripSubscription();
   }
 
@@ -278,7 +278,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   Future<void> _redrawUIOnTripUpdate(BuildContext context) async {
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+    PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
     GoogleMapsModel googleMaps =
         Provider.of<GoogleMapsModel>(context, listen: false);
 
@@ -290,7 +290,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.canceledByClient ||
-        trip.tripStatus == TripStatus.canceledByPilot) {
+        trip.tripStatus == TripStatus.canceledByPartner) {
       await googleMaps.undrawPolyline(context);
       return;
     }
@@ -305,23 +305,23 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
 
-    void handlePilotUpdates(TripStatus expectedStatus) {
+    void handlePartnerUpdates(TripStatus expectedStatus) {
       // only reset subscription if it's null (i.e., it has been cancelled or this
       // is the first time it's being used). We enforce a business rule that
       // when we cancel subscriptions we set them to null. This allows us to
       // update the TripModel and, as a consequence, notify listeners without
       // redefining subscriptions when _redrawUIOnTripUpdate is called again.
-      if (pilotSubscription == null) {
-        pilotSubscription = firebase.database.onPilotUpdate(pilot.id, (e) {
-          // if pilot was set free, stop listening for his updates, as he is
+      if (partnerSubscription == null) {
+        partnerSubscription = firebase.database.onPartnerUpdate(partner.id, (e) {
+          // if partner was set free, stop listening for his updates, as he is
           // no longer handling our trip.
-          PilotStatus pilotStatus =
-              getPilotStatusFromString(e.snapshot.value["status"]);
-          if (pilotStatus != PilotStatus.busy) {
-            _cancelPilotSubscription();
+          PartnerStatus partnerStatus =
+              getPartnerStatusFromString(e.snapshot.value["status"]);
+          if (partnerStatus != PartnerStatus.busy) {
+            _cancelPartnerSubscription();
             return;
           }
-          // only redraw polyline if trip status is as expected and pilot
+          // only redraw polyline if trip status is as expected and partner
           // position has changed. The first check is necessary because it is
           // possible that local status may be updated before backend learns
           // about the update thus triggering the cancelling of this listener.
@@ -331,16 +331,16 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           double newLat = double.parse(e.snapshot.value["current_latitude"]);
           double newLng = double.parse(e.snapshot.value["current_longitude"]);
           if (trip.tripStatus == expectedStatus &&
-              (newLat != pilot.currentLatitude ||
-                  newLng != pilot.currentLongitude)) {
-            // update pilot coordinates
-            pilot.updateCurrentLatitude(newLat);
-            pilot.updateCurrentLongitude(newLng);
-            // draw polyline from pilot to origin or from pilot to destination
-            if (expectedStatus == TripStatus.waitingPilot) {
-              googleMaps.drawPolylineFromPilotToOrigin(context);
+              (newLat != partner.currentLatitude ||
+                  newLng != partner.currentLongitude)) {
+            // update partner coordinates
+            partner.updateCurrentLatitude(newLat);
+            partner.updateCurrentLongitude(newLng);
+            // draw polyline from partner to origin or from partner to destination
+            if (expectedStatus == TripStatus.waitingPartner) {
+              googleMaps.drawPolylineFromPartnerToOrigin(context);
             } else if (expectedStatus == TripStatus.inProgress) {
-              googleMaps.drawPolylineFromPilotToDestination(context);
+              googleMaps.drawPolylineFromPartnerToDestination(context);
             }
           }
         });
@@ -357,9 +357,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
             _cancelSubscriptions();
             if (newTripStatus == TripStatus.inProgress) {
               // if new trip status is inProgress redrawy polyline, but this time
-              // from pilot to destination
+              // from partner to destination
               trip.updateStatus(newTripStatus);
-              googleMaps.drawPolylineFromPilotToDestination(context);
+              googleMaps.drawPolylineFromPartnerToDestination(context);
             } else if (newTripStatus != trip.tripStatus) {
               // otherwise, do something only if local trip status has not
               // been already updated to newTripStatus by some other code path
@@ -373,31 +373,31 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       }
     }
 
-    if (trip.tripStatus == TripStatus.waitingPilot) {
-      handlePilotUpdates(TripStatus.waitingPilot);
-      handleTripUpdates(TripStatus.waitingPilot);
+    if (trip.tripStatus == TripStatus.waitingPartner) {
+      handlePartnerUpdates(TripStatus.waitingPartner);
+      handleTripUpdates(TripStatus.waitingPartner);
       return;
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
-      handlePilotUpdates(TripStatus.inProgress);
+      handlePartnerUpdates(TripStatus.inProgress);
       handleTripUpdates(TripStatus.inProgress);
       return;
     }
 
     if (trip.tripStatus == TripStatus.completed) {
       await googleMaps.undrawPolyline(context);
-      await Navigator.pushNamed(context, RatePilot.routeName);
+      await Navigator.pushNamed(context, RatePartner.routeName);
       // important: don't notify listeneres when clearing models. This may cause
       // null exceptions because there may still be widgets from the previous
-      // screen RatePilot that use the values from the models.
-      pilot.clear(notify: false);
+      // screen RatePartner that use the values from the models.
+      partner.clear(notify: false);
       trip.clear(notify: false);
       return;
     }
 
-    if (trip.tripStatus == TripStatus.noPilotsAvailable ||
-        trip.tripStatus == TripStatus.lookingForPilot) {
+    if (trip.tripStatus == TripStatus.noPartnersAvailable ||
+        trip.tripStatus == TripStatus.lookingForPartner) {
       // alert user to wait
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(
@@ -516,7 +516,7 @@ List<Widget> _buildRemainingStackChildren({
   if (trip.tripStatus == null ||
       trip.tripStatus == TripStatus.off ||
       trip.tripStatus == TripStatus.canceledByClient ||
-      trip.tripStatus == TripStatus.canceledByPilot ||
+      trip.tripStatus == TripStatus.canceledByPartner ||
       trip.tripStatus == TripStatus.completed) {
     return [
       OverallPadding(
@@ -558,8 +558,8 @@ List<Widget> _buildRemainingStackChildren({
 
   if (trip.tripStatus == TripStatus.waitingConfirmation ||
       trip.tripStatus == TripStatus.paymentFailed ||
-      trip.tripStatus == TripStatus.noPilotsAvailable ||
-      trip.tripStatus == TripStatus.lookingForPilot) {
+      trip.tripStatus == TripStatus.noPartnersAvailable ||
+      trip.tripStatus == TripStatus.lookingForPartner) {
     // if user is about to confirm trip for the first time (waitingConfirmation)
     // has already confirmed but received a paymentFailed, give them the
     // option of trying again.
@@ -575,7 +575,7 @@ List<Widget> _buildRemainingStackChildren({
     ];
   }
 
-  if (trip.tripStatus == TripStatus.waitingPilot) {
+  if (trip.tripStatus == TripStatus.waitingPartner) {
     return [
       _buildCancelTripButton(context, trip,
           // TODO: decide on final fee
@@ -584,7 +584,7 @@ List<Widget> _buildRemainingStackChildren({
       Column(
         children: [
           Spacer(),
-          _buildPilotSummaryFloatingCard(
+          _buildPartnerSummaryFloatingCard(
             context,
             trip: trip,
             user: user,
@@ -655,7 +655,7 @@ Widget _buildETAFloatingCard(
   );
 }
 
-Widget _buildPilotSummaryFloatingCard(
+Widget _buildPartnerSummaryFloatingCard(
   BuildContext context, {
   @required TripModel trip,
   @required UserModel user,
@@ -663,7 +663,7 @@ Widget _buildPilotSummaryFloatingCard(
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   // Listen is false, so we must call setState manually if we change the model
-  PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+  PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
 
   return OverallPadding(
     bottom: screenHeight / 20,
@@ -679,10 +679,10 @@ Widget _buildPilotSummaryFloatingCard(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // TODO: notify client when pilot is near
-                    trip.pilotArrivalSeconds > 90
+                    // TODO: notify client when partner is near
+                    trip.partnerArrivalSeconds > 90
                         ? "Motorista a caminho"
-                        : (trip.pilotArrivalSeconds > 5
+                        : (trip.partnerArrivalSeconds > 5
                             ? "Motorista próximo"
                             : "Motorista no local"),
                     style: TextStyle(
@@ -703,7 +703,7 @@ Widget _buildPilotSummaryFloatingCard(
               SizedBox(width: screenWidth / 20),
               Spacer(),
               Text(
-                (trip.pilotArrivalSeconds / 60).round().toString() + " min",
+                (trip.partnerArrivalSeconds / 60).round().toString() + " min",
                 style: TextStyle(fontSize: 18),
               ),
             ],
@@ -716,9 +716,9 @@ Widget _buildPilotSummaryFloatingCard(
               children: [
                 CircularImage(
                   size: screenHeight / 13,
-                  imageFile: pilot.profileImage == null
+                  imageFile: partner.profileImage == null
                       ? AssetImage("images/user_icon.png")
-                      : pilot.profileImage.file,
+                      : partner.profileImage.file,
                 ),
                 SizedBox(width: screenWidth / 20),
                 Column(
@@ -732,7 +732,7 @@ Widget _buildPilotSummaryFloatingCard(
                             maxWidth: screenWidth / 4.2, // avoid overflowsr
                           ),
                           child: Text(
-                            pilot.name,
+                            partner.name,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -741,7 +741,7 @@ Widget _buildPilotSummaryFloatingCard(
                         ),
                         SizedBox(width: screenWidth / 50),
                         Text(
-                          pilot.rating.toString(),
+                          partner.rating.toString(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -755,9 +755,9 @@ Widget _buildPilotSummaryFloatingCard(
                       ],
                     ),
                     Text(
-                      pilot.vehicle.brand.toUpperCase() +
+                      partner.vehicle.brand.toUpperCase() +
                           " " +
-                          pilot.vehicle.model.toUpperCase(),
+                          partner.vehicle.model.toUpperCase(),
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColor.disabled,
@@ -765,7 +765,7 @@ Widget _buildPilotSummaryFloatingCard(
                       ),
                     ),
                     Text(
-                      pilot.phoneNumber,
+                      partner.phoneNumber,
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColor.disabled,
@@ -776,12 +776,12 @@ Widget _buildPilotSummaryFloatingCard(
                 ),
                 Spacer(),
                 Text(
-                  pilot.vehicle.plate.toUpperCase(),
+                  partner.vehicle.plate.toUpperCase(),
                   style: TextStyle(fontSize: 16),
                 ),
               ],
             ),
-            onTap: () => Navigator.pushNamed(context, PilotProfile.routeName),
+            onTap: () => Navigator.pushNamed(context, PartnerProfile.routeName),
           ),
           SizedBox(height: screenHeight / 100),
         ],
@@ -799,7 +799,7 @@ Widget _buildCancelTripButton(
   final screenWidth = MediaQuery.of(context).size.width;
 
   FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-  PilotModel pilot = Provider.of<PilotModel>(context, listen: false);
+  PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
   return Positioned(
     left: 0,
     child: OverallPadding(
@@ -833,13 +833,13 @@ Widget _buildCancelTripButton(
                     return;
                   }
                   // TODO: charge fee if necessary
-                  // cancel trip and update trip and pilot models once it succeeds
+                  // cancel trip and update trip and partner models once it succeeds
                   try {
                     firebase.functions.cancelTrip();
                   } catch (_) {}
                   // update models
                   trip.clear(status: TripStatus.canceledByClient);
-                  pilot.clear();
+                  partner.clear();
                   Navigator.pop(context);
                 },
               );

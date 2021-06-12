@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
@@ -23,13 +23,13 @@ enum FeedbackComponent {
   another,
 }
 
-class RatePilot extends StatefulWidget {
-  static String routeName = "RatePilot";
+class RatePartner extends StatefulWidget {
+  static String routeName = "RatePartner";
 
-  RatePilotState createState() => RatePilotState();
+  RatePartnerState createState() => RatePartnerState();
 }
 
-class RatePilotState extends State<RatePilot> {
+class RatePartnerState extends State<RatePartner> {
   String _rateDescription;
   int _rate;
   IconData _cleanlinessIcon;
@@ -66,7 +66,7 @@ class RatePilotState extends State<RatePilot> {
     super.dispose();
   }
 
-  void ratePilot(int rate) {
+  void ratePartner(int rate) {
     if (_lockScreen) {
       return;
     }
@@ -165,7 +165,7 @@ class RatePilotState extends State<RatePilot> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    PilotModel pilot = Provider.of<PilotModel>(context);
+    PartnerModel partner = Provider.of<PartnerModel>(context);
     TripModel trip = Provider.of<TripModel>(context);
     UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
@@ -256,7 +256,7 @@ class RatePilotState extends State<RatePilot> {
                   Divider(thickness: 0.1, color: Colors.black),
                   SizedBox(height: screenHeight / (_rate > 0 ? 100 : 50)),
                   Text(
-                    "Como foi a sua corrida com " + pilot.name + "?",
+                    "Como foi a sua corrida com " + partner.name + "?",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
@@ -269,9 +269,9 @@ class RatePilotState extends State<RatePilot> {
                     children: [
                       CircularImage(
                         size: screenHeight / 9,
-                        imageFile: pilot.profileImage == null
+                        imageFile: partner.profileImage == null
                             ? AssetImage("images/user_icon.png")
-                            : pilot.profileImage.file,
+                            : partner.profileImage.file,
                       ),
                       Spacer(),
                       Column(
@@ -285,7 +285,7 @@ class RatePilotState extends State<RatePilot> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               GestureDetector(
-                                onTap: () => ratePilot(1),
+                                onTap: () => ratePartner(1),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -298,7 +298,7 @@ class RatePilotState extends State<RatePilot> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => ratePilot(2),
+                                onTap: () => ratePartner(2),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -311,7 +311,7 @@ class RatePilotState extends State<RatePilot> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => ratePilot(3),
+                                onTap: () => ratePartner(3),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -324,7 +324,7 @@ class RatePilotState extends State<RatePilot> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => ratePilot(4),
+                                onTap: () => ratePartner(4),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -337,7 +337,7 @@ class RatePilotState extends State<RatePilot> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => ratePilot(5),
+                                onTap: () => ratePartner(5),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(right: screenWidth / 100),
@@ -397,7 +397,7 @@ class RatePilotState extends State<RatePilot> {
                                       BorderlessButton(
                                         onTap: () => selectFeedback(
                                             FeedbackComponent.safety_went_well),
-                                        primaryText: "Segurança ao pilotar.",
+                                        primaryText: "Segurança ao partnerar.",
                                         iconRight: _safetyIcon,
                                         iconRightColor: AppColor.primaryPink,
                                         primaryTextSize: 15,
@@ -467,7 +467,7 @@ class RatePilotState extends State<RatePilot> {
                               await connectivity.alertWhenOffline(
                                 context,
                                 message:
-                                    "Conecte-se à internet para avaliar o piloto.",
+                                    "Conecte-se à internet para avaliar o partnero.",
                               );
                               return;
                             }
@@ -478,9 +478,9 @@ class RatePilotState extends State<RatePilot> {
                               _showThankYouMessage = true;
                             });
 
-                            // call rate Pilot
-                            firebase.functions.ratePilot(
-                              pilotID: pilot.id,
+                            // call rate Partner
+                            firebase.functions.ratePartner(
+                              partnerID: partner.id,
                               score: _rate,
                               feedbackComponents: feedbackComponents,
                               feedbackMessage: _textFieldController.text,

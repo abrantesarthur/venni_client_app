@@ -5,7 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/connectivity.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/screens/cashDetail.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
@@ -35,10 +35,10 @@ import 'package:rider_frontend/screens/pastTripDetail.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/screens/payTrip.dart';
 import 'package:rider_frontend/screens/payments.dart';
-import 'package:rider_frontend/screens/pilotProfile.dart';
+import 'package:rider_frontend/screens/partnerProfile.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
-import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:rider_frontend/screens/settings.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -64,7 +64,7 @@ class _AppState extends State<App> {
   UserModel user;
   ConnectivityModel connectivity;
   GoogleMapsModel googleMaps;
-  PilotModel pilot;
+  PartnerModel partner;
   FirebaseAuth firebaseAuth;
   FirebaseDatabase firebaseDatabase;
   FirebaseStorage firebaseStorage;
@@ -188,7 +188,7 @@ class _AppState extends State<App> {
       tripModel = TripModel();
       user = UserModel();
       googleMaps = GoogleMapsModel();
-      pilot = PilotModel();
+      partner = PartnerModel();
       connectivity = ConnectivityModel();
     } else {
       return Splash();
@@ -210,8 +210,8 @@ class _AppState extends State<App> {
           ChangeNotifierProvider<GoogleMapsModel>(
             create: (context) => googleMaps,
           ),
-          ChangeNotifierProvider<PilotModel>(
-            create: (context) => pilot,
+          ChangeNotifierProvider<PartnerModel>(
+            create: (context) => partner,
           ),
           ChangeNotifierProvider<ConnectivityModel>(
             create: (context) => connectivity,
@@ -421,8 +421,8 @@ class _AppState extends State<App> {
               InsertNewPhone.routeName: (context) => InsertNewPhone(),
               InsertNewEmail.routeName: (context) => InsertNewEmail(),
               InsertNewPassword.routeName: (context) => InsertNewPassword(),
-              PilotProfile.routeName: (context) => PilotProfile(),
-              RatePilot.routeName: (context) => RatePilot(),
+              PartnerProfile.routeName: (context) => PartnerProfile(),
+              RatePartner.routeName: (context) => RatePartner(),
               AddCreditCard.routeName: (context) => AddCreditCard(),
               CashDetail.routeName: (context) => CashDetail(),
             },

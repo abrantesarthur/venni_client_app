@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'file:///Users/Arthur/Documents/venni/rider_app/test/mocks.dart';
+import '../mocks.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
@@ -328,7 +328,6 @@ void main() {
       await tester.pumpAndSettle();
 
       // after tapping button, we are go to Home
-      verify(mockNavigatorObserver.didPush(any, any));
       expect(find.byType(InsertPhone), findsNothing);
       expect(find.byType(Home), findsOneWidget);
     });

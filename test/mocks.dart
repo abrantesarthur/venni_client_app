@@ -67,3 +67,5 @@ MockUserPosition mockUserPosition = MockUserPosition();
 MockAddress mockAddress = MockAddress();
 MockPlaces mockPlaces = MockPlaces();
 MockClientPaymentMethod mockClientPaymentMethod = MockClientPaymentMethod();
+
+void main() {}

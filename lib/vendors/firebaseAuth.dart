@@ -39,7 +39,7 @@ extension AppFirebaseAuth on FirebaseAuth {
       );
       if (firebase.isRegistered) {
         // redirect to Home screen
-        Navigator.pushNamed(
+        Navigator.pushReplacementNamed(
           context,
           Home.routeName,
           arguments: HomeArguments(

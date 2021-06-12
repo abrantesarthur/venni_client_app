@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'file:///Users/Arthur/Documents/venni/rider_app/test/mocks.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/connectivity.dart';
+import '../mocks.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
-import 'package:rider_frontend/screens/ratePilot.dart';
+import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
@@ -15,26 +16,28 @@ void main() {
   // define mocks behaviors
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    when(mockPilotModel.name).thenReturn("Fulano");
+    when(mockPartnerModel.name).thenReturn("Fulano");
     when(mockTripModel.farePrice).thenReturn(500);
+    when(mockConnectivityModel.hasConnection).thenReturn(true);
     when(mockUserModel.defaultPaymentMethod)
         .thenReturn(mockClientPaymentMethod);
     when(mockClientPaymentMethod.type).thenReturn(PaymentMethodType.cash);
   });
 
-  Future<void> pumpRatePilot(WidgetTester tester) async {
+  Future<void> pumpRatePartner(WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<FirebaseModel>(
               create: (context) => mockFirebaseModel),
-          ChangeNotifierProvider<PilotModel>(
-              create: (context) => mockPilotModel),
+          ChangeNotifierProvider<PartnerModel>(
+              create: (context) => mockPartnerModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
-          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel)
+          ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
+          ChangeNotifierProvider<ConnectivityModel>(create: (context) => mockConnectivityModel),
         ],
         builder: (context, child) => MaterialApp(
-          home: RatePilot(),
+          home: RatePartner(),
           navigatorObservers: [mockNavigatorObserver],
         ),
       ),
@@ -45,11 +48,11 @@ void main() {
       "state",
       () => {
             testWidgets("inits as expected", (WidgetTester tester) async {
-              // pump RatePilot to the UI
-              await pumpRatePilot(tester);
+              // pump RatePartner to the UI
+              await pumpRatePartner(tester);
 
               verify(mockNavigatorObserver.didPush(any, any));
-              expect(find.byType(RatePilot), findsOneWidget);
+              expect(find.byType(RatePartner), findsOneWidget);
 
               // rate description starts as "nota geral"
               expect(find.textContaining("nota geral"), findsOneWidget);
@@ -75,12 +78,12 @@ void main() {
           });
 
   group(
-      "ratePilot",
+      "ratePartner",
       () => {
             testWidgets("displays warning if payment is cash",
                 (WidgetTester tester) async {
-              // add rate pilot to the UI (mockUser retur)
-              await pumpRatePilot(tester);
+              // add rate partner to the UI (mockUser retur)
+              await pumpRatePartner(tester);
 
               // mockUser returns payment in cash by default
               // so we expect to find the following warning
@@ -89,12 +92,12 @@ void main() {
             }),
             testWidgets("correctly updates the UI",
                 (WidgetTester tester) async {
-              // add rate pilot to the UI
-              await pumpRatePilot(tester);
+              // add rate partner to the UI
+              await pumpRatePartner(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RatePilot)) as RatePilotState;
+                  tester.state(find.byType(RatePartner)) as RatePartnerState;
 
               // expect to find 0 filled and 5 empty stars
               final filledStarFinders =
@@ -199,12 +202,12 @@ void main() {
             testWidgets(
                 "sets selected feedback components to true when user gives 5-star rating",
                 (WidgetTester tester) async {
-              // add rate pilot to the UI
-              await pumpRatePilot(tester);
+              // add rate partner to the UI
+              await pumpRatePartner(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RatePilot)) as RatePilotState;
+                  tester.state(find.byType(RatePartner)) as RatePartnerState;
 
               // get start findes
               final emptyStarFinders =
@@ -333,12 +336,12 @@ void main() {
             testWidgets(
                 "sets selected feedback components to false when user gives below 5-star rating",
                 (WidgetTester tester) async {
-              // add rate pilot to the UI
-              await pumpRatePilot(tester);
+              // add rate partner to the UI
+              await pumpRatePartner(tester);
 
               // get state
               final state =
-                  tester.state(find.byType(RatePilot)) as RatePilotState;
+                  tester.state(find.byType(RatePartner)) as RatePartnerState;
 
               // get start findes
               final emptyStarFinders =

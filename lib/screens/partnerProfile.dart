@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
-class PilotProfile extends StatelessWidget {
-  static String routeName = "PilotProfile";
+class PartnerProfile extends StatelessWidget {
+  static String routeName = "PartnerProfile";
 
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    PilotModel pilot = Provider.of<PilotModel>(context);
+    PartnerModel partner = Provider.of<PartnerModel>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -34,13 +34,13 @@ class PilotProfile extends StatelessWidget {
             SizedBox(height: screenHeight / 15),
             CircularImage(
               size: screenWidth / 3.2,
-              imageFile: pilot.profileImage == null
+              imageFile: partner.profileImage == null
                   ? AssetImage("images/user_icon.png")
-                  : pilot.profileImage.file,
+                  : partner.profileImage.file,
             ),
             SizedBox(height: screenHeight / 50),
             Text(
-              pilot.name,
+              partner.name,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             Row(
@@ -48,7 +48,7 @@ class PilotProfile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  pilot.rating.toString(),
+                  partner.rating.toString(),
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(width: screenWidth / 100),
@@ -59,16 +59,16 @@ class PilotProfile extends StatelessWidget {
               ],
             ),
             SizedBox(height: screenHeight / 50),
-            _buildInfo(context, field: "celular", value: pilot.phoneNumber),
+            _buildInfo(context, field: "celular", value: partner.phoneNumber),
             _buildInfo(context,
                 field: "corridas realizadas",
-                value: pilot.totalTrips.toString()),
+                value: partner.totalTrips.toString()),
             _buildInfo(context,
-                field: "membro desde", value: pilot.memberSince),
+                field: "membro desde", value: partner.memberSince),
             _buildInfo(context,
                 field: "moto",
-                value: pilot.vehicle.brand + " " + pilot.vehicle.model),
-            _buildInfo(context, field: "placa", value: pilot.vehicle.plate)
+                value: partner.vehicle.brand + " " + partner.vehicle.model),
+            _buildInfo(context, field: "placa", value: partner.vehicle.plate)
           ],
         ),
       ),

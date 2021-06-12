@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:mockito/mockito.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/connectivity.dart';
-import 'package:rider_frontend/models/pilot.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
@@ -34,7 +34,7 @@ class MockUserModel extends Mock implements UserModel {}
 
 class MockTripModel extends Mock implements TripModel {}
 
-class MockPilotModel extends Mock implements PilotModel {}
+class MockPartnerModel extends Mock implements PartnerModel {}
 
 class MockGoogleMapsModel extends Mock implements GoogleMapsModel {}
 
@@ -58,7 +58,7 @@ MockUserCredential mockUserCredential = MockUserCredential();
 MockUser mockUser = MockUser();
 MockUserModel mockUserModel = MockUserModel();
 MockTripModel mockTripModel = MockTripModel();
-MockPilotModel mockPilotModel = MockPilotModel();
+MockPartnerModel mockPartnerModel = MockPartnerModel();
 MockGoogleMapsModel mockGoogleMapsModel = MockGoogleMapsModel();
 MockConnectivityModel mockConnectivityModel = MockConnectivityModel();
 MockGeocodingResult mockGeocodingResult = MockGeocodingResult();

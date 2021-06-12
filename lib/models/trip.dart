@@ -14,15 +14,15 @@ class TripModel extends ChangeNotifier {
   String _encodedPoints;
   DateTime _eta;
   String _etaString;
-  num _pilotArrivalSeconds;
-  DateTime _pilotArrival;
-  String _pilotArrivalString;
+  num _partnerArrivalSeconds;
+  DateTime _partnerArrival;
+  String _partnerArrivalString;
 
   TripModel() {
     _tripStatus = TripStatus.off;
   }
 
-  // TODO: try moving pilot data to pilot model
+  // TODO: try moving partner data to partner model
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
   TripStatus get tripStatus => _tripStatus;
@@ -34,8 +34,8 @@ class TripModel extends ChangeNotifier {
   String get encodedPoints => _encodedPoints;
   DateTime get eta => _eta;
   String get etaString => _etaString;
-  String get pilotArrivalString => _pilotArrivalString;
-  num get pilotArrivalSeconds => _pilotArrivalSeconds;
+  String get partnerArrivalString => _partnerArrivalString;
+  num get partnerArrivalSeconds => _partnerArrivalSeconds;
 
   void updatePickUpAddres(Address address) {
     _currentPickUpAddress = address;
@@ -55,10 +55,10 @@ class TripModel extends ChangeNotifier {
     }
   }
 
-  void updatePilotArrivalSeconds(int s) {
-    _pilotArrivalSeconds = s;
-    _pilotArrival = _calculatePilotArrival();
-    _pilotArrivalString = _calculatePilotArrivalString();
+  void updatePartnerArrivalSeconds(int s) {
+    _partnerArrivalSeconds = s;
+    _partnerArrival = _calculatePartnerArrival();
+    _partnerArrivalString = _calculatePartnerArrivalString();
     _eta = _calculateETA();
     _etaString = _calculateETAString();
     notifyListeners();
@@ -92,11 +92,11 @@ class TripModel extends ChangeNotifier {
   }
 
   DateTime _calculateETA() {
-    if (_pilotArrivalSeconds == null || _durationSeconds == null) {
+    if (_partnerArrivalSeconds == null || _durationSeconds == null) {
       return null;
     }
     return DateTime.now().add(Duration(
-      seconds: _durationSeconds + _pilotArrivalSeconds,
+      seconds: _durationSeconds + _partnerArrivalSeconds,
     ));
   }
 
@@ -113,22 +113,22 @@ class TripModel extends ChangeNotifier {
             : _eta.minute.toString());
   }
 
-  DateTime _calculatePilotArrival() {
-    if (_pilotArrivalSeconds == null) {
+  DateTime _calculatePartnerArrival() {
+    if (_partnerArrivalSeconds == null) {
       return null;
     }
     return DateTime.now().add(Duration(
-      seconds: _pilotArrivalSeconds,
+      seconds: _partnerArrivalSeconds,
     ));
   }
 
-  String _calculatePilotArrivalString() {
-    if (_pilotArrival == null) {
+  String _calculatePartnerArrivalString() {
+    if (_partnerArrival == null) {
       return "";
     }
-    return _pilotArrival.hour.toString() +
+    return _partnerArrival.hour.toString() +
         ":" +
-        _pilotArrival.minute.toString();
+        _partnerArrival.minute.toString();
   }
 
   // TODO: round fare price up if payment is in money
@@ -154,11 +154,11 @@ class TripModel extends ChangeNotifier {
       _durationSeconds = rrr.durationSeconds;
       _durationText = rrr.durationText;
       _encodedPoints = rrr.encodedPoints;
-      _pilotArrivalSeconds = 300; // estimate pilot will arrive in 5 minutes
+      _partnerArrivalSeconds = 300; // estimate partner will arrive in 5 minutes
       _eta = _calculateETA();
       _etaString = _calculateETAString();
-      _pilotArrival = _calculatePilotArrival();
-      _pilotArrivalString = _calculatePilotArrivalString();
+      _partnerArrival = _calculatePartnerArrival();
+      _partnerArrivalString = _calculatePartnerArrivalString();
       if (notify) {
         notifyListeners();
       }

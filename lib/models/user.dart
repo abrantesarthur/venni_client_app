@@ -37,9 +37,14 @@ class UserModel extends ChangeNotifier {
 
   UserModel();
 
-  void setProfileImage(ProfileImage img) {
+  void setProfileImage(
+    ProfileImage img, {
+    bool notify = true,
+  }) {
     _profileImage = img;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void setRating(String r) {
@@ -61,13 +66,18 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-  void fromClientInterface(ClientInterface c) {
+  void fromClientInterface(
+    ClientInterface c, {
+    bool notify = true,
+  }) {
     if (c != null) {
       _rating = c.rating;
       _defaultPaymentMethod = c.defaultPaymentMethod;
       _creditCards = c.creditCards;
       _unpaidTrip = c.unpaidTrip;
-      notifyListeners();
+      if (notify) {
+        notifyListeners();
+      }
     }
   }
 
@@ -102,16 +112,18 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-  Future<void> downloadData(FirebaseModel firebase) async {
+  Future<void> downloadData(
+    FirebaseModel firebase, {
+    bool notify = true,
+  }) async {
     // download user image file
     // TODO: there is aproblem with getProfileImage. it's not returning. fix it
     firebase.storage
         .getUserProfileImage(uid: firebase.auth.currentUser.uid)
-        .then((value) => this.setProfileImage(value));
+        .then((value) => this.setProfileImage(value, notify: notify));
 
-    // get user rating
     ClientInterface client = await firebase.database.getClientData(firebase);
-    this.fromClientInterface(client);
+    this.fromClientInterface(client, notify: notify);
   }
 
   Future<Position> getPosition({bool notify = true}) async {

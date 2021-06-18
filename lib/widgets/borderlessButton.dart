@@ -83,7 +83,7 @@ class BorderlessButton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    primaryText,
+                    primaryText ?? "",
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         color: primaryTextColor ?? Colors.black,

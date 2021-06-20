@@ -503,7 +503,8 @@ class ConfirmTripResult {
 
   factory ConfirmTripResult.fromJson(Map<dynamic, dynamic> json) {
     if (json == null || json.isEmpty) return null;
-    PartnerStatus partnerStatus = getPartnerStatusFromString(json["partner_status"]);
+    PartnerStatus partnerStatus =
+        getPartnerStatusFromString(json["partner_status"]);
     TripStatus tripStatus = getTripStatusFromString(json["trip_status"]);
     return ConfirmTripResult(
       partnerID: json["partner_id"],

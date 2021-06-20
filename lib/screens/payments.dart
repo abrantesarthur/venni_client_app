@@ -134,7 +134,7 @@ class PaymentsState extends State<Payments> {
                     ],
                   )
                 : Container(),
-            user.creditCards != null &&
+            user.creditCards == null ||
                     user.creditCards.length < 5 // user can add at most 5 cards
                 ? BorderlessButton(
                     iconLeft: Icons.add,

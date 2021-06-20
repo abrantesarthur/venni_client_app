@@ -80,7 +80,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
     }
     if (tripStatus == TripStatus.lookingForPartner) {
       setState(() {
-        splashMessage = "Encontrando o melhor partnero...";
+        splashMessage = "Encontrando o melhor piloto...";
       });
     }
   }

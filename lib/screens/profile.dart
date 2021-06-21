@@ -55,7 +55,6 @@ class ProfileState extends State<Profile> {
             Spacer(),
             GestureDetector(
               onTap: () async {
-                // TODO: do it just like in partner app
                 PickedFile img = await pickImage(context);
                 if (img != null) {
                   // push image to firebase
@@ -143,10 +142,10 @@ class ProfileState extends State<Profile> {
           secondaryText: firebase.auth.currentUser?.email,
           label: firebase.auth.currentUser.emailVerified
               ? "Confirmado"
-              : "Não confirmado", // TODO: make dynamic
+              : "Não confirmado",
           labelColor: firebase.auth.currentUser.emailVerified
               ? Colors.green
-              : AppColor.secondaryRed, // TODO: make dynamic
+              : AppColor.secondaryRed,
           iconRight: Icons.keyboard_arrow_right,
           primaryTextSize: 16,
           secondaryTextSize: 18,

@@ -8,7 +8,6 @@ import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 
 import '../models/firebase.dart';
-import '../models/firebase.dart';
 
 class EditPhone extends StatefulWidget {
   static const String routeName = "EditPhone";

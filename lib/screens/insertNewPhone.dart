@@ -166,6 +166,8 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
     // displayErrorMessage displays warning message depending on received exception
     if (e.code == "invalid-verification-code") {
       setInactiveState(message: "Código inválido. Tente novamente.");
+    } else if (e.code == "credential-already-in-use") {
+      setInactiveState(message: "O número já está sendo usado. Tente outro.");
     } else {
       setInactiveState(message: "Algo deu errado. Tente novamente mais tarde.");
     }

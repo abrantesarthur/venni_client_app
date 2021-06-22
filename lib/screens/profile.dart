@@ -119,8 +119,10 @@ class ProfileState extends State<Profile> {
         ),
         Divider(thickness: 0.1, color: Colors.black),
         BorderlessButton(
-          onTap: () {
-            Navigator.pushNamed(context, EditPhone.routeName);
+          onTap: () async {
+            await Navigator.pushNamed(context, EditPhone.routeName);
+            // call setState so updated phone is displayed
+            setState(() {});
           },
           primaryText: "Alterar Telefone",
           secondaryText:
@@ -135,8 +137,10 @@ class ProfileState extends State<Profile> {
         ),
         Divider(thickness: 0.1, color: Colors.black),
         BorderlessButton(
-          onTap: () {
-            Navigator.pushNamed(context, EditEmail.routeName);
+          onTap: () async {
+            await Navigator.pushNamed(context, EditEmail.routeName);
+            // call setState so updated email is displayed
+            setState(() {});
           },
           primaryText: "Alterar email",
           secondaryText: firebase.auth.currentUser?.email,

@@ -228,6 +228,7 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: LayoutBuilder(
         builder: (
           BuildContext context,

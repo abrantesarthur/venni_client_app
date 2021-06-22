@@ -115,6 +115,29 @@ extension AppFirebaseAuth on FirebaseAuth {
     }
   }
 
+  Future<void> createClient({
+    @required FirebaseModel firebase,
+    @required UserCredential credential,
+    @required String email,
+    @required String password,
+    @required String displayName,
+  }) async {
+    //update other userCredential information
+    await credential.user.updateEmail(email);
+    await credential.user.updatePassword(password);
+    await credential.user.updateProfile(displayName: displayName);
+
+    // create client entry in database with some of the fields set
+    try {
+      await firebase.database.createClient(this.currentUser);
+    } catch (e) {
+      throw FirebaseAuthException(code: "database-failure", message: "Failed to add client entry to database.",);
+    }
+
+    // send email verification
+    await credential.user.sendEmailVerification();
+  }
+
   Future<UserCredential> _reauthenticateWithEmailAndPassword(String password) {
     // reauthenticate user to avoid 'requires-recent-login' error
     EmailAuthCredential credential = EmailAuthProvider.credential(

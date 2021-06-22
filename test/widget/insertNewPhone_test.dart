@@ -506,166 +506,107 @@ void main() {
                   newPhoneNumber.withoutCountryCode())));
     });
 
-    testWidgets(
-        "pushes InsertSmsCode screen which, on incorrect code, navigates back returning exception",
-        (WidgetTester tester) async {
-      // push InsertNewPhone to the UI
-      await pumpWidget(tester);
+    void testException({
+      @required String code,
+      @required String expectedWarning,
+    }) {
+      testWidgets(
+          "pushes InsertSmsCode screen which, on '" +
+              code +
+              "', navigates back displaying warning",
+          (WidgetTester tester) async {
+        // push InsertNewPhone to the UI
+        await pumpWidget(tester);
 
-      // set mocks to succesfully change phone number
-      final String oldPhoneNumber = "+5538888888888";
-      final String newPhoneNumber = "+5538999999999";
+        // set mocks to succesfully change phone number
+        final String oldPhoneNumber = "+5538888888888";
+        final String newPhoneNumber = "+5538999999999";
 
-      // before updatePhoneNumber is called, user has old phoneNumber
-      when(mockUser.phoneNumber).thenReturn(oldPhoneNumber);
-      // updating phone fails, throwing "invalid-verification-code"
-      when(mockUser.updatePhoneNumber(any)).thenAnswer((_) {
-        // after updatePhoneNumber is called, user has new phoneNumber
-        throw FirebaseAuthException(
-            message: "message", code: "invalid-verification-code");
+        // before updatePhoneNumber is called, user has old phoneNumber
+        when(mockUser.phoneNumber).thenReturn(oldPhoneNumber);
+        // updating phone fails, throwing 'code'
+        when(mockUser.updatePhoneNumber(any)).thenAnswer((_) {
+          // after updatePhoneNumber is called, user has new phoneNumber
+          throw FirebaseAuthException(message: "message", code: code);
+        });
+
+        // verifyPhoneNumber calls codeSentCallbacks
+        setVerifyPhoneNumberMock(
+          tester: tester,
+          verifyPhoneNumberCallbackName: "codeSent",
+        );
+
+        // expect InsertNewPhone to be pushed
+        final insertNewPhoneFinder = find.byType(InsertNewPhone);
+        expect(insertNewPhoneFinder, findsOneWidget);
+        verify(mockNavigatorObserver.didPush(any, any));
+
+        // enter new phone number to enable circular button callback
+        await tester.enterText(
+            find.byType(InputPhone), newPhoneNumber.substring(3));
+        await tester.pumpAndSettle();
+
+        // tapping button triggers buttonCallback, calling mocked codeSentCallbakc
+        await tester.tap(find.byType(AppButton));
+        await tester.pumpAndSettle();
+
+        // after tapping button, we go to the InsertSmsCode screen
+        verify(mockNavigatorObserver.didPush(any, any));
+        final insertSmsCodeFinder = find.byType(InsertSmsCode);
+        final insertSmsCodeWidget = tester.firstWidget(insertSmsCodeFinder);
+        expect(insertSmsCodeFinder, findsOneWidget);
+        expect(insertNewPhoneFinder, findsNothing);
+        expect(
+          insertSmsCodeWidget,
+          isA<InsertSmsCode>()
+              .having(
+                (i) => i.verificationId,
+                "verificationId",
+                equals("verificationId123"),
+              )
+              .having((i) => i.resendToken, "resendToken", 123),
+        );
+
+        // insert any sms code
+        final appInputTextFinder = find.byType(AppInputText);
+        expect(appInputTextFinder, findsOneWidget);
+        await tester.enterText(appInputTextFinder, "123456");
+        await tester.pumpAndSettle();
+
+        // tap CircularButton
+        await tester.tap(find.byType(CircularButton));
+        await tester.pumpAndSettle();
+
+        // verify that we navigated back
+        verify(mockNavigatorObserver.didPop(any, any));
+        expect(insertSmsCodeFinder, findsNothing);
+        expect(insertNewPhoneFinder, findsOneWidget);
+
+        // expect failure warning message
+        final warningFinder = find.byType(Warning);
+        expect(warningFinder, findsOneWidget);
+        final warningWidget = tester.firstWidget(warningFinder);
+        expect(
+            warningWidget,
+            isA<Warning>()
+                .having((w) => w.message, "message", equals(expectedWarning)));
       });
+    }
 
-      // verifyPhoneNumber calls codeSentCallbacks
-      setVerifyPhoneNumberMock(
-        tester: tester,
-        verifyPhoneNumberCallbackName: "codeSent",
-      );
+    testException(
+      code: "invalid-verification-code",
+      expectedWarning: "Código inválido. Tente novamente.",
+    );
 
-      // expect InsertNewPhone to be pushed
-      final insertNewPhoneFinder = find.byType(InsertNewPhone);
-      expect(insertNewPhoneFinder, findsOneWidget);
-      verify(mockNavigatorObserver.didPush(any, any));
+    testException(
+      code: "credential-already-in-use",
+      expectedWarning: "O número já está sendo usado. Tente outro.",
+    );
 
-      // enter new phone number to enable circular button callback
-      await tester.enterText(
-          find.byType(InputPhone), newPhoneNumber.substring(3));
-      await tester.pumpAndSettle();
-
-      // tapping button triggers buttonCallback, calling mocked codeSentCallbakc
-      await tester.tap(find.byType(AppButton));
-      await tester.pumpAndSettle();
-
-      // after tapping button, we go to the InsertSmsCode screen
-      verify(mockNavigatorObserver.didPush(any, any));
-      final insertSmsCodeFinder = find.byType(InsertSmsCode);
-      final insertSmsCodeWidget = tester.firstWidget(insertSmsCodeFinder);
-      expect(insertSmsCodeFinder, findsOneWidget);
-      expect(insertNewPhoneFinder, findsNothing);
-      expect(
-        insertSmsCodeWidget,
-        isA<InsertSmsCode>()
-            .having(
-              (i) => i.verificationId,
-              "verificationId",
-              equals("verificationId123"),
-            )
-            .having((i) => i.resendToken, "resendToken", 123),
-      );
-
-      // insert any sms code
-      final appInputTextFinder = find.byType(AppInputText);
-      expect(appInputTextFinder, findsOneWidget);
-      await tester.enterText(appInputTextFinder, "123456");
-      await tester.pumpAndSettle();
-
-      // tap CircularButton
-      await tester.tap(find.byType(CircularButton));
-      await tester.pumpAndSettle();
-
-      // verify that we navigated back
-      verify(mockNavigatorObserver.didPop(any, any));
-      expect(insertSmsCodeFinder, findsNothing);
-      expect(insertNewPhoneFinder, findsOneWidget);
-
-      // expect failure warning message
-      final warningFinder = find.byType(Warning);
-      expect(warningFinder, findsOneWidget);
-      final warningWidget = tester.firstWidget(warningFinder);
-      expect(
-          warningWidget,
-          isA<Warning>().having((w) => w.message, "message",
-              equals("Código inválido. Tente novamente.")));
-    });
-
-    testWidgets(
-        "pushes InsertSmsCode screen which, on general error, navigates back returning exception",
-        (WidgetTester tester) async {
-      // push InsertNewPhone to the UI
-      await pumpWidget(tester);
-
-      // set mocks to succesfully change phone number
-      final String oldPhoneNumber = "+5538888888888";
-      final String newPhoneNumber = "+5538999999999";
-
-      // before updatePhoneNumber is called, user has old phoneNumber
-      when(mockUser.phoneNumber).thenReturn(oldPhoneNumber);
-      // updating phone fails, throwing "invalid-verification-code"
-      when(mockUser.updatePhoneNumber(any)).thenAnswer((_) {
-        // after updatePhoneNumber is called, user has new phoneNumber
-        throw FirebaseAuthException(message: "message", code: "general-error");
-      });
-
-      // verifyPhoneNumber calls codeSentCallbacks
-      setVerifyPhoneNumberMock(
-        tester: tester,
-        verifyPhoneNumberCallbackName: "codeSent",
-      );
-
-      // expect InsertNewPhone to be pushed
-      final insertNewPhoneFinder = find.byType(InsertNewPhone);
-      expect(insertNewPhoneFinder, findsOneWidget);
-      verify(mockNavigatorObserver.didPush(any, any));
-
-      // enter new phone number to enable circular button callback
-      await tester.enterText(
-          find.byType(InputPhone), newPhoneNumber.substring(3));
-      await tester.pumpAndSettle();
-
-      // tapping button triggers buttonCallback, calling mocked codeSentCallbakc
-      await tester.tap(find.byType(AppButton));
-      await tester.pumpAndSettle();
-
-      // after tapping button, we go to the InsertSmsCode screen
-      verify(mockNavigatorObserver.didPush(any, any));
-      final insertSmsCodeFinder = find.byType(InsertSmsCode);
-      final insertSmsCodeWidget = tester.firstWidget(insertSmsCodeFinder);
-      expect(insertSmsCodeFinder, findsOneWidget);
-      expect(insertNewPhoneFinder, findsNothing);
-      expect(
-        insertSmsCodeWidget,
-        isA<InsertSmsCode>()
-            .having(
-              (i) => i.verificationId,
-              "verificationId",
-              equals("verificationId123"),
-            )
-            .having((i) => i.resendToken, "resendToken", 123),
-      );
-
-      // insert any sms code
-      final appInputTextFinder = find.byType(AppInputText);
-      expect(appInputTextFinder, findsOneWidget);
-      await tester.enterText(appInputTextFinder, "123456");
-      await tester.pumpAndSettle();
-
-      // tap CircularButton
-      await tester.tap(find.byType(CircularButton));
-      await tester.pumpAndSettle();
-
-      // verify that we navigated back
-      verify(mockNavigatorObserver.didPop(any, any));
-      expect(insertSmsCodeFinder, findsNothing);
-      expect(insertNewPhoneFinder, findsOneWidget);
-
-      // expect failure warning message
-      final warningFinder = find.byType(Warning);
-      expect(warningFinder, findsOneWidget);
-      final warningWidget = tester.firstWidget(warningFinder);
-      expect(
-          warningWidget,
-          isA<Warning>().having((w) => w.message, "message",
-              equals("Algo deu errado. Tente novamente mais tarde.")));
-    });
+    testException(
+      code: "general-error",
+      expectedWarning: "Algo deu errado. Tente novamente mais tarde.",
+    );
 
     testWidgets(
         "pushes InsertSmsCode screen which, on navigate back, returns displaying nothing",

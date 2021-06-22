@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -202,18 +203,15 @@ class InsertPasswordState extends State<InsertPassword> {
     }
   }
 
-  Future<bool> registerUser() async {
+  Future<bool> registerUser(BuildContext context) async {
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     try {
-      //update other userCredential information
-      await widget.userCredential.user.updateEmail(widget.userEmail);
-      await widget.userCredential.user
-          .updatePassword(passwordTextEditingController.text);
-      await widget.userCredential.user
-          .updateProfile(displayName: widget.name + " " + widget.surname);
-
-      // send email verification
-      await widget.userCredential.user.sendEmailVerification();
-
+      await firebase.auth.createClient(
+          firebase: firebase,
+          credential: widget.userCredential,
+          email: widget.userEmail,
+          password: passwordTextEditingController.text,
+          displayName: widget.name + " " + widget.surname,);
       return true;
     } on FirebaseAuthException catch (e) {
       await handleRegistrationFailure(e);
@@ -224,7 +222,7 @@ class InsertPasswordState extends State<InsertPassword> {
   // buttonCallback tries signing user up by adding remainig data to its credential
   void buttonCallback(BuildContext context) async {
     setState(() {
-      successfullyRegisteredUser = registerUser();
+      successfullyRegisteredUser = registerUser(context);
     });
   }
 

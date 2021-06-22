@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/models/firebase.dart';
@@ -99,6 +100,16 @@ extension AppFirebaseDatabase on FirebaseDatabase {
       return snapshot.value;
     } catch (_) {}
     return null;
+  }
+
+  Future<void> createClient(User user) async {
+    return this.reference().child("clients").child(user.uid).set({
+      "uid": user.uid,
+      "payment_method": {
+        "default": "cash",
+      },
+      "rating": "5",
+    });
   }
 
   Future<Map<dynamic, dynamic>> getPartnerFromID(String partnerID) async {

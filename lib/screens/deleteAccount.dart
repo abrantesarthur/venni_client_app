@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseAuth.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputPassword.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
@@ -10,7 +11,7 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions.dart';
 
 import '../models/firebase.dart';
 
@@ -33,6 +34,7 @@ class DeleteAccountState extends State<DeleteAccount> {
   IconData doesntUseServiceIcon;
   IconData anotherIcon;
   Map<DeleteReason, bool> deleteReasons;
+  bool lockScreen;
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class DeleteAccountState extends State<DeleteAccount> {
     hasAnotherAccountIcon = Icons.check_box_outline_blank;
     doesntUseServiceIcon = Icons.check_box_outline_blank;
     anotherIcon = Icons.check_box_outline_blank;
+    lockScreen = false;
     deleteReasons = {
       DeleteReason.badAppExperience: false,
       DeleteReason.badTripExperience: false,
@@ -103,22 +106,40 @@ class DeleteAccountState extends State<DeleteAccount> {
           content:
               "Atenção: esta operação não pode ser desfeita e você perderá todos os dados da sua conta.",
           onPressedYes: () async {
-            // show loading icon
+            // show loading icon and lock screen
             setState(() {
               buttonChild = CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               );
+              lockScreen = true;
             });
 
             // pop off dialog
             Navigator.pop(context);
 
+            // get password
+            String password = passwordTextEditingController.text;
+
             // remove focus from text field
             passwordFocusNode.unfocus();
 
             // clear password field
-            String password = passwordTextEditingController.text;
             passwordTextEditingController.text = "";
+
+            // make sure the user has entered a correct password
+            CheckPasswordResponse cpr = await firebase.auth.checkPassword(
+              password,
+            );
+
+            if (cpr != null && !cpr.successful) {
+              // if password is wrong remove loading icon and display warnings
+              setState(() {
+                buttonChild = null;
+                warningMessage = Warning(message: cpr.message);
+                lockScreen = false;
+              });
+              return;
+            }
 
             // submit delete reasons
             await firebase.database.submitDeleteReasons(
@@ -127,22 +148,22 @@ class DeleteAccountState extends State<DeleteAccount> {
             );
 
             // request to delete
-            final response = await firebase.auth.deleteAccount(
-              firebase: firebase,
-              password: password,
-              reasons: deleteReasons,
-            );
-
-            // show warnings if unsuccesfull
-            if (response != null && !response.successful) {
+            try {
+              await firebase.functions.deleteAccount();
+              // on success, log user out
+              await firebase.auth.signOut();
+            } catch (e) {
               setState(() {
-                warningMessage = Warning(message: response.message);
+                warningMessage = Warning(
+                  message: "Algo deu errado. Tente novamente mais tarde.",
+                );
               });
             }
 
-            // remove loading icon
+            // remove loading icon and unlock screen
             setState(() {
               buttonChild = null;
+              lockScreen = false;
             });
           },
           onPressedNo: () {
@@ -234,7 +255,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     Row(
                       children: [
                         ArrowBackButton(
-                            onTapCallback: () => Navigator.pop(context)),
+                          onTapCallback:
+                              lockScreen ? () {} : () => Navigator.pop(context),
+                        ),
                         Spacer(),
                       ],
                     ),
@@ -249,7 +272,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.badTripExperience),
+                      onTap: lockScreen
+                          ? () {}
+                          : () => toggleReason(DeleteReason.badTripExperience),
                       primaryText: "Experiência ruim durante corrida.",
                       iconRight: badTripExperienceIcon,
                       iconRightColor: AppColor.primaryPink,
@@ -257,7 +282,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.hasAnotherAccount),
+                      onTap: lockScreen
+                          ? () {}
+                          : () => toggleReason(DeleteReason.hasAnotherAccount),
                       primaryText: "Tenho outra conta.",
                       iconRight: hasAnotherAccountIcon,
                       iconRightColor: AppColor.primaryPink,
@@ -265,7 +292,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.doesntUseService),
+                      onTap: lockScreen
+                          ? () {}
+                          : () => toggleReason(DeleteReason.doesntUseService),
                       primaryText: "Não utilizo muito o serviço.",
                       iconRight: doesntUseServiceIcon,
                       iconRightColor: AppColor.primaryPink,
@@ -273,7 +302,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.badAppExperience),
+                      onTap: lockScreen
+                          ? () {}
+                          : () => toggleReason(DeleteReason.badAppExperience),
                       primaryText: "Experiência ruim com a conta.",
                       iconRight: badAppExperienceIcon,
                       iconRightColor: AppColor.primaryPink,
@@ -281,7 +312,9 @@ class DeleteAccountState extends State<DeleteAccount> {
                     ),
                     SizedBox(height: screenHeight / 40),
                     BorderlessButton(
-                      onTap: () => toggleReason(DeleteReason.another),
+                      onTap: lockScreen
+                          ? () {}
+                          : () => toggleReason(DeleteReason.another),
                       primaryText: "Outro.",
                       iconRight: anotherIcon,
                       iconRightColor: AppColor.primaryPink,
@@ -301,7 +334,7 @@ class DeleteAccountState extends State<DeleteAccount> {
                       textData: "Excluir Conta",
                       child: buttonChild,
                       buttonColor: buttonColor,
-                      onTapCallBack: buttonCallback == null
+                      onTapCallBack: buttonCallback == null || lockScreen
                           ? () {}
                           : () => buttonCallback(context),
                     ),

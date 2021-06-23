@@ -238,6 +238,7 @@ class DeleteAccountState extends State<DeleteAccount> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: LayoutBuilder(builder: (
         BuildContext context,
         BoxConstraints viewportConstraints,

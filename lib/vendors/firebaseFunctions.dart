@@ -4,6 +4,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:encrypt/encrypt_io.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 import 'package:path_provider/path_provider.dart' as pp;
@@ -234,6 +236,14 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     }
     try {
       await this.httpsCallable("payment-set_default_payment_method").call(data);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    try {
+      await this.httpsCallable("account-delete_client").call();
     } catch (e) {
       throw e;
     }

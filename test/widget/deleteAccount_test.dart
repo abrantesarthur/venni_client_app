@@ -251,8 +251,9 @@ void main() {
         (WidgetTester tester) async {
       testDeleteAccount(
           tester: tester,
-          errorCode: "wrong-password",
-          expectedMessage: "Senha incorreta. Tente novamente.");
+          errorCode: "too-many-requests",
+          expectedMessage:
+              "Muitas tentativas sucessivas. Tente novamente mais tarde.");
     });
 
     testWidgets(

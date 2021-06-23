@@ -131,7 +131,10 @@ extension AppFirebaseAuth on FirebaseAuth {
     try {
       await firebase.database.createClient(this.currentUser);
     } catch (e) {
-      throw FirebaseAuthException(code: "database-failure", message: "Failed to add client entry to database.",);
+      throw FirebaseAuthException(
+        code: "database-failure",
+        message: "Failed to add client entry to database.",
+      );
     }
 
     // send email verification
@@ -139,7 +142,6 @@ extension AppFirebaseAuth on FirebaseAuth {
   }
 
   Future<UserCredential> _reauthenticateWithEmailAndPassword(String password) {
-    // reauthenticate user to avoid 'requires-recent-login' error
     EmailAuthCredential credential = EmailAuthProvider.credential(
       email: this.currentUser.email,
       password: password,
@@ -147,23 +149,21 @@ extension AppFirebaseAuth on FirebaseAuth {
     return this.currentUser.reauthenticateWithCredential(credential);
   }
 
-  Future<UpdatePasswordResponse> reauthenticateAndUpdatePassword({
-    @required String oldPassword,
-    @required String newPassword,
-  }) async {
+  Future<CheckPasswordResponse> checkPassword(String password) async {
     try {
       // check if user entered correct old password and avoid 'requires-recent-login' error
-      await _reauthenticateWithEmailAndPassword(oldPassword);
+      await _reauthenticateWithEmailAndPassword(password);
+      return CheckPasswordResponse(successful: true);
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "wrong-password":
-          return UpdatePasswordResponse(
+          return CheckPasswordResponse(
             successful: false,
             code: e.code,
             message: "Senha incorreta. Tente novamente.",
           );
         case "too-many-requests":
-          return UpdatePasswordResponse(
+          return CheckPasswordResponse(
             successful: false,
             code: e.code,
             message:
@@ -172,12 +172,27 @@ extension AppFirebaseAuth on FirebaseAuth {
         default:
           // user-mismatch, user-not-found, invalid-credential, invalid-email
           // should never happen
-          return UpdatePasswordResponse(
+          return CheckPasswordResponse(
             successful: false,
             code: e.code,
-            message: "Algo deu errado. Tente novamente mais tarde",
+            message: "Algo deu errado. Tente novamente mais tarde.",
           );
       }
+    }
+  }
+
+  Future<UpdatePasswordResponse> reauthenticateAndUpdatePassword({
+    @required String oldPassword,
+    @required String newPassword,
+  }) async {
+    // check if user entered correct old password and avoid 'requires-recent-login' error
+    CheckPasswordResponse cpr = await checkPassword(oldPassword);
+    if (cpr != null && !cpr.successful) {
+      return UpdatePasswordResponse(
+        successful: cpr.successful,
+        code: cpr.code,
+        message: cpr.message,
+      );
     }
 
     try {
@@ -256,43 +271,6 @@ extension AppFirebaseAuth on FirebaseAuth {
       );
     }
   }
-
-  Future<DeleteAccountResponse> deleteAccount({
-    @required FirebaseModel firebase,
-    @required String password,
-    @required Map<DeleteReason, bool> reasons,
-  }) async {
-    UserCredential userCredential;
-    try {
-      // check if user entered correct old password and avoid 'requires-recent-login' error
-      userCredential = await _reauthenticateWithEmailAndPassword(password);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "wrong-password") {
-        return DeleteAccountResponse(
-          successful: false,
-          code: e.code,
-          message: "Senha incorreta. Tente novamente.",
-        );
-      } else {
-        return DeleteAccountResponse(
-          successful: false,
-          code: e.code,
-          message: "Algo deu errado. Tente novamente mais tarde.",
-        );
-      }
-    }
-
-    try {
-      // delete user from firebase authentication
-      await userCredential.user.delete();
-      return DeleteAccountResponse(successful: true);
-    } on FirebaseAuthException catch (_) {
-      return DeleteAccountResponse(
-        successful: false,
-        message: "Algo deu errado. Tente novamente mais tarde.",
-      );
-    }
-  }
 }
 
 class CreateEmailResponse {
@@ -333,6 +311,18 @@ class UpdatePasswordResponse extends CreateEmailResponse {
 
 class DeleteAccountResponse extends CreateEmailResponse {
   DeleteAccountResponse({
+    @required bool successful,
+    String code,
+    String message,
+  }) : super(
+          successful: successful,
+          message: message,
+          code: code,
+        );
+}
+
+class CheckPasswordResponse extends CreateEmailResponse {
+  CheckPasswordResponse({
     @required bool successful,
     String code,
     String message,

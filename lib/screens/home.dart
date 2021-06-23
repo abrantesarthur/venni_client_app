@@ -119,6 +119,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
       // add listener to FirebaseModel so user is redirected to Start when logs out
       _firebaseListener = () {
+        print("heard something");
         _signOut(context);
       };
       widget.firebase.addListener(_firebaseListener);
@@ -312,7 +313,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       // update the TripModel and, as a consequence, notify listeners without
       // redefining subscriptions when _redrawUIOnTripUpdate is called again.
       if (partnerSubscription == null) {
-        partnerSubscription = firebase.database.onPartnerUpdate(partner.id, (e) {
+        partnerSubscription =
+            firebase.database.onPartnerUpdate(partner.id, (e) {
           // if partner was set free, stop listening for his updates, as he is
           // no longer handling our trip.
           PartnerStatus partnerStatus =

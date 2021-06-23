@@ -267,7 +267,6 @@ class InsertNewPasswordState extends State<InsertNewPassword> {
                         controller: oldPasswordTextEditingController,
                         hintText: "senha atual",
                         focusNode: oldPasswordFocusNode,
-                        autoFocus: true,
                         enabled: !lockScreen,
                         onSubmittedCallback: (String _) {
                           oldPasswordFocusNode.unfocus();

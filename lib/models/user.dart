@@ -5,8 +5,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
 

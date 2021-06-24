@@ -6,7 +6,7 @@ import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';

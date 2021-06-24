@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/addCreditCard.dart';
 import 'package:rider_frontend/screens/cashDetail.dart';
 import 'package:rider_frontend/screens/creditCardDetail.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 

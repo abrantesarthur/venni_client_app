@@ -11,7 +11,7 @@ import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:uuid/uuid.dart';
 
 extension AppFirebaseAuth on FirebaseAuth {

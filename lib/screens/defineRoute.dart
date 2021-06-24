@@ -1,6 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rider_frontend/models/connectivity.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';

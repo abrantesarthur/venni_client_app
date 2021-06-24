@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/vendors/directions.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -87,7 +87,8 @@ class GoogleMapsModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> drawPolylineFromPartnerToDestination(BuildContext context) async {
+  Future<void> drawPolylineFromPartnerToDestination(
+      BuildContext context) async {
     // only draw polyline between the partner and origin if inProgress
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     if (trip.tripStatus != TripStatus.inProgress) {
@@ -181,7 +182,8 @@ class GoogleMapsModel extends ChangeNotifier {
 
       // set partner coordinates locally to what directions returns
       partner.updateCurrentLatitude(response.result.route.destinationLatitude);
-      partner.updateCurrentLongitude(response.result.route.destinationLongitude);
+      partner
+          .updateCurrentLongitude(response.result.route.destinationLongitude);
 
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;

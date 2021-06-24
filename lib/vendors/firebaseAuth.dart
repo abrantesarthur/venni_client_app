@@ -9,6 +9,7 @@ import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
+import 'package:rider_frontend/screens/insertPassword.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:uuid/uuid.dart';
 
@@ -22,22 +23,33 @@ extension AppFirebaseAuth on FirebaseAuth {
   }) async {
     try {
       // important: if the user doesn't have an account, one will be created
-      UserCredential userCredential =
-          await firebaseAuth.signInWithCredential(credential);
+      UserCredential userCredential = await firebaseAuth.signInWithCredential(
+        credential,
+      );
 
       // however, we only consider the user to be registered, if they have a displayName,
       // meaning, they went through the whole registration process
-      FirebaseModel firebase =
-          Provider.of<FirebaseModel>(context, listen: false);
-      GoogleMapsModel googleMaps =
-          Provider.of<GoogleMapsModel>(context, listen: false);
+      FirebaseModel firebase = Provider.of<FirebaseModel>(
+        context,
+        listen: false,
+      );
+      GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(
+        context,
+        listen: false,
+      );
       UserModel user = Provider.of<UserModel>(context, listen: false);
       TripModel trip = Provider.of<TripModel>(context, listen: false);
       ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
         context,
         listen: false,
       );
-      if (firebase.isRegistered) {
+
+      // try download client data
+      await user.downloadData(firebase);
+
+      // if user already has a client account
+      if (user.id != null && firebase.isRegistered) {
+        print("user.id != null && firebase.isRegistered");
         // redirect to Home screen
         Navigator.pushReplacementNamed(
           context,
@@ -50,7 +62,21 @@ extension AppFirebaseAuth on FirebaseAuth {
             connectivity: connectivity,
           ),
         );
+      } else if (firebase.isRegistered) {
+        print("firebase.isRegistered");
+
+        // otherwise, if user already has a partner account, skip email and name
+        // screens and jump straigth to password. In that case, we want to confirm
+        // the password, not insert a new one.
+        Navigator.pushNamed(
+          context,
+          InsertPassword.routeName,
+          arguments: InsertPasswordArguments(userCredential: userCredential),
+        );
       } else {
+        print("else");
+        // if user has no account whatsoever, push email screen to create a new
+        // account
         Navigator.pushNamed(
           context,
           InsertEmail.routeName,
@@ -58,6 +84,7 @@ extension AppFirebaseAuth on FirebaseAuth {
         );
       }
     } catch (e) {
+      print(e);
       onExceptionCallback(e);
     }
   }
@@ -118,14 +145,21 @@ extension AppFirebaseAuth on FirebaseAuth {
   Future<void> createClient({
     @required FirebaseModel firebase,
     @required UserCredential credential,
-    @required String email,
-    @required String password,
-    @required String displayName,
+    String email,
+    String password,
+    String displayName,
   }) async {
-    //update other userCredential information
-    await credential.user.updateEmail(email);
-    await credential.user.updatePassword(password);
-    await credential.user.updateProfile(displayName: displayName);
+    //  update other userCredential information. This may throw
+    // 'requires-recent-login or other errors
+    if (email != null) {
+      await credential.user.updateEmail(email);
+    }
+    if (password != null) {
+      await credential.user.updatePassword(password);
+    }
+    if (displayName != null) {
+      await credential.user.updateProfile(displayName: displayName);
+    }
 
     // create client entry in database with some of the fields set
     try {
@@ -137,8 +171,10 @@ extension AppFirebaseAuth on FirebaseAuth {
       );
     }
 
-    // send email verification
-    await credential.user.sendEmailVerification();
+    // send email verification if necessary
+    if (!firebase.auth.currentUser.emailVerified) {
+      await credential.user.sendEmailVerification();
+    }
   }
 
   Future<UserCredential> _reauthenticateWithEmailAndPassword(String password) {

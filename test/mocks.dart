@@ -53,6 +53,7 @@ class MockClientPaymentMethod extends Mock implements ClientPaymentMethod {}
 MockFirebaseModel mockFirebaseModel = MockFirebaseModel();
 MockFirebaseAuth mockFirebaseAuth = MockFirebaseAuth();
 MockFirebaseDatabase mockFirebaseDatabase = MockFirebaseDatabase();
+MockDatabaseReference mockDatabaseReference = MockDatabaseReference();
 MockNavigatorObserver mockNavigatorObserver = MockNavigatorObserver();
 MockUserCredential mockUserCredential = MockUserCredential();
 MockUser mockUser = MockUser();

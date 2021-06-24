@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
@@ -28,9 +29,9 @@ class InsertPasswordArguments {
   final String userEmail;
   InsertPasswordArguments({
     @required this.userCredential,
-    @required this.name,
-    @required this.surname,
-    @required this.userEmail,
+    this.name,
+    this.surname,
+    this.userEmail,
   });
 }
 
@@ -43,9 +44,9 @@ class InsertPassword extends StatefulWidget {
   final String userEmail;
   InsertPassword({
     @required this.userCredential,
-    @required this.userEmail,
-    @required this.name,
-    @required this.surname,
+    this.userEmail,
+    this.name,
+    this.surname,
   });
 
   @override
@@ -129,7 +130,10 @@ class InsertPasswordState extends State<InsertPassword> {
     super.dispose();
   }
 
-  Future<void> handleRegistrationFailure(FirebaseAuthException e) async {
+  Future<void> handleRegistrationFailure(
+    FirebaseModel firebase,
+    FirebaseAuthException e,
+  ) async {
     // disactivate CircularButton callback
     setState(() {
       circularButtonCallback = null;
@@ -155,8 +159,14 @@ class InsertPasswordState extends State<InsertPassword> {
         );
       });
     } else {
-      // rollback and delete user
-      await widget.userCredential.user.delete();
+      // delete client entry in database
+      await firebase.database.deleteClient(widget.userCredential.user.uid);
+
+      // if user did not already have a partner account
+      if (!firebase.isRegistered) {
+        // rollback and delete user from authentication
+        await widget.userCredential.user.delete();
+      }
 
       String firstWarningMessage;
       if (e.code == "requires-recent-login") {
@@ -203,26 +213,80 @@ class InsertPasswordState extends State<InsertPassword> {
     }
   }
 
-  Future<bool> registerUser(BuildContext context) async {
-    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    try {
-      await firebase.auth.createClient(
+  Future<bool> registerUser(
+    FirebaseModel firebase,
+    UserModel user,
+  ) async {
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    // if user already has a partner account
+    if (firebase.isRegistered) {
+      // make sure they've entered a correct password
+      CheckPasswordResponse cpr = await firebase.auth.checkPassword(
+        passwordTextEditingController.text,
+      );
+      if (cpr != null && !cpr.successful) {
+        // if not, display appropriate warning
+        setState(() {
+          registrationErrorWarnings = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: screenHeight / 40),
+              Warning(
+                message: cpr.message,
+              ),
+              SizedBox(height: screenHeight / 80),
+            ],
+          );
+        });
+        return false;
+      }
+
+      // if user entered correct password, create them a client account
+      try {
+        await firebase.auth.createClient(
           firebase: firebase,
           credential: widget.userCredential,
-          email: widget.userEmail,
-          password: passwordTextEditingController.text,
-          displayName: widget.name + " " + widget.surname,);
+        );
+        // we enforce a variant that, by the time Home is pushed, user model
+        // must be already populated
+        await user.downloadData(firebase);
+        return true;
+      } catch (e) {
+        await handleRegistrationFailure(firebase, e);
+        return false;
+      }
+    }
+
+    // if user doensn't already have a partner account, we simply create one
+    try {
+      await firebase.auth.createClient(
+        firebase: firebase,
+        credential: widget.userCredential,
+        email: widget.userEmail,
+        password: passwordTextEditingController.text,
+        displayName: widget.name + " " + widget.surname,
+      );
+      // we enforce a variant that, by the time Home is pushed, user model
+      // must be already populated
+      await user.downloadData(firebase);
       return true;
     } on FirebaseAuthException catch (e) {
-      await handleRegistrationFailure(e);
+      await handleRegistrationFailure(firebase, e);
       return false;
     }
   }
 
   // buttonCallback tries signing user up by adding remainig data to its credential
   void buttonCallback(BuildContext context) async {
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
     setState(() {
-      successfullyRegisteredUser = registerUser(context);
+      successfullyRegisteredUser = registerUser(
+        firebase,
+        user,
+      );
     });
   }
 
@@ -305,7 +369,9 @@ class InsertPasswordState extends State<InsertPassword> {
                           ),
                           SizedBox(height: screenHeight / 25),
                           Text(
-                            "Insira uma senha",
+                            firebase.isRegistered
+                                ? "Insira sua senha"
+                                : "Insira uma senha",
                             style: TextStyle(color: Colors.black, fontSize: 18),
                           ),
                           SizedBox(height: screenHeight / 40),
@@ -313,31 +379,41 @@ class InsertPasswordState extends State<InsertPassword> {
                             controller: passwordTextEditingController,
                             autoFocus: true,
                           ),
-                          displayPasswordWarnings
+                          firebase.isRegistered
                               ? Column(
                                   children: [
                                     SizedBox(height: screenHeight / 40),
-                                    PasswordWarning(
-                                      isValid: passwordChecks[0],
+                                    Warning(
                                       message:
-                                          "Precisa ter no mínimo 8 caracteres",
-                                    ),
-                                    SizedBox(height: screenHeight / 80),
-                                    PasswordWarning(
-                                      isValid: passwordChecks[1],
-                                      message:
-                                          "Precisa ter pelo menos uma letra",
-                                    ),
-                                    SizedBox(height: screenHeight / 80),
-                                    PasswordWarning(
-                                      isValid: passwordChecks[2],
-                                      message:
-                                          "Precisa ter pelo menos um dígito",
-                                    ),
-                                    SizedBox(height: screenHeight / 80),
+                                          "Já existe uma conta de parceiro com o telefone selecionado. Insira sua senha para prosseguir.",
+                                    )
                                   ],
                                 )
-                              : Container(),
+                              : displayPasswordWarnings
+                                  ? Column(
+                                      children: [
+                                        SizedBox(height: screenHeight / 40),
+                                        PasswordWarning(
+                                          isValid: passwordChecks[0],
+                                          message:
+                                              "Precisa ter no mínimo 8 caracteres",
+                                        ),
+                                        SizedBox(height: screenHeight / 80),
+                                        PasswordWarning(
+                                          isValid: passwordChecks[1],
+                                          message:
+                                              "Precisa ter pelo menos uma letra",
+                                        ),
+                                        SizedBox(height: screenHeight / 80),
+                                        PasswordWarning(
+                                          isValid: passwordChecks[2],
+                                          message:
+                                              "Precisa ter pelo menos um dígito",
+                                        ),
+                                        SizedBox(height: screenHeight / 80),
+                                      ],
+                                    )
+                                  : Container(),
                           registrationErrorWarnings != null
                               ? registrationErrorWarnings
                               : Container(),

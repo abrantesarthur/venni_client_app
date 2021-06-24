@@ -58,18 +58,18 @@ extension AppFirebaseDatabase on FirebaseDatabase {
 
   // TODO: make sure this still works correctly. Print results and write tests
   Future<ClientInterface> getClientData(FirebaseModel firebase) async {
-    String uid = firebase.auth.currentUser.uid;
     ClientInterface result;
     try {
+      String uid = firebase.auth.currentUser?.uid ?? "";
       DataSnapshot snapshot =
           await this.reference().child("clients").child(uid).once();
       result = ClientInterface.fromJson(snapshot.value);
-
-      // if partner has upaid trip
+      // if client has upaid trip
       if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
         // download unpaid trip and add it to result
-        Trip unpaidTrip =
-            await firebase.functions.getPastTrip(result.unpaidTripID);
+        Trip unpaidTrip = await firebase.functions.getPastTrip(
+          result.unpaidTripID,
+        );
         result.setUnpaidTrip(unpaidTrip);
       }
     } catch (_) {}
@@ -103,13 +103,17 @@ extension AppFirebaseDatabase on FirebaseDatabase {
   }
 
   Future<void> createClient(User user) async {
-    return this.reference().child("clients").child(user.uid).set({
+    return await this.reference().child("clients").child(user.uid).set({
       "uid": user.uid,
       "payment_method": {
         "default": "cash",
       },
       "rating": "5",
     });
+  }
+
+  Future<void> deleteClient(String uid) async {
+    return await this.reference().child("clients").child(uid).remove();
   }
 
   Future<Map<dynamic, dynamic>> getPartnerFromID(String partnerID) async {
@@ -270,12 +274,14 @@ class CreditCard {
 }
 
 class ClientInterface {
+  final String id;
   final String rating;
   final ClientPaymentMethod defaultPaymentMethod;
   final List<CreditCard> creditCards;
   final String unpaidTripID;
   Trip unpaidTrip;
   ClientInterface({
+    @required this.id,
     @required this.rating,
     @required this.defaultPaymentMethod,
     @required this.creditCards,
@@ -300,6 +306,7 @@ class ClientInterface {
     }
 
     return ClientInterface(
+      id: json["uid"],
       rating: json["rating"],
       defaultPaymentMethod:
           ClientPaymentMethod.fromJson(json["payment_method"]),

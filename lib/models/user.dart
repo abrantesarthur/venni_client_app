@@ -18,6 +18,7 @@ class ProfileImage {
 }
 
 class UserModel extends ChangeNotifier {
+  String _id;
   GeocodingResult _geocoding;
   Position _position;
   StreamSubscription _positionSubscription;
@@ -27,6 +28,7 @@ class UserModel extends ChangeNotifier {
   List<CreditCard> _creditCards;
   Trip _unpaidTrip;
 
+  String get id => _id;
   GeocodingResult get geocoding => _geocoding;
   Position get position => _position;
   ProfileImage get profileImage => _profileImage;
@@ -71,6 +73,7 @@ class UserModel extends ChangeNotifier {
     bool notify = true,
   }) {
     if (c != null) {
+      _id = c.id;
       _rating = c.rating;
       _defaultPaymentMethod = c.defaultPaymentMethod;
       _creditCards = c.creditCards;
@@ -117,7 +120,6 @@ class UserModel extends ChangeNotifier {
     bool notify = true,
   }) async {
     // download user image file
-    // TODO: there is aproblem with getProfileImage. it's not returning. fix it
     firebase.storage
         .getUserProfileImage(uid: firebase.auth.currentUser.uid)
         .then((value) => this.setProfileImage(value, notify: notify));

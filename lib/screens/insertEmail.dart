@@ -13,7 +13,6 @@ import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
 
-
 class InsertEmailArguments {
   final UserCredential userCredential;
   InsertEmailArguments({@required this.userCredential});
@@ -84,8 +83,9 @@ class InsertEmailState extends State<InsertEmail> {
       );
     });
 
-    CreateEmailResponse response =
-        await _firebaseAuth.createEmail(emailTextEditingController.text);
+    CreateEmailResponse response = await _firebaseAuth.createEmail(
+      emailTextEditingController.text,
+    );
 
     // stop progress
     setState(() {

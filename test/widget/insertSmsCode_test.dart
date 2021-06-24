@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:rider_frontend/screens/insertPassword.dart';
 import '../mocks.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
@@ -20,7 +21,6 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/vendors/firebaseAuth.dart';
 
-// TODO: test different modes
 void main() {
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +42,7 @@ void main() {
   void setupFirebaseMocks({
     @required WidgetTester tester,
     String verifyPhoneNumberCallbackName,
+    bool userHasClientAccount,
     bool userIsRegistered,
     bool signInSucceeds,
     FirebaseAuthException verificationCompletedException,
@@ -54,6 +55,13 @@ void main() {
       when(mockFirebaseModel.isRegistered).thenReturn(true);
     } else {
       when(mockFirebaseModel.isRegistered).thenReturn(false);
+    }
+
+    if (userHasClientAccount != null && userHasClientAccount) {
+      when(mockUserModel.id).thenReturn("clientID");
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
+    } else {
+      when(mockUserModel.id).thenReturn(null);
     }
 
     // mock FirebaseAuth's signInWithCredential to return mockUserCredential
@@ -252,6 +260,12 @@ void main() {
             Start.routeName: (context) => Start(),
             InsertEmail.routeName: (context) => InsertEmail(
                   userCredential: mockUserCredential,
+                ),
+            InsertPassword.routeName: (context) => InsertPassword(
+                  userCredential: mockUserCredential,
+                  userEmail: "fulano@example.com",
+                  name: "Fulano",
+                  surname: "de Tal",
                 )
           },
           navigatorObservers: [mockNavigatorObserver],
@@ -302,8 +316,7 @@ void main() {
       expect(insertSmsState.warningMessage, isNull);
     });
 
-    testWidgets(
-        "pushes Home screen when user is registered and sign in succeeds",
+    testWidgets("pushes Home screen when user has client account",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
@@ -313,7 +326,7 @@ void main() {
       // code verification succeeds and user is registered
       setupFirebaseMocks(
         tester: tester,
-        userIsRegistered: true,
+        userHasClientAccount: true,
         signInSucceeds: true,
       );
 
@@ -338,17 +351,18 @@ void main() {
     });
 
     testWidgets(
-        "ends in InsertEmail screen if firebaseModel.isRegistered returns false",
+        "pushes InsertPassword screen when user already has a partner account",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
 
       verify(mockNavigatorObserver.didPush(any, any));
 
-      // code verification succeeds and user is not registered
+      // code verification succeeds and user has a partner account
       setupFirebaseMocks(
         tester: tester,
-        userIsRegistered: false,
+        userHasClientAccount: false,
+        userIsRegistered: true,
         signInSucceeds: true,
       );
 
@@ -359,32 +373,31 @@ void main() {
 
       stateIsEnabled(tester.state(find.byType(InsertSmsCode)), completeCode);
 
-      // before tapping the button, there is no Start screen
-      expect(find.byType(InsertEmail), findsNothing);
+      // before tapping the button, there is no InsertPassword screen
+      expect(find.byType(InsertPassword), findsNothing);
       expect(find.byType(InsertSmsCode), findsOneWidget);
 
       // tap circular button
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
 
-      // after tapping button, Start screen is pushed
-      verify(mockNavigatorObserver.didPush(any, any));
-      expect(find.byType(InsertEmail), findsOneWidget);
-      expect(find.byType(Home), findsNothing);
+      // after tapping button, Home screen is pushed
+      expect(find.byType(InsertPassword), findsOneWidget);
       expect(find.byType(InsertSmsCode), findsNothing);
     });
 
     testWidgets(
-        "pushes InsertEmail screen when sign in succeeds and phone is not registered",
+        "pushes InsertEmail screen when user already has no account whatsoever",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
 
       verify(mockNavigatorObserver.didPush(any, any));
 
-      // code verification succeeds and phone is not registered
+      // code verification succeeds and user has a partner account
       setupFirebaseMocks(
         tester: tester,
+        userHasClientAccount: false,
         userIsRegistered: false,
         signInSucceeds: true,
       );
@@ -404,15 +417,16 @@ void main() {
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
 
-      // after tapping button, InsertEmail screen is pushed
-      verify(mockNavigatorObserver.didPush(any, any));
+      // after tapping button, Home screen is pushed
       expect(find.byType(InsertEmail), findsOneWidget);
       expect(find.byType(InsertSmsCode), findsNothing);
     });
 
-    testWidgets(
-        "displays right warning when userIsRegistered but 'invalid-verification-code' exception happens",
-        (WidgetTester tester) async {
+    Future<void> testExceptions(
+      WidgetTester tester,
+      String code,
+      String expectedWarning,
+    ) async {
       // add insertSmsCode widget to the UI
       await pumpWidget(tester);
 
@@ -422,56 +436,10 @@ void main() {
       // user is registered but sign in throws exception
       FirebaseAuthException e = FirebaseAuthException(
         message: "message",
-        code: "invalid-verification-code",
+        code: code,
       );
       setupFirebaseMocks(
           tester: tester,
-          userIsRegistered: true,
-          verificationCompletedException: e,
-          verificationCompletedOnExceptionCallback: (e) => insertSmsCodeState
-              .displayErrorMessage(insertSmsCodeState.context, e));
-
-      // insert complete smsCode to enabled callback
-      String completeCode = "123456";
-      await tester.enterText(find.byType(AppInputText), completeCode);
-      await tester.pump();
-
-      stateIsEnabled(tester.state(find.byType(InsertSmsCode)), completeCode);
-
-      // before tapping the button, there is no 'Código inválido' warning
-      expect(
-        find.widgetWithText(Warning, "Código inválido. Tente outro."),
-        findsNothing,
-      );
-
-      // tap circular button
-      await tester.tap(find.byType(CircularButton));
-      await tester.pumpAndSettle();
-
-      // after tapping button, there is 'Código inválido" warning
-      expect(
-        find.widgetWithText(Warning, "Código inválido. Tente outro."),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets(
-        "displays right warning when userIsRegistered and other exceptions happen",
-        (WidgetTester tester) async {
-      // add insertSmsCode widget to the UI
-      await pumpWidget(tester);
-
-      final insertSmsCodeState =
-          tester.state(find.byType(InsertSmsCode)) as InsertSmsCodeState;
-
-      // user is registered but sign in throws exception
-      FirebaseAuthException e = FirebaseAuthException(
-        message: "message",
-        code: "any other code",
-      );
-      setupFirebaseMocks(
-          tester: tester,
-          userIsRegistered: true,
           verificationCompletedException: e,
           verificationCompletedOnExceptionCallback: (e) => insertSmsCodeState
               .displayErrorMessage(insertSmsCodeState.context, e));
@@ -485,7 +453,7 @@ void main() {
 
       // before tapping the button, there is no 'Algo deu errado' warning
       expect(
-        find.widgetWithText(Warning, "Algo deu errado. Tente mais tarde."),
+        find.widgetWithText(Warning, expectedWarning),
         findsNothing,
       );
 
@@ -495,8 +463,27 @@ void main() {
 
       // after tapping button, there is 'Algo deu errado" warning
       expect(
-        find.widgetWithText(Warning, "Algo deu errado. Tente mais tarde."),
+        find.widgetWithText(Warning, expectedWarning),
         findsOneWidget,
+      );
+    }
+
+    testWidgets("displays right warning when 'anything-else' is thrown",
+        (WidgetTester tester) async {
+      await testExceptions(
+        tester,
+        "anything-else",
+        "Algo deu errado. Tente mais tarde.",
+      );
+    });
+
+    testWidgets(
+        "displays right warning when 'invalid-verification-code' is thrown",
+        (WidgetTester tester) async {
+      await testExceptions(
+        tester,
+        "invalid-verification-code",
+        "Código inválido. Tente outro.",
       );
     });
   });
@@ -539,7 +526,7 @@ void main() {
     }
 
     testWidgets(
-        "pushes Home when it triggers verificationCompleted, user is registered and code is verified",
+        "pushes Home when it triggers verificationCompleted, user has client account and code is verified",
         (WidgetTester tester) async {
       // add insertSmsCode widget to the UI
       await pumpInsertSmsCodeWidget(
@@ -561,7 +548,7 @@ void main() {
       // and code is verified
       setupFirebaseMocks(
         tester: tester,
-        userIsRegistered: true,
+        userHasClientAccount: true,
         signInSucceeds: true,
         verifyPhoneNumberCallbackName: "verificationCompleted",
       );
@@ -593,6 +580,61 @@ void main() {
 
       // expect Home page to be pushed
       expect(find.byType(Home), findsOneWidget);
+      expect(find.byType(InsertSmsCode), findsNothing);
+    });
+
+    testWidgets(
+        "pushes InsertPassword when it triggers verificationCompleted, user has partner account and code is verified",
+        (WidgetTester tester) async {
+      // add insertSmsCode widget to the UI
+      await pumpInsertSmsCodeWidget(
+        tester,
+        routeName: InsertPassword.routeName,
+        route: InsertPassword(
+          userCredential: mockUserCredential,
+        ),
+      );
+
+      // InsertSmsCode was pushed
+      verify(mockNavigatorObserver.didPush(any, any));
+
+      // verifyPhoneNumber triggers verificationCompleted when user is registered
+      // and code is verified
+      setupFirebaseMocks(
+        tester: tester,
+        userHasClientAccount: false,
+        userIsRegistered: true,
+        signInSucceeds: true,
+        verifyPhoneNumberCallbackName: "verificationCompleted",
+      );
+
+      // expect not to find a warning allowing to resendCode
+      // tap on warning to resendCode
+      final resendCodeWidgetFinder =
+          find.widgetWithText(Warning, "Reenviar o código para meu celular");
+      expect(resendCodeWidgetFinder, findsNothing);
+
+      // set remainingSeconds to 0 so resendCode callback is activated
+      final insertSmsCodeState =
+          tester.state(find.byType(InsertSmsCode)) as InsertSmsCodeState;
+      insertSmsCodeState.setState(() {
+        insertSmsCodeState.remainingSeconds = 0;
+      });
+      await tester.pump();
+
+      // when remainingSeconds hits 0, find a warning allowing to resendCode
+      expect(resendCodeWidgetFinder, findsOneWidget);
+
+      // before tapping the button, there is no InsertPassword screen
+      expect(find.byType(InsertPassword), findsNothing);
+      expect(find.byType(InsertSmsCode), findsOneWidget);
+
+      // tap on warning to resendCode
+      await tester.tap(find.text("Reenviar o código para meu celular"));
+      await tester.pumpAndSettle();
+
+      // expect InsertPassword page to be pushed
+      expect(find.byType(InsertPassword), findsOneWidget);
       expect(find.byType(InsertSmsCode), findsNothing);
     });
 

@@ -44,6 +44,7 @@ void main() {
     @required String verifyPhoneNumberCallbackName,
     bool userIsRegistered,
     bool signInSucceeds,
+    bool userHasClientAccount,
     FirebaseAuthException firebaseAuthException,
   }) {
     when(mockUserCredential.user).thenReturn(mockUser);
@@ -52,6 +53,13 @@ void main() {
       when(mockFirebaseModel.isRegistered).thenReturn(true);
     } else {
       when(mockFirebaseModel.isRegistered).thenReturn(false);
+    }
+
+    if (userHasClientAccount != null && userHasClientAccount) {
+      when(mockUserModel.id).thenReturn("clientID");
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
+    } else {
+      when(mockUserModel.id).thenReturn(null);
     }
 
     // mock FirebaseAuth's signInWithCredential to return mockUserCredential
@@ -310,7 +318,7 @@ void main() {
       setupFirebaseMocks(
         tester: tester,
         verifyPhoneNumberCallbackName: "verificationCompleted",
-        userIsRegistered: true,
+        userHasClientAccount: true,
         signInSucceeds: true,
       );
 

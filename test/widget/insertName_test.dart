@@ -19,6 +19,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
+    when(mockFirebaseModel.isRegistered).thenReturn(true);
     when(mockConnectivityModel.hasConnection).thenReturn(true);
   });
 

@@ -39,6 +39,19 @@ class UserModel extends ChangeNotifier {
 
   UserModel();
 
+  void clear() {
+    _id = null;
+    _geocoding = null;
+    _position = null;
+    _positionSubscription = null;
+    _profileImage = null;
+    _rating = null;
+    _defaultPaymentMethod = null;
+    _creditCards = null;
+    _unpaidTrip = null;
+    notifyListeners();
+  }
+
   void setProfileImage(
     ProfileImage img, {
     bool notify = true,

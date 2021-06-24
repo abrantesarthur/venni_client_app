@@ -249,7 +249,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   // push start screen when user logs out
   void _signOut(BuildContext context) {
+    UserModel user = Provider.of<UserModel>(context, listen: false);
     if (!widget.firebase.isRegistered) {
+      user.clear();
       Navigator.pushNamedAndRemoveUntil(context, Start.routeName, (_) => false);
     }
   }

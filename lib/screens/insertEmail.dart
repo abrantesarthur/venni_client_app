@@ -11,7 +11,8 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
 
 class InsertEmailArguments {
   final UserCredential userCredential;

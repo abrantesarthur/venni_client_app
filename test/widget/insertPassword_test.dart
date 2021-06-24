@@ -25,7 +25,13 @@ void main() {
     when(mockFirebaseModel.auth).thenReturn(mockFirebaseAuth);
     when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
     when(mockUser.displayName).thenReturn("Fulano");
+    when(mockUser.email).thenReturn("example@provider.com");
+    when(mockUser.emailVerified).thenReturn(true);
     when(mockFirebaseModel.database).thenReturn(mockFirebaseDatabase);
+    when(mockFirebaseModel.isRegistered).thenReturn(false);
+    when(mockFirebaseDatabase.reference()).thenReturn(mockDatabaseReference);
+    when(mockDatabaseReference.child(any)).thenReturn(mockDatabaseReference);
+    when(mockDatabaseReference.remove()).thenAnswer((_) => Future.value());
     when(mockUserModel.geocoding).thenReturn(mockGeocodingResult);
     when(mockGeocodingResult.latitude).thenReturn(0);
     when(mockGeocodingResult.longitude).thenReturn(0);
@@ -249,7 +255,122 @@ void main() {
   });
 
   group("buttonCallback", () {
-    testWidgets("pushes Home screen when succesfully registering user",
+    Future<void> testErrosWhenisRegistered(
+      WidgetTester tester,
+      String code,
+      String expectedWarning,
+    ) async {
+      // add widget to the UI
+      await pumpWidget(tester);
+
+      verify(mockNavigatorObserver.didPush(any, any));
+
+      // insert valid password to activate circular button
+      final appInputTextFinder = find.byType(AppInputText);
+      await tester.enterText(appInputTextFinder, "avalidpassword123");
+      await tester.pumpAndSettle();
+
+      // expect callback to be activated state
+      final InsertPasswordState insertPasswordState =
+          tester.state(find.byType(InsertPassword));
+      expect(insertPasswordState.circularButtonCallback, isNotNull);
+
+      // set mocks to throw 'wrong-password' error
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
+      when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+      FirebaseAuthException e = FirebaseAuthException(
+        message: "message",
+        code: code,
+      );
+      when(mockUser.reauthenticateWithCredential(any))
+          .thenAnswer((_) async => throw e);
+
+      // expect registrationErrorWarnings to be null
+      expect(insertPasswordState.registrationErrorWarnings, isNull);
+
+      // simulate tapping button to register the user
+      await tester.tap(find.byType(CircularButton));
+      await tester.pump();
+
+      // expect registrationErrorWarnings not to be null
+      expect(insertPasswordState.registrationErrorWarnings, isNotNull);
+
+      await tester.pumpAndSettle();
+
+      // expect to find warning
+      final warningFinder = find.widgetWithText(Warning, expectedWarning);
+      expect(warningFinder, findsOneWidget);
+    }
+
+    testWidgets("correctly handles 'wrong-password' error",
+        (WidgetTester tester) async {
+      await testErrosWhenisRegistered(
+        tester,
+        'wrong-password',
+        "Senha incorreta. Tente novamente.",
+      );
+    });
+
+    testWidgets("correctly handles 'too-many-requests' error",
+        (WidgetTester tester) async {
+      await testErrosWhenisRegistered(
+        tester,
+        'too-many-requests',
+        "Muitas tentativas sucessivas. Tente novamente mais tarde.",
+      );
+    });
+
+    testWidgets("correctly handles 'anything-else' error",
+        (WidgetTester tester) async {
+      await testErrosWhenisRegistered(
+        tester,
+        'anything-else',
+        "Algo deu errado. Tente novamente mais tarde.",
+      );
+    });
+
+    testWidgets(
+        "pushes Home when user has partner account and inserts correct password",
+        (WidgetTester tester) async {
+      // add widget to the UI
+      await pumpWidget(tester);
+
+      verify(mockNavigatorObserver.didPush(any, any));
+
+      // insert valid password to activate circular button
+      final appInputTextFinder = find.byType(AppInputText);
+      await tester.enterText(appInputTextFinder, "avalidpassword123");
+      await tester.pumpAndSettle();
+
+      // expect callback to be activated state
+      final InsertPasswordState insertPasswordState =
+          tester.state(find.byType(InsertPassword));
+      expect(insertPasswordState.circularButtonCallback, isNotNull);
+
+      // set mocks so user has partner account and typed right password
+      when(mockFirebaseModel.isRegistered).thenReturn(true);
+      when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.reauthenticateWithCredential(any)).thenAnswer(
+        (_) async => Future.value(mockUserCredential),
+      );
+
+      // before tapping, expect successfullyRegisteredUser to be null
+      expect(insertPasswordState.successfullyRegisteredUser, isNull);
+
+      // tap button
+      await tester.tap(find.byType(CircularButton));
+      await tester.pumpAndSettle();
+
+      // expect successfullyRegisteredUser to be a future  bool
+      expect(
+          insertPasswordState.successfullyRegisteredUser, isA<Future<bool>>());
+
+      // expect Home to be pushed
+      await tester.pumpAndSettle();
+      expect(find.byType(Home), findsOneWidget);
+    });
+
+    testWidgets("pushes Home screen when user doesn't have partner account",
         (WidgetTester tester) async {
       // add widget to the UI
       await pumpWidget(tester);
@@ -274,14 +395,19 @@ void main() {
           tester.state(find.byType(InsertPassword));
       expect(insertPasswordState.circularButtonCallback, isNotNull);
 
-      // set mocks to succesfully register user
-      when(mockFirebaseModel.isRegistered).thenReturn(true);
+      // set mocks so user doesn't have partner account and registers successfully
+      when(mockFirebaseModel.isRegistered).thenReturn(false);
       when(mockUserCredential.user).thenReturn(mockUser);
-      when(mockUser.updateEmail(any)).thenAnswer((_) async => Future.value());
-      when(mockUser.updatePassword(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockUser.updateEmail(any)).thenAnswer(
+        (_) async => Future.value(),
+      );
+      when(mockUser.updatePassword(any)).thenAnswer(
+        (_) async => Future.value(),
+      );
       when(mockUser.updateProfile(displayName: anyNamed("displayName")))
-          .thenAnswer((_) async => Future.value());
+          .thenAnswer(
+        (_) async => Future.value(),
+      );
 
       // before tapping, expect successfullyRegisteredUser to be null
       expect(insertPasswordState.successfullyRegisteredUser, isNull);
@@ -292,10 +418,12 @@ void main() {
 
       // expect successfullyRegisteredUser to be a future  bool
       expect(
-          insertPasswordState.successfullyRegisteredUser, isA<Future<bool>>());
-      await tester.pumpAndSettle();
+        insertPasswordState.successfullyRegisteredUser,
+        isA<Future<bool>>(),
+      );
 
       // expect Home to be pushed
+      await tester.pumpAndSettle();
       expect(find.byType(Home), findsOneWidget);
     });
 
@@ -318,14 +446,19 @@ void main() {
 
       // set mocks to throw 'requires-recent-login' error
       FirebaseAuthException e = FirebaseAuthException(
-          message: "message", code: "requires-recent-login");
-      when(mockFirebaseModel.isRegistered).thenReturn(true);
+        message: "message",
+        code: "requires-recent-login",
+      );
+      when(mockFirebaseModel.isRegistered).thenReturn(false);
       when(mockUserCredential.user).thenReturn(mockUser);
       when(mockUser.updateEmail(any)).thenAnswer((_) async => throw e);
-      when(mockUser.updatePassword(any))
-          .thenAnswer((_) async => Future.value());
+      when(mockUser.updatePassword(any)).thenAnswer(
+        (_) async => Future.value(),
+      );
       when(mockUser.updateProfile(displayName: anyNamed("displayName")))
-          .thenAnswer((_) async => Future.value());
+          .thenAnswer(
+        (_) async => Future.value(),
+      );
 
       // before tapping, expect successfullyRegisteredUser to be null
       expect(insertPasswordState.successfullyRegisteredUser, isNull);

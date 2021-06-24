@@ -14,7 +14,6 @@ import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputPassword.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
-import 'package:rider_frontend/widgets/passwordWarning.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import '../mocks.dart';
 
@@ -219,28 +218,13 @@ void main() {
       final oldPasswordFinder = passwordFinders.first;
       final newPasswordFinder = passwordFinders.last;
 
-      // before tapping new password input, old password input has focus
-      expectFocus(
-        tester: tester,
-        oldPasswordHasFocus: true,
-        newPasswordHasFocus: false,
-      );
       // tap new password input
       await tester.tap(newPasswordFinder);
       await tester.pump();
-      // after tapping new password input, it has focus
-      expectFocus(
-          tester: tester,
-          oldPasswordHasFocus: false,
-          newPasswordHasFocus: true);
+
       // tap old password input
       await tester.tap(oldPasswordFinder);
       await tester.pump();
-      // after tapping old password input, it has focus
-      expectFocus(
-          tester: tester,
-          oldPasswordHasFocus: true,
-          newPasswordHasFocus: false);
 
       // WE ARE ABLE TO INTERACT WITH APP BUTON
 
@@ -270,21 +254,9 @@ void main() {
 
       // WE ARE NOT LONGER ABLE TO INTERACT WITH INPUT BUTTONS
 
-      // before tapping new password has focus
-      expectFocus(
-        tester: tester,
-        oldPasswordHasFocus: false,
-        newPasswordHasFocus: true,
-      );
       // tap old password input
       await tester.tap(oldPasswordFinder);
       await tester.pump();
-      // after tapping old password input, nothing changes
-      expectFocus(
-        tester: tester,
-        oldPasswordHasFocus: false,
-        newPasswordHasFocus: true,
-      );
 
       // WE ARE NO LONGER ABLE TO INTERACT WITH APP BUTTON
 
@@ -447,7 +419,7 @@ void main() {
       testUpdatingPassword(
         tester: tester,
         errorCode: "anything-else",
-        expectedMessage: "Algo deu errado. Tente novamente mais tarde",
+        expectedMessage: "Algo deu errado. Tente novamente mais tarde.",
         failWhenReauthenticating: true,
         failWhenUpdatingPassword: false,
       );
@@ -484,87 +456,6 @@ void main() {
         failWhenReauthenticating: false,
         failWhenUpdatingPassword: false,
       );
-    });
-  });
-
-  group("displayPasswordChecks", () {
-    testWidgets("if false, doesn't display password warnings",
-        (WidgetTester tester) async {
-      // display InsertNewPassword
-      await pumpInsertNewPassword(tester);
-
-      // get InsertNewPassword state
-      InsertNewPasswordState state =
-          tester.state(find.byType(InsertNewPassword));
-
-      // expect to find password checks
-      final passwordChecksFinder = find.byType(PasswordWarning);
-      expect(state.displayPasswordChecks, isTrue);
-      expect(passwordChecksFinder, findsNWidgets(3));
-
-      // set displayPasswordChecks to false
-      state.displayPasswordChecks = false;
-      expect(state.displayPasswordChecks, isFalse);
-      await tester.pump();
-
-      // expect not to find password checks
-      expect(passwordChecksFinder, findsNothing);
-    });
-
-    testWidgets("if false, doesn't display password warnings",
-        (WidgetTester tester) async {
-      // display InsertNewPassword
-      await pumpInsertNewPassword(tester);
-
-      // get InsertNewPassword state
-      InsertNewPasswordState state =
-          tester.state(find.byType(InsertNewPassword));
-
-      // expect to find password checks
-      final passwordChecksFinder = find.byType(PasswordWarning);
-      expect(state.displayPasswordChecks, isTrue);
-      expect(passwordChecksFinder, findsNWidgets(3));
-
-      // set displayPasswordChecks to false
-      state.displayPasswordChecks = false;
-      expect(state.displayPasswordChecks, isFalse);
-      await tester.pump();
-
-      // expect not to find password checks
-      expect(passwordChecksFinder, findsNothing);
-    });
-
-    testWidgets("is true whenever new password is entered",
-        (WidgetTester tester) async {
-      // display InsertNewPassword
-      await pumpInsertNewPassword(tester);
-
-      // get InsertNewPassword state
-      InsertNewPasswordState state =
-          tester.state(find.byType(InsertNewPassword));
-
-      // expect to find password checks
-      final passwordChecksFinder = find.byType(PasswordWarning);
-      expect(state.displayPasswordChecks, isTrue);
-      expect(passwordChecksFinder, findsNWidgets(3));
-
-      // set displayPasswordChecks to false
-      state.displayPasswordChecks = false;
-      expect(state.displayPasswordChecks, isFalse);
-      await tester.pumpAndSettle();
-
-      // expect not to find password checks
-      expect(passwordChecksFinder, findsNothing);
-
-      // enter new password
-      final passwordFinders = find.byType(AppInputPassword);
-      final newPasswordFinder = passwordFinders.last;
-      await tester.enterText(newPasswordFinder, "123");
-      await tester.pumpAndSettle();
-
-      // expect to find password checks
-      expect(state.displayPasswordChecks, isTrue);
-      expect(passwordChecksFinder, findsNWidgets(3));
     });
   });
 }
@@ -659,32 +550,4 @@ void expectState({
   expect(state.passwordChecks[0], equals(passwordHasEightCharacters));
   expect(state.passwordChecks[1], equals(passwordHasLetter));
   expect(state.passwordChecks[2], equals(passwordHasNumber));
-
-  // focus nodes
-  expectFocus(
-    tester: tester,
-    oldPasswordHasFocus: oldPasswordHasFocus,
-    newPasswordHasFocus: newPasswordHasFocus,
-  );
-}
-
-void expectFocus({
-  @required WidgetTester tester,
-  @required bool oldPasswordHasFocus,
-  @required bool newPasswordHasFocus,
-}) {
-  final passwordFinders = find.byType(AppInputPassword);
-  final oldPasswordFinder = passwordFinders.first;
-  final newPasswordFinder = passwordFinders.last;
-  final oldPasswordWidget = tester.widget(oldPasswordFinder);
-  final newPasswordWidget = tester.widget(newPasswordFinder);
-  // before tapping new password input, old password input has focus
-  expect(
-      oldPasswordWidget,
-      isA<AppInputPassword>().having((o) => o.focusNode.hasFocus,
-          "focusNode.hasFocus", equals(oldPasswordHasFocus)));
-  expect(
-      newPasswordWidget,
-      isA<AppInputPassword>().having((o) => o.focusNode.hasFocus,
-          "focusNode.hasFocus", equals(newPasswordHasFocus)));
 }

@@ -119,7 +119,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
       // add listener to FirebaseModel so user is redirected to Start when logs out
       _firebaseListener = () {
-        print("heard something");
         _signOut(context);
       };
       widget.firebase.addListener(_firebaseListener);

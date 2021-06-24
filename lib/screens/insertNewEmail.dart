@@ -9,7 +9,8 @@ import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
 
 import '../models/firebase.dart';
 import '../widgets/warning.dart';

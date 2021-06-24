@@ -7,7 +7,7 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';

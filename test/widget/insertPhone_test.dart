@@ -15,7 +15,7 @@ import 'package:rider_frontend/screens/insertPhone.dart';
 import 'package:rider_frontend/screens/insertSmsCode.dart';
 import 'package:rider_frontend/screens/insertEmail.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseAuth.dart';
+import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/inputPhone.dart';

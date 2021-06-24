@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 
 class TripModel extends ChangeNotifier {
   Address _currentPickUpAddress;

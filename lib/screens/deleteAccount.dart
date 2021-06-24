@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/methods.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
@@ -12,8 +13,7 @@ import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions.dart';
-
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import '../models/firebase.dart';
 
 class DeleteAccount extends StatefulWidget {

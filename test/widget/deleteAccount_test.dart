@@ -9,7 +9,7 @@ import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
 import 'package:rider_frontend/styles.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/appInputPassword.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';

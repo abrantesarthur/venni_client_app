@@ -9,7 +9,7 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/ratePartner.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase.dart';
+import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
 void main() {
@@ -34,7 +34,8 @@ void main() {
               create: (context) => mockPartnerModel),
           ChangeNotifierProvider<TripModel>(create: (context) => mockTripModel),
           ChangeNotifierProvider<UserModel>(create: (context) => mockUserModel),
-          ChangeNotifierProvider<ConnectivityModel>(create: (context) => mockConnectivityModel),
+          ChangeNotifierProvider<ConnectivityModel>(
+              create: (context) => mockConnectivityModel),
         ],
         builder: (context, child) => MaterialApp(
           home: RatePartner(),

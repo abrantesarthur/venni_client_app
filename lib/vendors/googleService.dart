@@ -16,7 +16,10 @@ class GoogleWebService {
   Future<http.Response> doGet(String params) async {
     http.Response response;
     try {
-      response = await http.get(_buildUrl(params));
+      response = await http.get(Uri.https(
+          _baseUrl,
+          "/json?key=$_googleApiKey&language=pt-BR" +
+              (params.length > 0 ? "&" + params : "")));
     } catch (_) {}
     return response;
   }

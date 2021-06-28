@@ -37,17 +37,7 @@ class Places {
 
       var autocompleteResponse;
       try {
-        autocompleteResponse = await http.get(Uri.https(
-          "maps.googleapis.com",
-          "/maps/api/place/autocomplete/json?" +
-              "input=$placeName&" +
-              "key=$_googleApiKey&" +
-              "sessiontoken=$sessionToken&" +
-              "location=$latitude,$longitude&" +
-              "radius=${30000}&" +
-              "strictbounds&" +
-              "language=pt-BR",
-        ));
+        autocompleteResponse = await http.get(autoCompleteUrl);
       } catch (_) {}
       if (autocompleteResponse != null &&
           autocompleteResponse.statusCode < 300) {

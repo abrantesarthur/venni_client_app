@@ -143,9 +143,6 @@ class TripModel extends ChangeNotifier {
       _encodedPoints = null;
       _eta = null;
       _etaString = null;
-      if (notify) {
-        notifyListeners();
-      }
     } else {
       _tripStatus = rrr.tripStatus;
       _farePrice = rrr.farePrice;
@@ -159,9 +156,28 @@ class TripModel extends ChangeNotifier {
       _etaString = _calculateETAString();
       _partnerArrival = _calculatePartnerArrival();
       _partnerArrivalString = _calculatePartnerArrivalString();
-      if (notify) {
-        notifyListeners();
-      }
+      // enrich adddress with coordinates
+      Address enrichedPickUpAddress = Address(
+        isDropOff: _currentPickUpAddress.isDropOff,
+        mainText: _currentPickUpAddress.mainText,
+        secondaryText: _currentPickUpAddress.secondaryText,
+        placeID: _currentPickUpAddress.placeID,
+        latitude: rrr.originLat,
+        longitude: rrr.originLng,
+      );
+      _currentPickUpAddress = enrichedPickUpAddress;
+      Address enrichedDropOffAddress = Address(
+        isDropOff: _currentDropOffAddress.isDropOff,
+        mainText: _currentDropOffAddress.mainText,
+        secondaryText: _currentDropOffAddress.secondaryText,
+        placeID: _currentDropOffAddress.placeID,
+        latitude: rrr.destinationLat,
+        longitude: rrr.destinationLng,
+      );
+      _currentDropOffAddress = enrichedDropOffAddress;
+    }
+    if (notify) {
+      notifyListeners();
     }
   }
 }

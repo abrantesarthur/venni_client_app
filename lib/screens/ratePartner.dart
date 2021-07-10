@@ -467,7 +467,7 @@ class RatePartnerState extends State<RatePartner> {
                               await connectivity.alertWhenOffline(
                                 context,
                                 message:
-                                    "Conecte-se à internet para avaliar o partnero.",
+                                    "Conecte-se à internet para avaliar o parceiro.",
                               );
                               return;
                             }

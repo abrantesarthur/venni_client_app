@@ -18,13 +18,9 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     }
 
     HttpsCallable callable = this.httpsCallable(functionName);
-    try {
-      HttpsCallableResult result = await callable.call(data);
-      if (result != null && result.data != null) {
-        return Trip.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result = await callable.call(data);
+    if (result != null && result.data != null) {
+      return Trip.fromJson(result.data);
     }
     return null;
   }
@@ -52,28 +48,20 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     if (cardID != null) {
       data["card_id"] = cardID;
     }
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("trip-confirm").call(data);
-      if (result != null && result.data != null) {
-        return ConfirmTripResult.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("trip-confirm").call(data);
+    if (result != null && result.data != null) {
+      return ConfirmTripResult.fromJson(result.data);
     }
     return null;
   }
 
   Future<bool> captureUnpaidTrip(String cardID) async {
     Map data = {"card_id": cardID};
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("payment-capture_unpaid_trip").call(data);
-      if (result != null) {
-        return result.data;
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("payment-capture_unpaid_trip").call(data);
+    if (result != null) {
+      return result.data;
     }
     return false;
   }
@@ -89,28 +77,20 @@ extension AppFirebaseFunctions on FirebaseFunctions {
       }
     }
 
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("trip-client_get_past_trips").call(data);
-      if (result != null && result.data != null) {
-        return Trips.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("trip-client_get_past_trips").call(data);
+    if (result != null && result.data != null) {
+      return Trips.fromJson(result.data);
     }
     return null;
   }
 
   Future<Trip> getPastTrip(String pastTripID) async {
     Map data = {"past_trip_id": pastTripID};
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("trip-client_get_past_trip").call(data);
-      if (result != null && result.data != null) {
-        return Trip.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("trip-client_get_past_trip").call(data);
+    if (result != null && result.data != null) {
+      return Trip.fromJson(result.data);
     }
     return null;
   }
@@ -119,16 +99,12 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     Map<String, String> data = {};
     data["partner_id"] = args.partnerID;
     data["past_trip_ref_key"] = args.pastTripRefKey;
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("trip-partner_get_trip_rating").call(data);
-      if (result != null &&
-          result.data != null &&
-          result.data["partner_rating"] != null) {
-        return result.data["partner_rating"];
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("trip-partner_get_trip_rating").call(data);
+    if (result != null &&
+        result.data != null &&
+        result.data["partner_rating"] != null) {
+      return result.data["partner_rating"];
     }
     return null;
   }
@@ -166,14 +142,10 @@ extension AppFirebaseFunctions on FirebaseFunctions {
   }
 
   Future<HashKey> getCardHashKey() async {
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("payment-get_card_hash_key").call();
-      if (result != null && result.data != null) {
-        return HashKey.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("payment-get_card_hash_key").call();
+    if (result != null && result.data != null) {
+      return HashKey.fromJson(result.data);
     }
     return null;
   }
@@ -202,24 +174,16 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     billingAddress["zipcode"] = args.billingAddress.zipcode;
     data["billing_address"] = billingAddress;
 
-    try {
-      HttpsCallableResult result =
-          await this.httpsCallable("payment-create_card").call(data);
-      if (result != null && result.data != null) {
-        return CreditCard.fromJson(result.data);
-      }
-    } catch (e) {
-      throw e;
+    HttpsCallableResult result =
+        await this.httpsCallable("payment-create_card").call(data);
+    if (result != null && result.data != null) {
+      return CreditCard.fromJson(result.data);
     }
     return null;
   }
 
   Future<void> deleteCard(String cardID) async {
-    try {
-      await this.httpsCallable("payment-delete_card").call({"card_id": cardID});
-    } catch (e) {
-      throw e;
-    }
+    await this.httpsCallable("payment-delete_card").call({"card_id": cardID});
   }
 
   Future<void> setDefaultPaymentMethod({String cardID}) async {
@@ -227,18 +191,10 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     if (cardID != null) {
       data["card_id"] = cardID;
     }
-    try {
-      await this.httpsCallable("payment-set_default_payment_method").call(data);
-    } catch (e) {
-      throw e;
-    }
+    await this.httpsCallable("payment-set_default_payment_method").call(data);
   }
 
   Future<void> deleteAccount() async {
-    try {
-      await this.httpsCallable("account-delete_client").call();
-    } catch (e) {
-      throw e;
-    }
+    await this.httpsCallable("account-delete_client").call();
   }
 }

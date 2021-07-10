@@ -167,7 +167,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       // if connectivity changed from offline to online
       if (connectivity.hasConnection) {
         // download user data
-        user.downloadData(firebase);
+        try {
+          user.downloadData(firebase);
+        } catch (e) {}
         // TODO: download trip information if user has current trip. Do the same when initing home just like in partner app
       }
     }
@@ -514,9 +516,11 @@ List<Widget> _buildRemainingStackChildren({
           child: MenuButton(onPressed: () {
             scaffoldKey.currentState.openDrawer();
             // trigger getUserRating so it is updated in case it's changed
-            firebase.database
-                .getClientData(firebase)
-                .then((value) => user.setRating(value.rating));
+            try {
+              firebase.database.getClientData(firebase).then(
+                    (value) => user.setRating(value.rating),
+                  );
+            } catch (e) {}
           }),
         ),
       ),
@@ -562,9 +566,11 @@ List<Widget> _buildRemainingStackChildren({
           child: MenuButton(onPressed: () {
             scaffoldKey.currentState.openDrawer();
             // trigger getUserRating so it is updated in case it's changed
-            firebase.database
-                .getClientData(firebase)
-                .then((value) => user.setRating(value?.rating));
+            try {
+              firebase.database
+                  .getClientData(firebase)
+                  .then((value) => user.setRating(value?.rating));
+            } catch (e) {}
           }),
         ),
       )

@@ -26,7 +26,8 @@ class UserModel extends ChangeNotifier {
   StreamSubscription _positionSubscription;
   ProfileImage _profileImage;
   String _rating;
-  ClientPaymentMethod _defaultPaymentMethod = ClientPaymentMethod(type: PaymentMethodType.cash);
+  ClientPaymentMethod _defaultPaymentMethod =
+      ClientPaymentMethod(type: PaymentMethodType.cash);
   List<CreditCard> _creditCards;
   Trip _unpaidTrip;
 
@@ -208,7 +209,7 @@ class UserModel extends ChangeNotifier {
 
   // getPaymentMethodSvgPath returns defaultPaymentMethod's svg path
   String getPaymentMethodSvgPath(BuildContext context) {
-    if ( _defaultPaymentMethod.type == PaymentMethodType.cash) {
+    if (_defaultPaymentMethod.type == PaymentMethodType.cash) {
       return "images/money.svg";
     }
 

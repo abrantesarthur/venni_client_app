@@ -61,20 +61,18 @@ extension AppFirebaseDatabase on FirebaseDatabase {
   // TODO: make sure this still works correctly. Print results and write tests
   Future<ClientInterface> getClientData(FirebaseModel firebase) async {
     ClientInterface result;
-    try {
-      String uid = firebase.auth.currentUser?.uid ?? "";
-      DataSnapshot snapshot =
-          await this.reference().child("clients").child(uid).once();
-      result = ClientInterface.fromJson(snapshot.value);
-      // if client has upaid trip
-      if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
-        // download unpaid trip and add it to result
-        Trip unpaidTrip = await firebase.functions.getPastTrip(
-          result.unpaidTripID,
-        );
-        result.setUnpaidTrip(unpaidTrip);
-      }
-    } catch (_) {}
+    String uid = firebase.auth.currentUser?.uid ?? "";
+    DataSnapshot snapshot =
+        await this.reference().child("clients").child(uid).once();
+    result = ClientInterface.fromJson(snapshot.value);
+    // if client has upaid trip
+    if (result.unpaidTripID != null && result.unpaidTripID.isNotEmpty) {
+      // download unpaid trip and add it to result
+      Trip unpaidTrip = await firebase.functions.getPastTrip(
+        result.unpaidTripID,
+      );
+      result.setUnpaidTrip(unpaidTrip);
+    }
     return result;
   }
 

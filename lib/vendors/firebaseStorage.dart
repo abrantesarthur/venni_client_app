@@ -13,7 +13,7 @@ extension AppFirebaseStorage on FirebaseStorage {
     try {
       this
           .ref()
-          .child("user-photos")
+          .child("client-photos")
           .child(uid)
           .child("profile" + path.extension(img.path))
           .putFile(dartIo.File(img.path));
@@ -25,7 +25,7 @@ extension AppFirebaseStorage on FirebaseStorage {
   Future<ProfileImage> getUserProfileImage({@required String uid}) async {
     ListResult results;
     try {
-      results = await this.ref().child("user-photos").child(uid).list();
+      results = await this.ref().child("client-photos").child(uid).list();
       if (results != null && results.items.length > 0) {
         String imageURL = await results.items[0].getDownloadURL();
         return ProfileImage(

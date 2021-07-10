@@ -141,6 +141,10 @@ class Trip {
   final TripStatus tripStatus;
   final String originPlaceID;
   final String destinationPlaceID;
+  final double originLat;
+  final double originLng;
+  final double destinationLat;
+  final double destinationLng;
   final num farePrice;
   final num distanceMeters;
   final String distanceText;
@@ -160,6 +164,10 @@ class Trip {
     @required this.tripStatus,
     @required this.originPlaceID,
     @required this.destinationPlaceID,
+    @required this.originLat,
+    @required this.originLng,
+    @required this.destinationLat,
+    @required this.destinationLng,
     @required this.farePrice,
     @required this.distanceMeters,
     @required this.distanceText,
@@ -191,6 +199,10 @@ class Trip {
       tripStatus: status,
       originPlaceID: json["origin_place_id"],
       destinationPlaceID: json["destination_place_id"],
+      originLat: double.parse(json["origin_lat"]),
+      originLng: double.parse(json["origin_lng"]),
+      destinationLat: double.parse(json["destination_lat"]),
+      destinationLng: double.parse(json["destination_lng"]),
       farePrice: json["fare_price"],
       distanceMeters: int.parse(json["distance_meters"]),
       distanceText: json["distance_text"],
@@ -349,8 +361,8 @@ enum TripStatus {
   noPartnersAvailable,
   inProgress,
   completed,
-  canceledByPartner,
-  canceledByClient,
+  cancelledByPartner,
+  cancelledByClient,
   paymentFailed,
   off,
 }
@@ -378,10 +390,10 @@ TripStatus getTripStatusFromString(String status) {
     return TripStatus.completed;
   }
   if (status == "cancelled-by-partner") {
-    return TripStatus.canceledByPartner;
+    return TripStatus.cancelledByPartner;
   }
   if (status == "cancelled-by-client") {
-    return TripStatus.canceledByClient;
+    return TripStatus.cancelledByClient;
   }
   if (status == "payment-failed") {
     return TripStatus.paymentFailed;

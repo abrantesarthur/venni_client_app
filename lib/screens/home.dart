@@ -22,6 +22,7 @@ import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
@@ -167,6 +168,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       if (connectivity.hasConnection) {
         // download user data
         user.downloadData(firebase);
+        // TODO: download trip information if user has current trip. Do the same when initing home just like in partner app
       }
     }
 
@@ -293,9 +295,18 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
 
-    if (trip.tripStatus == TripStatus.canceledByClient ||
-        trip.tripStatus == TripStatus.canceledByPartner) {
+    if (trip.tripStatus == TripStatus.cancelledByClient) {
       await googleMaps.undrawPolyline(context);
+      return;
+    }
+
+    if (trip.tripStatus == TripStatus.cancelledByPartner) {
+      print("cancelledByPartner");
+      await showOkDialog(
+        context: context,
+        title: "Nosso(a) parceiro(a) cancelou a corrida",
+        content: "faça o pedido novamnete",
+      );
       return;
     }
 
@@ -520,8 +531,7 @@ List<Widget> _buildRemainingStackChildren({
 
   if (trip.tripStatus == null ||
       trip.tripStatus == TripStatus.off ||
-      trip.tripStatus == TripStatus.canceledByClient ||
-      trip.tripStatus == TripStatus.canceledByPartner ||
+      trip.tripStatus == TripStatus.cancelledByClient ||
       trip.tripStatus == TripStatus.completed) {
     return [
       OverallPadding(
@@ -554,7 +564,7 @@ List<Widget> _buildRemainingStackChildren({
             // trigger getUserRating so it is updated in case it's changed
             firebase.database
                 .getClientData(firebase)
-                .then((value) => user.setRating(value.rating));
+                .then((value) => user.setRating(value?.rating));
           }),
         ),
       )
@@ -564,10 +574,11 @@ List<Widget> _buildRemainingStackChildren({
   if (trip.tripStatus == TripStatus.waitingConfirmation ||
       trip.tripStatus == TripStatus.paymentFailed ||
       trip.tripStatus == TripStatus.noPartnersAvailable ||
-      trip.tripStatus == TripStatus.lookingForPartner) {
+      trip.tripStatus == TripStatus.lookingForPartner ||
+      trip.tripStatus == TripStatus.cancelledByPartner) {
     // if user is about to confirm trip for the first time (waitingConfirmation)
-    // has already confirmed but received a paymentFailed, give them the
-    // option of trying again.
+    // has already confirmed but received a paymentFailed, or the partner canceleld,
+    // give them the option of trying again.
     return [
       _buildCancelTripButton(context, trip),
       _buildEditRouteButton(context, trip),
@@ -760,9 +771,9 @@ Widget _buildPartnerSummaryFloatingCard(
                       ],
                     ),
                     Text(
-                      partner.vehicle.brand.toUpperCase() +
+                      (partner.vehicle?.brand?.toUpperCase() ?? "") +
                           " " +
-                          partner.vehicle.model.toUpperCase(),
+                          (partner.vehicle?.model?.toUpperCase() ?? ""),
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColor.disabled,
@@ -781,7 +792,7 @@ Widget _buildPartnerSummaryFloatingCard(
                 ),
                 Spacer(),
                 Text(
-                  partner.vehicle.plate.toUpperCase(),
+                  partner.vehicle?.plate?.toUpperCase() ?? "",
                   style: TextStyle(fontSize: 16),
                 ),
               ],
@@ -843,7 +854,7 @@ Widget _buildCancelTripButton(
                     firebase.functions.cancelTrip();
                   } catch (_) {}
                   // update models
-                  trip.clear(status: TripStatus.canceledByClient);
+                  trip.clear(status: TripStatus.cancelledByClient);
                   partner.clear();
                   Navigator.pop(context);
                 },
@@ -967,8 +978,7 @@ Widget _buildTripSummaryFloatingCard(
             ),
             Spacer(),
             Text(
-              // TODO: make sure this workd
-              "R\$ " + (trip.farePrice / 100).toString(),
+              "R\$ " + (trip.farePrice / 100).toStringAsFixed(2),
               style: TextStyle(fontSize: 18),
             ),
           ],

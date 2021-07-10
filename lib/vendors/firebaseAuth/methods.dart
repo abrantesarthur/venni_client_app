@@ -50,7 +50,6 @@ extension AppFirebaseAuth on FirebaseAuth {
 
       // if user already has a client account
       if (user.id != null && firebase.isRegistered) {
-        print("user.id != null && firebase.isRegistered");
         // redirect to Home screen
         Navigator.pushReplacementNamed(
           context,
@@ -64,8 +63,6 @@ extension AppFirebaseAuth on FirebaseAuth {
           ),
         );
       } else if (firebase.isRegistered) {
-        print("firebase.isRegistered");
-
         // otherwise, if user already has a partner account, skip email and name
         // screens and jump straigth to password. In that case, we want to confirm
         // the password, not insert a new one.
@@ -75,7 +72,6 @@ extension AppFirebaseAuth on FirebaseAuth {
           arguments: InsertPasswordArguments(userCredential: userCredential),
         );
       } else {
-        print("else");
         // if user has no account whatsoever, push email screen to create a new
         // account
         Navigator.pushNamed(
@@ -85,7 +81,6 @@ extension AppFirebaseAuth on FirebaseAuth {
         );
       }
     } catch (e) {
-      print(e);
       onExceptionCallback(e);
     }
   }

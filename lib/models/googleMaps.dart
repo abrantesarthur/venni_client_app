@@ -132,7 +132,7 @@ class GoogleMapsModel extends ChangeNotifier {
 
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
-      drawPolyline(
+      await drawPolyline(
         context: context,
         encodedPoints: encodedPoints,
         topPadding: screenHeight / 40,
@@ -145,6 +145,7 @@ class GoogleMapsModel extends ChangeNotifier {
   }
 
   Future<void> drawPolylineFromPartnerToOrigin(BuildContext context) async {
+    print("drawPolylineFromPartnerToOrigin");
     // only draw polyline between the use and the partner if waitingPartner
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     if (trip.tripStatus != TripStatus.waitingPartner) {
@@ -187,7 +188,7 @@ class GoogleMapsModel extends ChangeNotifier {
 
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
-      drawPolyline(
+      await drawPolyline(
         context: context,
         encodedPoints: encodedPoints,
         topPadding: screenHeight / 40,
@@ -222,7 +223,6 @@ class GoogleMapsModel extends ChangeNotifier {
 
     // hide user's location details and set maps padding
     setGoogleMapsCameraView(
-      locationButtonEnabled: false,
       topPadding: topPadding,
       bottomPadding: bottomPadding,
     );

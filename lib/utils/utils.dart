@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/widgets/okDialog.dart';
+import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
 enum States {
   AC,
@@ -369,4 +371,39 @@ class MaskedInputFormatter extends TextInputFormatter {
       selection: new TextSelection.collapsed(offset: newText.toString().length),
     );
   }
+}
+
+Future<void> showOkDialog({
+  @required BuildContext context,
+  @required String title,
+  String content,
+}) async {
+  return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return OkDialog(
+          title: title,
+          content: content,
+        );
+      });
+}
+
+Future<T> showYesNoDialog<T>(
+  BuildContext context, {
+  @required String title,
+  String content,
+  VoidCallback onPressedNo,
+  @required VoidCallback onPressedYes,
+}) async {
+  return await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return YesNoDialog(
+        title: title,
+        content: content,
+        onPressedYes: onPressedYes,
+        onPressedNo: onPressedNo,
+      );
+    },
+  );
 }

@@ -245,6 +245,65 @@ class Vehicle {
   }
 }
 
+class Partner {
+  final String id;
+  final String name;
+  final String lastName;
+  final int totalTrips;
+  final int memberSince;
+  final String phoneNumber;
+  final String currentClientID;
+  final double currentLatitude;
+  final double currentLongitude;
+  final String currentZone;
+  final PartnerStatus status;
+  final Vehicle vehicle;
+  final int idleSince;
+  final double rating;
+
+  Partner({
+    @required this.id,
+    @required this.name,
+    @required this.lastName,
+    @required this.totalTrips,
+    @required this.memberSince,
+    @required this.phoneNumber,
+    @required this.currentClientID,
+    @required this.currentLatitude,
+    @required this.currentLongitude,
+    @required this.currentZone,
+    @required this.status,
+    @required this.vehicle,
+    @required this.idleSince,
+    @required this.rating,
+  });
+
+  factory Partner.fromJson(Map json) {
+    if (json == null || json.isEmpty) return null;
+    PartnerStatus partnerStatus = getPartnerStatusFromString(
+      json["partner_status"],
+    );
+    return Partner(
+      id: json["uid"],
+      name: json["name"],
+      lastName: json["last_name"],
+      totalTrips: int.parse(json["total_trips"]),
+      memberSince: int.parse(json["member_since"]),
+      phoneNumber: json["phone_number"],
+      currentClientID: json["current_client_uid"],
+      currentLatitude: double.parse(json["current_latitude"]),
+      currentLongitude: double.parse(json["current_longitude"]),
+      currentZone: json["current_zone"],
+      status: partnerStatus,
+      vehicle: Vehicle.fromJson(json["vehicle"]),
+      idleSince: int.parse(json["idle_since"]),
+      rating: double.parse(double.parse(json["rating"]).toStringAsFixed(2)),
+    );
+  }
+}
+
+// ConfirmTripResult is pretty much an extension of Partner, with the diffeence
+// that its fields have different names and it has 'tripStatus'
 class ConfirmTripResult {
   final String partnerID;
   final String partnerName;
@@ -280,7 +339,7 @@ class ConfirmTripResult {
     @required this.partnerRating,
   });
 
-  factory ConfirmTripResult.fromJson(Map<dynamic, dynamic> json) {
+  factory ConfirmTripResult.fromJson(Map json) {
     if (json == null || json.isEmpty) return null;
     PartnerStatus partnerStatus =
         getPartnerStatusFromString(json["partner_status"]);

@@ -152,8 +152,13 @@ class _AppState extends State<App> {
   }
 
   Future<void> initializeUser() async {
-    // download partner data
+    // download client and trip data
     await user.downloadData(firebaseModel, notify: false);
+    await tripModel.downloadData(
+      firebase: firebaseModel,
+      partner: partner,
+      notify: false,
+    );
   }
 
   // TODO: README How to test locally taking DEV flavor into account. Explain that need to run emulator locally.

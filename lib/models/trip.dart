@@ -1,6 +1,12 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/partner.dart';
+import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
+import 'package:rider_frontend/vendors/firebaseStorage.dart';
 
 class TripModel extends ChangeNotifier {
   Address _currentPickUpAddress;
@@ -131,9 +137,37 @@ class TripModel extends ChangeNotifier {
         _partnerArrival.minute.toString();
   }
 
+  // downloadData sends requests to download data about current trips and partner
+  Future<void> downloadData({
+    FirebaseModel firebase,
+    PartnerModel partner,
+    bool notify = true,
+  }) async {
+    Trip trip;
+    try {
+      trip = await firebase.functions.getCurrentTrip();
+      fromTripInterface(trip, notify: notify);
+    } on FirebaseException catch (e) {
+      // an error was thrown becasue there is no active trip, clear model
+      if (e.code == "not-found") {
+        clear();
+      }
+      return;
+    }
+
+    //if trip exists and has waiting-partner or in-progress status
+    if (trip.tripStatus == TripStatus.inProgress ||
+        trip.tripStatus == TripStatus.waitingPartner) {
+      //  download partner data. This may throw an error.
+      await partner.downloadData(firebase: firebase, id: trip.partnerID);
+    } else {
+      partner.clear(notify: notify);
+    }
+  }
+
   // TODO: round fare price up if payment is in money
-  void fromRequestTripResult(Trip rrr, {bool notify = true}) {
-    if (rrr == null) {
+  void fromTripInterface(Trip trip, {bool notify = true}) {
+    if (trip == null) {
       _tripStatus = TripStatus.off;
       _farePrice = null;
       _distanceMeters = null;
@@ -144,13 +178,13 @@ class TripModel extends ChangeNotifier {
       _eta = null;
       _etaString = null;
     } else {
-      _tripStatus = rrr.tripStatus;
-      _farePrice = rrr.farePrice;
-      _distanceMeters = rrr.distanceMeters;
-      _distanceText = rrr.distanceText;
-      _durationSeconds = rrr.durationSeconds;
-      _durationText = rrr.durationText;
-      _encodedPoints = rrr.encodedPoints;
+      _tripStatus = trip.tripStatus;
+      _farePrice = trip.farePrice;
+      _distanceMeters = trip.distanceMeters;
+      _distanceText = trip.distanceText;
+      _durationSeconds = trip.durationSeconds;
+      _durationText = trip.durationText;
+      _encodedPoints = trip.encodedPoints;
       _partnerArrivalSeconds = 300; // estimate partner will arrive in 5 minutes
       _eta = _calculateETA();
       _etaString = _calculateETAString();
@@ -158,22 +192,26 @@ class TripModel extends ChangeNotifier {
       _partnerArrivalString = _calculatePartnerArrivalString();
       // enrich adddress with coordinates
       Address enrichedPickUpAddress = Address(
-        isDropOff: _currentPickUpAddress.isDropOff,
-        mainText: _currentPickUpAddress.mainText,
-        secondaryText: _currentPickUpAddress.secondaryText,
-        placeID: _currentPickUpAddress.placeID,
-        latitude: rrr.originLat,
-        longitude: rrr.originLng,
+        isDropOff: false,
+        mainText: _currentPickUpAddress?.mainText ?? trip.originAddress,
+        secondaryText:
+            _currentPickUpAddress?.secondaryText ?? trip.originAddress,
+        placeID: _currentPickUpAddress?.placeID ?? trip.originPlaceID,
+        latitude: trip.originLat,
+        longitude: trip.originLng,
       );
+
       _currentPickUpAddress = enrichedPickUpAddress;
       Address enrichedDropOffAddress = Address(
-        isDropOff: _currentDropOffAddress.isDropOff,
-        mainText: _currentDropOffAddress.mainText,
-        secondaryText: _currentDropOffAddress.secondaryText,
-        placeID: _currentDropOffAddress.placeID,
-        latitude: rrr.destinationLat,
-        longitude: rrr.destinationLng,
+        isDropOff: true,
+        mainText: _currentDropOffAddress?.mainText ?? trip.destinationAddress,
+        secondaryText:
+            _currentDropOffAddress?.secondaryText ?? trip.destinationAddress,
+        placeID: _currentDropOffAddress?.placeID ?? trip.destinationPlaceID,
+        latitude: trip.destinationLat,
+        longitude: trip.destinationLng,
       );
+
       _currentDropOffAddress = enrichedDropOffAddress;
     }
     if (notify) {

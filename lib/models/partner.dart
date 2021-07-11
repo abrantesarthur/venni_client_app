@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/models/user.dart';
 
 class PartnerModel extends ChangeNotifier {
@@ -65,7 +67,47 @@ class PartnerModel extends ChangeNotifier {
     _currentLongitude = lng;
   }
 
-  void updateProfileImage(ProfileImage img) {}
+  void updateProfileImage(ProfileImage img, {bool notify = true}) {
+    _profileImage = img;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  Future<void> downloadData({
+    @required FirebaseModel firebase,
+    @required String id,
+  }) async {
+    Partner p = await firebase.functions.getPartner(id);
+    await fromPartnerInterface(partner: p);
+
+    // download partner profile picture
+    if (_id != null) {
+      ProfileImage img = await firebase.storage.getPartnerProfilePicture(_id);
+      _profileImage = img;
+    }
+  }
+
+  Future<void> fromPartnerInterface({Partner partner}) async {
+    if (partner == null) {
+      return Future.value();
+    }
+    _id = partner.id;
+    _name = partner.name;
+    _lastName = partner.lastName;
+    _phoneNumber = partner.phoneNumber;
+    _vehicle = partner.vehicle;
+    _rating = partner.rating;
+    _currentLatitude = partner.currentLatitude;
+    _currentLongitude = partner.currentLongitude;
+    _totalTrips = partner.totalTrips;
+    _memberSinceDate = partner.memberSince == null
+        ? null
+        : (DateTime.fromMillisecondsSinceEpoch(partner.memberSince));
+    _memberSince = partner.memberSince == null
+        ? null
+        : partner.memberSince.getFormatedDate();
+  }
 
   Future<void> fromConfirmTripResult(
     BuildContext context,
@@ -74,7 +116,6 @@ class PartnerModel extends ChangeNotifier {
     if (result == null) {
       return Future.value();
     }
-    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     _id = result.partnerID;
     _name = result.partnerName;
     _lastName = result.partnerLastName;
@@ -87,21 +128,8 @@ class PartnerModel extends ChangeNotifier {
     _memberSinceDate = result.partnerMemberSince == null
         ? null
         : (DateTime.fromMillisecondsSinceEpoch(result.partnerMemberSince));
-    _memberSince = _memberSinceDate == null
+    _memberSince = result.partnerMemberSince == null
         ? null
-        : (_memberSinceDate.day < 10
-                ? "0" + _memberSinceDate.day.toString()
-                : _memberSinceDate.day.toString()) +
-            "/" +
-            (_memberSinceDate.month < 10
-                ? "0" + _memberSinceDate.month.toString()
-                : _memberSinceDate.month.toString()) +
-            "/" +
-            _memberSinceDate.year.toString();
-
-    // download partner profile picture
-    ProfileImage img =
-        await firebase.storage.getPartnerProfilePicture(result.partnerID);
-    this._profileImage = img;
+        : result.partnerMemberSince.getFormatedDate();
   }
 }

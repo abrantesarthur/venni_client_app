@@ -50,6 +50,11 @@ extension AppFirebaseAuth on FirebaseAuth {
 
       // if user already has a client account
       if (user.id != null && firebase.isRegistered) {
+        // try downloading any possible current trips
+        try {
+          await trip.downloadData();
+        } catch (e) {}
+
         // redirect to Home screen
         Navigator.pushReplacementNamed(
           context,

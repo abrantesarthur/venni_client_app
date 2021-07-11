@@ -10,13 +10,8 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
-import 'package:rider_frontend/screens/confirmTrip.dart';
-import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/menu.dart';
-import 'package:rider_frontend/screens/pastTrips.dart';
-import 'package:rider_frontend/screens/payTrip.dart';
 import 'package:rider_frontend/screens/payments.dart';
-import 'package:rider_frontend/screens/partnerProfile.dart';
 import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:rider_frontend/screens/shareLocation.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -24,17 +19,12 @@ import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
-import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
-import 'package:rider_frontend/widgets/appButton.dart';
-import 'package:rider_frontend/widgets/borderlessButton.dart';
-import 'package:rider_frontend/widgets/cancelButton.dart';
-import 'package:rider_frontend/widgets/circularImage.dart';
-import 'package:rider_frontend/widgets/floatingCard.dart';
-import 'package:rider_frontend/widgets/menuButton.dart';
-import 'package:rider_frontend/widgets/overallPadding.dart';
-import 'package:rider_frontend/widgets/yesNoDialog.dart';
+import 'package:rider_frontend/widgets/confirmTripWidget.dart';
+import 'package:rider_frontend/widgets/inProgressWidget.dart';
+import 'package:rider_frontend/widgets/requestTripWidgets.dart';
+import 'package:rider_frontend/widgets/unpaidTripWidget.dart';
+import 'package:rider_frontend/widgets/waitingPartnerWidget.dart';
 
 class HomeArguments {
   final FirebaseModel firebase;
@@ -74,7 +64,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> with WidgetsBindingObserver {
   Future<Position> userPositionFuture;
-  GlobalKey<ScaffoldState> _scaffoldKey;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   StreamSubscription partnerSubscription;
   StreamSubscription tripSubscription;
   bool _hasConnection;
@@ -99,8 +89,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     // we override, is notified whenever an application even occurs (e.g., system
     // puts app in background).
     WidgetsBinding.instance.addObserver(this);
-
-    _scaffoldKey = GlobalKey<ScaffoldState>();
 
     // trigger _getUserPosition
     userPositionFuture = _getUserPosition();
@@ -151,7 +139,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // get user position
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     TripModel trip = Provider.of<TripModel>(context);
@@ -174,7 +161,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       }
     }
 
-    // provide GoogleMapsModel
     return FutureBuilder(
       initialData: null,
       future: userPositionFuture,
@@ -183,7 +169,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         AsyncSnapshot<Position> snapshot,
       ) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // show loading screen while waiting for download to succeed
+          // show loading screen while waiting to get user position
           return Splash(
               text: "Muito bom ter você de volta, " +
                   firebase.auth.currentUser.displayName.split(" ").first +
@@ -195,7 +181,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           return ShareLocation(push: Home.routeName);
         }
 
-        // user data download finished: show home screen
         return Scaffold(
           key: _scaffoldKey,
           drawer: Menu(),
@@ -223,13 +208,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
                 polylines: Set<Polyline>.of(googleMaps.polylines.values),
                 markers: googleMaps.markers,
               ),
-              for (var child in _buildRemainingStackChildren(
+              _buildRemainingStackChildren(
                 context: context,
                 scaffoldKey: _scaffoldKey,
                 trip: trip,
                 user: user,
-              ))
-                child
+              )
             ],
           ),
         );
@@ -287,8 +271,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
-    GoogleMapsModel googleMaps =
-        Provider.of<GoogleMapsModel>(context, listen: false);
+    GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(
+      context,
+      listen: false,
+    );
 
     if (trip.tripStatus == null || trip.tripStatus == TripStatus.off) {
       // wait before undrawing polyline to help prevent concurrency issues
@@ -496,85 +482,22 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   }
 }
 
-List<Widget> _buildRemainingStackChildren({
+Widget _buildRemainingStackChildren({
   @required BuildContext context,
   @required GlobalKey<ScaffoldState> scaffoldKey,
   @required TripModel trip,
   @required UserModel user,
 }) {
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-    context,
-    listen: false,
-  );
-
   // lock trip request if user has pending payments
   if (user.unpaidTrip != null) {
-    return [
-      Positioned(
-        child: OverallPadding(
-          child: MenuButton(onPressed: () {
-            scaffoldKey.currentState.openDrawer();
-            // trigger getUserRating so it is updated in case it's changed
-            try {
-              firebase.database.getClientData(firebase).then(
-                    (value) => user.setRating(value.rating),
-                  );
-            } catch (e) {}
-          }),
-        ),
-      ),
-      Column(
-        children: [
-          Spacer(),
-          _buildPendingPaymentFloatingCard(context, user.unpaidTrip, user),
-        ],
-      ),
-    ];
+    return UnpaidTripWidget(scaffoldKey: scaffoldKey);
   }
 
   if (trip.tripStatus == null ||
       trip.tripStatus == TripStatus.off ||
       trip.tripStatus == TripStatus.cancelledByClient ||
       trip.tripStatus == TripStatus.completed) {
-    return [
-      OverallPadding(
-        child: Container(
-          alignment: Alignment.bottomCenter,
-          child: AppButton(
-            borderRadius: 10.0,
-            iconLeft: Icons.near_me,
-            textData: "Para onde vamos?",
-            onTapCallBack: () async {
-              if (!connectivity.hasConnection) {
-                await connectivity.alertWhenOffline(context);
-                return;
-              }
-              Navigator.pushNamed(
-                context,
-                DefineRoute.routeName,
-                arguments: DefineRouteArguments(
-                  mode: DefineRouteMode.request,
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-      Positioned(
-        child: OverallPadding(
-          child: MenuButton(onPressed: () {
-            scaffoldKey.currentState.openDrawer();
-            // trigger getUserRating so it is updated in case it's changed
-            try {
-              firebase.database
-                  .getClientData(firebase)
-                  .then((value) => user.setRating(value?.rating));
-            } catch (e) {}
-          }),
-        ),
-      )
-    ];
+    return RequestTrip(scaffoldKey: scaffoldKey);
   }
 
   if (trip.tripStatus == TripStatus.waitingConfirmation ||
@@ -585,731 +508,15 @@ List<Widget> _buildRemainingStackChildren({
     // if user is about to confirm trip for the first time (waitingConfirmation)
     // has already confirmed but received a paymentFailed, or the partner canceleld,
     // give them the option of trying again.
-    return [
-      _buildCancelTripButton(context, trip),
-      _buildEditRouteButton(context, trip),
-      Column(
-        children: [
-          Spacer(),
-          _buildTripSummaryFloatingCard(context, trip, user),
-        ],
-      ),
-    ];
+    return ConfirmTripWidget();
   }
 
   if (trip.tripStatus == TripStatus.waitingPartner) {
-    return [
-      _buildCancelTripButton(context, trip,
-          // TODO: decide on final fee
-          content:
-              "Atenção: como alguém já está a caminho, será cobrada uma taxa de R\$2,00,"),
-      Column(
-        children: [
-          Spacer(),
-          _buildPartnerSummaryFloatingCard(
-            context,
-            trip: trip,
-            user: user,
-          ),
-        ],
-      ),
-    ];
+    return WaitingPartnerWidget();
   }
 
   if (trip.tripStatus == TripStatus.inProgress) {
-    return [
-      Column(
-        children: [
-          Spacer(),
-          _buildETAFloatingCard(
-            context,
-            trip: trip,
-            user: user,
-          ),
-        ],
-      ),
-    ];
+    return InProgressWidget();
   }
-  return [];
-}
-
-Widget _buildETAFloatingCard(
-  BuildContext context, {
-  @required TripModel trip,
-  @required UserModel user,
-}) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  // Listen is false, so we must call setState manually if we change the model
-
-  return OverallPadding(
-    bottom: screenHeight / 20,
-    left: 0,
-    right: 0,
-    child: FloatingCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            "Previsão de chegada",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            (trip.eta.hour < 10
-                    ? "0" + trip.eta.hour.toString()
-                    : trip.eta.hour.toString()) +
-                ":" +
-                (trip.eta.minute < 10
-                    ? "0" + trip.eta.minute.toString()
-                    : trip.eta.minute.toString()),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 60,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildPartnerSummaryFloatingCard(
-  BuildContext context, {
-  @required TripModel trip,
-  @required UserModel user,
-}) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  // Listen is false, so we must call setState manually if we change the model
-  PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
-
-  return OverallPadding(
-    bottom: screenHeight / 20,
-    left: 0,
-    right: 0,
-    child: FloatingCard(
-      child: Column(
-        children: [
-          SizedBox(height: screenHeight / 100),
-          Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    // TODO: notify client when partner is near
-                    trip.partnerArrivalSeconds > 90
-                        ? "Motorista a caminho"
-                        : (trip.partnerArrivalSeconds > 5
-                            ? "Motorista próximo"
-                            : "Motorista no local"),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    "Vá ao local de encontro",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColor.disabled,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(width: screenWidth / 20),
-              Spacer(),
-              Text(
-                (trip.partnerArrivalSeconds / 60).round().toString() + " min",
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-          SizedBox(height: screenHeight / 100),
-          Divider(thickness: 0.1, color: Colors.black),
-          SizedBox(height: screenHeight / 100),
-          InkWell(
-            child: Row(
-              children: [
-                CircularImage(
-                  size: screenHeight / 13,
-                  imageFile: partner.profileImage == null
-                      ? AssetImage("images/user_icon.png")
-                      : partner.profileImage.file,
-                ),
-                SizedBox(width: screenWidth / 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          constraints: BoxConstraints(
-                            maxWidth: screenWidth / 4.2, // avoid overflowsr
-                          ),
-                          child: Text(
-                            partner.name ?? "",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: screenWidth / 50),
-                        Text(
-                          partner.rating?.toString() ?? "",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Icon(
-                          Icons.star_rate,
-                          size: 17,
-                          color: Colors.black87,
-                        )
-                      ],
-                    ),
-                    Text(
-                      (partner.vehicle?.brand?.toUpperCase() ?? "") +
-                          " " +
-                          (partner.vehicle?.model?.toUpperCase() ?? ""),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColor.disabled,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      partner.phoneNumber,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColor.disabled,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Spacer(),
-                Text(
-                  partner.vehicle?.plate?.toUpperCase() ?? "",
-                  style: TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
-            onTap: () => Navigator.pushNamed(context, PartnerProfile.routeName),
-          ),
-          SizedBox(height: screenHeight / 100),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildCancelTripButton(
-  BuildContext context,
-  TripModel trip, {
-  String title,
-  String content,
-}) {
-  final screenWidth = MediaQuery.of(context).size.width;
-
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-  PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
-  return Positioned(
-    left: 0,
-    child: OverallPadding(
-      left: screenWidth / 30,
-      child: CancelButton(
-        onPressed: () async {
-          // make sure user is connected to the internet
-          ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-            context,
-            listen: false,
-          );
-          if (!connectivity.hasConnection) {
-            await connectivity.alertWhenOffline(
-              context,
-              message: "Conecte-se à internet para cancelar o pedido,",
-            );
-            return;
-          }
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return YesNoDialog(
-                title: title ?? "Cancelar Pedido?",
-                content: content,
-                onPressedYes: () async {
-                  if (!connectivity.hasConnection) {
-                    await connectivity.alertWhenOffline(
-                      context,
-                      message: "Conecte-se à internet para cancelar o pedido,",
-                    );
-                    return;
-                  }
-                  // TODO: charge fee if necessary
-                  // cancel trip and update trip and partner models once it succeeds
-                  try {
-                    firebase.functions.cancelTrip();
-                  } catch (_) {}
-                  // update models
-                  trip.clear(status: TripStatus.cancelledByClient);
-                  partner.clear();
-                  Navigator.pop(context);
-                },
-              );
-            },
-          );
-        },
-      ),
-    ),
-  );
-}
-
-Widget _buildEditRouteButton(
-  BuildContext context,
-  TripModel trip,
-) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  TripModel trip = Provider.of<TripModel>(context, listen: false);
-
-  return Positioned(
-    right: 0,
-    child: FloatingCard(
-      leftMargin: screenWidth / 4.5,
-      rightMargin: screenWidth / 30,
-      leftPadding: screenWidth / 20,
-      topMargin: screenHeight / 15,
-      borderRadius: 25,
-      child: InkWell(
-        onTap: () async {
-          Navigator.pushNamed(
-            context,
-            DefineRoute.routeName,
-            arguments: DefineRouteArguments(
-              mode: DefineRouteMode.edit,
-            ),
-          );
-        },
-        child: Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: screenWidth / 2,
-                  child: BorderlessButton(
-                    svgLeftPath: "images/pickUpIcon.svg",
-                    svgLeftWidth: 10,
-                    primaryText: trip.pickUpAddress.mainText,
-                    primaryTextWeight: FontWeight.bold,
-                    primaryTextSize: 13,
-                    primaryTextColor: AppColor.disabled,
-                  ),
-                ),
-                SizedBox(height: screenHeight / 150),
-                Container(
-                  width: screenWidth / 2,
-                  child: BorderlessButton(
-                    svgLeftPath: "images/dropOffIcon.svg",
-                    svgLeftWidth: 10,
-                    primaryText: trip.dropOffAddress.mainText,
-                    primaryTextWeight: FontWeight.bold,
-                    primaryTextSize: 13,
-                    primaryTextColor: AppColor.disabled,
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              flex: 1,
-              child: Text(
-                "Alterar",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: AppColor.disabled,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _buildTripSummaryFloatingCard(
-  BuildContext context,
-  TripModel trip,
-  UserModel user,
-) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-
-  return FloatingCard(
-    leftMargin: 0,
-    rightMargin: 0,
-    child: Column(
-      children: [
-        SizedBox(height: screenHeight / 200),
-        Row(
-          children: [
-            Text(
-              "Chegada ao destino",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-            Text(
-              trip.etaString,
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
-        SizedBox(height: screenHeight / 100),
-        Row(
-          children: [
-            Text(
-              "Preço",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-            Text(
-              "R\$ " + (trip.farePrice / 100).toStringAsFixed(2),
-              style: TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
-        SizedBox(height: screenHeight / 200),
-        Divider(thickness: 0.1, color: Colors.black),
-        SizedBox(height: screenHeight / 200),
-        Padding(
-          padding: const EdgeInsets.only(
-            bottom: 40,
-            left: 5,
-            right: 5,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: BorderlessButton(
-                  svgLeftPath: user.getPaymentMethodSvgPath(context),
-                  svgLeftWidth: 28,
-                  primaryText: user.getPaymentMethodDescription(context),
-                  primaryTextWeight: FontWeight.bold,
-                  iconRight: Icons.keyboard_arrow_right,
-                  iconRightColor: Colors.black,
-                  paddingTop: screenHeight / 200,
-                  paddingBottom: screenHeight / 200,
-                  onTap: () async {
-                    await Navigator.pushNamed(
-                      context,
-                      Payments.routeName,
-                      arguments: PaymentsArguments(mode: PaymentsMode.pick),
-                    );
-                  },
-                ),
-              ),
-              Spacer(flex: 1),
-              AppButton(
-                textData: "Confirmar",
-                borderRadius: 30.0,
-                height: screenHeight / 15,
-                width: screenWidth / 2.5,
-                textStyle: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                onTapCallBack: () =>
-                    confirmTripCallback(context, trip, firebase, user),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Future<void> confirmTripCallback(
-  BuildContext context,
-  TripModel trip,
-  FirebaseModel firebase,
-  UserModel user,
-) async {
-  // make sure user is connected to the internet
-  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-    context,
-    listen: false,
-  );
-  if (!connectivity.hasConnection) {
-    await connectivity.alertWhenOffline(context);
-    return;
-  }
-  // alert user in case they're paying with cash
-  if (user.defaultPaymentMethod.type == PaymentMethodType.cash) {
-    final useCard = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Confirmar pagamento em dinheiro?"),
-          content: Text(
-            "Considere pagar com cartão de crédito. É prático e seguro.",
-            style: TextStyle(color: AppColor.disabled),
-          ),
-          actions: [
-            TextButton(
-              child: Text(
-                "usar cartão",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: () => Navigator.pop(context, true),
-            ),
-            TextButton(
-              child: Text(
-                "confirmar",
-                style: TextStyle(
-                  color: AppColor.primaryPink,
-                  fontSize: 18,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context, false),
-            ),
-          ],
-        );
-      },
-    ) as bool;
-    // push payments screen if user decides to pick a card
-    if (useCard) {
-      await Navigator.pushNamed(
-        context,
-        Payments.routeName,
-        arguments: PaymentsArguments(mode: PaymentsMode.pick),
-      );
-      return;
-    }
-  }
-
-  // push confirmation screen if user picks a card or decides to continue cash payment
-  await Navigator.pushNamed(
-    context,
-    ConfirmTrip.routeName,
-    arguments: ConfirmTripArguments(
-      firebase: firebase,
-      trip: trip,
-      user: user,
-    ),
-  );
-}
-
-// TODO: update map paddings
-Widget _buildPendingPaymentFloatingCard(
-  BuildContext context,
-  Trip trip,
-  UserModel user,
-) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  return FloatingCard(
-    leftMargin: 0,
-    rightMargin: 0,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(height: screenHeight / 200),
-        Text(
-          "Pagamento pendente",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColor.primaryPink,
-          ),
-        ),
-        SizedBox(height: screenHeight / 200),
-        Divider(thickness: 0.1, color: Colors.black),
-        SizedBox(height: screenHeight / 200),
-        buildPastTrip(context, trip),
-        SizedBox(height: screenHeight / 200),
-        Divider(thickness: 0.1, color: Colors.black),
-        SizedBox(height: screenHeight / 200),
-        Padding(
-          padding: const EdgeInsets.only(
-            bottom: 40,
-            left: 5,
-            right: 5,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: BorderlessButton(
-                  svgLeftPath: user.getPaymentMethodSvgPath(context),
-                  svgLeftWidth: 28,
-                  primaryText: user.getPaymentMethodDescription(context),
-                  primaryTextWeight: FontWeight.bold,
-                  iconRight: Icons.keyboard_arrow_right,
-                  iconRightColor: Colors.black,
-                  paddingTop: screenHeight / 200,
-                  paddingBottom: screenHeight / 200,
-                  onTap: () async {
-                    await Navigator.pushNamed(
-                      context,
-                      Payments.routeName,
-                      arguments: PaymentsArguments(mode: PaymentsMode.pick),
-                    );
-                  },
-                ),
-              ),
-              Spacer(flex: 1),
-              AppButton(
-                  textData: "Pagar",
-                  borderRadius: 30.0,
-                  height: screenHeight / 15,
-                  width: screenWidth / 2.5,
-                  textStyle: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  onTapCallBack: () => payTripCallback(context, trip, user)),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Future<void> payTripCallback(
-  BuildContext context,
-  Trip trip,
-  UserModel user,
-) async {
-  // make sure user is connected to the internet
-  ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-    context,
-    listen: false,
-  );
-  if (!connectivity.hasConnection) {
-    await connectivity.alertWhenOffline(context);
-    return;
-  }
-  FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-
-  // alert user in case they're paying with cash
-  if (user.defaultPaymentMethod.type == PaymentMethodType.cash) {
-    final chooseCard = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Pagamento em dinheiro não permitido."),
-          actions: [
-            TextButton(
-              child: Text(
-                "cancelar",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: () => Navigator.pop(context, false),
-            ),
-            TextButton(
-              child: Text(
-                "escolher cartão",
-                style: TextStyle(
-                  color: AppColor.primaryPink,
-                  fontSize: 18,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context, true),
-            ),
-          ],
-        );
-      },
-    ) as bool;
-    // push payments screen if user decides to choose a card
-    if (chooseCard) {
-      await Navigator.pushNamed(
-        context,
-        Payments.routeName,
-        arguments: PaymentsArguments(mode: PaymentsMode.pick),
-      );
-    }
-    // return, so PayTrip is only pushed if payment method is credit card
-    return;
-  }
-
-  // push PayTrip screen after user picks a card
-  final paid = await Navigator.pushNamed(
-    context,
-    PayTrip.routeName,
-    arguments: PayTripArguments(
-      firebase: firebase,
-      cardID: user.defaultPaymentMethod.creditCardID,
-    ),
-  ) as bool;
-
-  // show warnings about payment status
-  if (paid) {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            "Pagamento concluido!",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
-          ),
-          content: Text(
-              "Muito obrigado! Agora você pode continuar pedindo corridas."),
-          actions: [
-            TextButton(
-              child: Text(
-                "ok",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: () => Navigator.pop(context, false),
-            ),
-          ],
-        );
-      },
-    );
-  } else {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            "O pagamento falhou!",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.red,
-            ),
-          ),
-          content: Text(
-              "Tente novamente. Utilizar outro cartão pode resolver o problema."),
-          actions: [
-            TextButton(
-              child: Text(
-                "ok",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: () => Navigator.pop(context, false),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  return Container();
 }

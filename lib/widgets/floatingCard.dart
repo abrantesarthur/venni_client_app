@@ -9,6 +9,7 @@ class FloatingCard extends StatelessWidget {
   final double leftPadding;
   final double rightPadding;
   final double borderRadius;
+  final int flex;
 
   FloatingCard({
     this.width,
@@ -19,6 +20,7 @@ class FloatingCard extends StatelessWidget {
     this.borderRadius,
     this.leftPadding,
     this.rightPadding,
+    this.flex,
   });
 
   @override
@@ -26,14 +28,8 @@ class FloatingCard extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Container(
-      width: width ?? screenWidth,
-      padding: EdgeInsets.only(
-        left: leftMargin ?? screenWidth / 15,
-        right: rightMargin ?? screenWidth / 15,
-        top: topMargin ?? 0,
-      ),
-      child: Material(
+    Widget buildMaterial() {
+      return Material(
         type: MaterialType.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius ?? 10),
@@ -48,7 +44,22 @@ class FloatingCard extends StatelessWidget {
           ),
           child: child,
         ),
-      ),
-    );
+      );
+    }
+
+    return this.flex != null
+        ? Expanded(
+            flex: flex,
+            child: buildMaterial(),
+          )
+        : Container(
+            width: width ?? screenWidth,
+            padding: EdgeInsets.only(
+              left: leftMargin ?? screenWidth / 15,
+              right: rightMargin ?? screenWidth / 15,
+              top: topMargin ?? 0,
+            ),
+            child: buildMaterial(),
+          );
   }
 }

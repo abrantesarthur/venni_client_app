@@ -60,8 +60,8 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     Map data = {"card_id": cardID};
     HttpsCallableResult result =
         await this.httpsCallable("payment-capture_unpaid_trip").call(data);
-    if (result != null) {
-      return result.data;
+    if (result != null && result.data != null) {
+      return result.data["success"];
     }
     return false;
   }

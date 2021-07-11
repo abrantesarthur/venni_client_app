@@ -407,3 +407,12 @@ Future<T> showYesNoDialog<T>(
     },
   );
 }
+
+extension IntExtension on int {
+  String getFormatedDate() {
+    DateTime d = DateTime.fromMillisecondsSinceEpoch(this);
+    String day = d.day < 10 ? "0" + d.day.toString() : d.day.toString();
+    String month = d.month < 10 ? "0" + d.month.toString() : d.month.toString();
+    return day + "/" + month + "/" + d.year.toString();
+  }
+}

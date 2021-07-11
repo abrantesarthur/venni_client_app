@@ -247,7 +247,7 @@ class DefineRouteState extends State<DefineRoute> {
     }
 
     // update trip with response
-    trip.fromRequestTripResult(result);
+    trip.fromTripInterface(result);
     Navigator.pop(context);
   }
 

@@ -15,6 +15,7 @@ import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
+import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
 // TODO: test
@@ -226,6 +227,14 @@ class ConfirmTripState extends State<ConfirmTrip> {
     if (result.tripStatus == TripStatus.waitingPartner) {
       // populate PartnerModel with information returned by confirmTrip
       await partner.fromConfirmTripResult(context, result);
+
+      // download partner profile picture
+      if (partner.id != null) {
+        ProfileImage img = await firebase.storage.getPartnerProfilePicture(
+          partner.id,
+        );
+        partner.updateProfileImage(img, notify: false);
+      }
     }
 
     // TODO: update trip not only its status but also with other info returned

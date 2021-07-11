@@ -169,8 +169,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         // download user data
         try {
           user.downloadData(firebase);
+          trip.downloadData();
         } catch (e) {}
-        // TODO: download trip information if user has current trip. Do the same when initing home just like in partner app
       }
     }
 
@@ -754,7 +754,7 @@ Widget _buildPartnerSummaryFloatingCard(
                             maxWidth: screenWidth / 4.2, // avoid overflowsr
                           ),
                           child: Text(
-                            partner.name,
+                            partner.name ?? "",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -763,7 +763,7 @@ Widget _buildPartnerSummaryFloatingCard(
                         ),
                         SizedBox(width: screenWidth / 50),
                         Text(
-                          partner.rating.toString(),
+                          partner.rating?.toString() ?? "",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

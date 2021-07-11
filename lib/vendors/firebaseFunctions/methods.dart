@@ -95,6 +95,15 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
+  Future<Trip> getCurrentTrip() async {
+    HttpsCallableResult result =
+        await this.httpsCallable("trip-client_get_current_trip").call();
+    if (result != null && result.data != null) {
+      return Trip.fromJson(result.data);
+    }
+    return null;
+  }
+
   Future<int> partnerGetTripRating(PartnerGetTripRatingArguments args) async {
     Map<String, String> data = {};
     data["partner_id"] = args.partnerID;
@@ -196,5 +205,17 @@ extension AppFirebaseFunctions on FirebaseFunctions {
 
   Future<void> deleteAccount() async {
     await this.httpsCallable("account-delete_client").call();
+  }
+
+  Future<Partner> getPartner(String id) async {
+    print("getPartner");
+    Map<String, String> data = {"partner_id": id};
+    HttpsCallableResult result =
+        await this.httpsCallable("partner-get_by_id").call(data);
+    if (result != null && result.data != null) {
+      print(result.data);
+      return Partner.fromJson(result.data);
+    }
+    return null;
   }
 }

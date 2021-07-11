@@ -39,18 +39,27 @@ extension AppFirebaseStorage on FirebaseStorage {
     return null;
   }
 
-  // TODO: cache downloaded images
-  // TODO: use something other than NetworkImage so it can load right away
   Future<ProfileImage> getPartnerProfilePicture(String id) async {
+    if (id == null) {
+      return null;
+    }
     ListResult results;
     try {
-      results = await this.ref().child("partner-photos").child(id).list();
+      results = await this.ref().child("partner-documents").child(id).list();
       if (results != null && results.items.length > 0) {
-        String imageURL = await results.items[0].getDownloadURL();
-        return ProfileImage(
-          file: NetworkImage(imageURL),
-          name: results.items[0].name,
-        );
+        Reference profilePhotoRef;
+        results.items.forEach((item) {
+          if (item.fullPath.contains("profilePhoto")) {
+            profilePhotoRef = item;
+          }
+        });
+        if (profilePhotoRef != null) {
+          String imageURL = await profilePhotoRef.getDownloadURL();
+          return ProfileImage(
+            file: NetworkImage(imageURL),
+            name: results.items[0].name,
+          );
+        }
       }
     } catch (e) {
       return null;

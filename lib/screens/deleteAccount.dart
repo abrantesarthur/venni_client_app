@@ -128,9 +128,12 @@ class DeleteAccountState extends State<DeleteAccount> {
             passwordTextEditingController.text = "";
 
             // make sure the user has entered a correct password
-            CheckPasswordResponse cpr = await firebase.auth.checkPassword(
-              password,
-            );
+            CheckPasswordResponse cpr;
+            try {
+              cpr = await firebase.auth.checkPassword(
+                password,
+              );
+            } catch (_) {}
 
             if (cpr != null && !cpr.successful) {
               // if password is wrong remove loading icon and display warnings
@@ -143,10 +146,12 @@ class DeleteAccountState extends State<DeleteAccount> {
             }
 
             // submit delete reasons
-            await firebase.database.submitDeleteReasons(
-              reasons: deleteReasons,
-              uid: firebase.auth.currentUser.uid,
-            );
+            try {
+              await firebase.database.submitDeleteReasons(
+                reasons: deleteReasons,
+                uid: firebase.auth.currentUser.uid,
+              );
+            } catch (_) {}
 
             // request to delete
             try {

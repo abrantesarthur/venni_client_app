@@ -188,71 +188,86 @@ Widget _buildPartnerRatingDetail({
                               AppColor.primaryPink),
                         ),
                       )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            getRateDescription(partnerRating),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    : snapshot.hasError
+                        ? Container(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Algo deu errado. Verifique a sua conexão com a internet e tente novamente.",
+                              style: TextStyle(
+                                color: AppColor.disabled,
+                              ),
+                            ),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(right: screenWidth / 200),
-                                child: Icon(
-                                  partnerRating != null && partnerRating >= 1
-                                      ? Icons.star_sharp
-                                      : Icons.star_border_sharp,
-                                  size: 25,
-                                ),
+                              Text(
+                                getRateDescription(partnerRating),
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w700),
                               ),
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(right: screenWidth / 200),
-                                child: Icon(
-                                  partnerRating != null && partnerRating >= 2
-                                      ? Icons.star_sharp
-                                      : Icons.star_border_sharp,
-                                  size: 25,
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(right: screenWidth / 200),
-                                child: Icon(
-                                  partnerRating != null && partnerRating >= 3
-                                      ? Icons.star_sharp
-                                      : Icons.star_border_sharp,
-                                  size: 25,
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(right: screenWidth / 200),
-                                child: Icon(
-                                  partnerRating != null && partnerRating >= 4
-                                      ? Icons.star_sharp
-                                      : Icons.star_border_sharp,
-                                  size: 25,
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(right: screenWidth / 200),
-                                child: Icon(
-                                  partnerRating != null && partnerRating >= 5
-                                      ? Icons.star_sharp
-                                      : Icons.star_border_sharp,
-                                  size: 25,
-                                ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: screenWidth / 200),
+                                    child: Icon(
+                                      partnerRating != null &&
+                                              partnerRating >= 1
+                                          ? Icons.star_sharp
+                                          : Icons.star_border_sharp,
+                                      size: 25,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: screenWidth / 200),
+                                    child: Icon(
+                                      partnerRating != null &&
+                                              partnerRating >= 2
+                                          ? Icons.star_sharp
+                                          : Icons.star_border_sharp,
+                                      size: 25,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: screenWidth / 200),
+                                    child: Icon(
+                                      partnerRating != null &&
+                                              partnerRating >= 3
+                                          ? Icons.star_sharp
+                                          : Icons.star_border_sharp,
+                                      size: 25,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: screenWidth / 200),
+                                    child: Icon(
+                                      partnerRating != null &&
+                                              partnerRating >= 4
+                                          ? Icons.star_sharp
+                                          : Icons.star_border_sharp,
+                                      size: 25,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        right: screenWidth / 200),
+                                    child: Icon(
+                                      partnerRating != null &&
+                                              partnerRating >= 5
+                                          ? Icons.star_sharp
+                                          : Icons.star_border_sharp,
+                                      size: 25,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ],
-                      )
+                          )
               ],
             ),
             SizedBox(height: screenHeight / 200),

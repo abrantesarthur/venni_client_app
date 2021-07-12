@@ -479,12 +479,14 @@ class RatePartnerState extends State<RatePartner> {
                             });
 
                             // call rate Partner
-                            firebase.functions.ratePartner(
-                              partnerID: partner.id,
-                              score: _rate,
-                              feedbackComponents: feedbackComponents,
-                              feedbackMessage: _textFieldController.text,
-                            );
+                            try {
+                              firebase.functions.ratePartner(
+                                partnerID: partner.id,
+                                score: _rate,
+                                feedbackComponents: feedbackComponents,
+                                feedbackMessage: _textFieldController.text,
+                              );
+                            } catch (_) {}
 
                             // wait 3 seconds then pop back
                             await Future.delayed(Duration(seconds: 3));

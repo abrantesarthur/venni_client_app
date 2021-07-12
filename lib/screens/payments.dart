@@ -61,7 +61,9 @@ class PaymentsState extends State<Payments> {
                   user.setDefaultPaymentMethod(
                     ClientPaymentMethod(type: PaymentMethodType.cash),
                   );
-                  firebase.functions.setDefaultPaymentMethod();
+                  try {
+                    firebase.functions.setDefaultPaymentMethod();
+                  } catch (_) {}
                   // go back to previous screen
                   Navigator.pop(context);
                 } else {
@@ -106,9 +108,12 @@ class PaymentsState extends State<Payments> {
                                             user.creditCards[index].id,
                                       ),
                                     );
-                                    firebase.functions.setDefaultPaymentMethod(
-                                      cardID: user.creditCards[index].id,
-                                    );
+                                    try {
+                                      firebase.functions
+                                          .setDefaultPaymentMethod(
+                                        cardID: user.creditCards[index].id,
+                                      );
+                                    } catch (_) {}
                                     // go back to previous screen
                                     Navigator.pop(context);
                                   } else {
@@ -167,9 +172,11 @@ class PaymentsState extends State<Payments> {
                             creditCardID: addedCard.id,
                           ),
                         );
-                        firebase.functions.setDefaultPaymentMethod(
-                          cardID: addedCard.id,
-                        );
+                        try {
+                          firebase.functions.setDefaultPaymentMethod(
+                            cardID: addedCard.id,
+                          );
+                        } catch (_) {}
                         // pop back
                         Navigator.pop(context);
                       }

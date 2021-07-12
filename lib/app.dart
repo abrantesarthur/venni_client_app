@@ -378,6 +378,7 @@ class _AppState extends State<App> {
                     return MaterialPageRoute(builder: (context) {
                       return ShareLocation(
                         push: args.push,
+                        routeArguments: args.routeArguments,
                       );
                     });
                   }

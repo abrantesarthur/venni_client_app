@@ -159,7 +159,6 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     return null;
   }
 
-  // TODO: add tests to fromJson and wherever else appropriate
   Future<CreditCard> createCard(CreateCardArguments args) async {
     // build cardHash
     HashKey hashKey = await getCardHashKey();

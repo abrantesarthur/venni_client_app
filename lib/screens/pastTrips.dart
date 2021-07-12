@@ -154,40 +154,46 @@ class PastTripsState extends State<PastTrips> {
                                 AppColor.primaryPink),
                           ),
                         )
-                      : MediaQuery.removePadding(
-                          context: context,
-                          removeTop: true,
-                          removeBottom: true,
-                          child: pastTrips.length == 0
-                              ? !connectivity.hasConnection
-                                  ? Text(
-                                      "Você está offline.",
-                                      style:
-                                          TextStyle(color: AppColor.disabled),
-                                    )
-                                  : Text(
-                                      "Você ainda não fez nenhuma corrida.",
-                                      style:
-                                          TextStyle(color: AppColor.disabled),
-                                    )
-                              : ListView.separated(
-                                  controller: scrollController,
-                                  physics: AlwaysScrollableScrollPhysics(),
-                                  scrollDirection: Axis.vertical,
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, index) {
-                                    return buildPastTrip(
-                                      context,
-                                      pastTrips[index],
-                                    );
-                                  },
-                                  separatorBuilder: (context, index) {
-                                    return Divider(
-                                        thickness: 0.1, color: Colors.black);
-                                  },
-                                  itemCount: pastTrips.length,
-                                ),
-                        ),
+                      : snapshot.hasError
+                          ? Text(
+                              "Algo deu errado. Verifique a sua conexão com a internet e tente novamente.",
+                              style: TextStyle(color: AppColor.disabled),
+                            )
+                          : MediaQuery.removePadding(
+                              context: context,
+                              removeTop: true,
+                              removeBottom: true,
+                              child: pastTrips.length == 0
+                                  ? !connectivity.hasConnection
+                                      ? Text(
+                                          "Você está offline.",
+                                          style: TextStyle(
+                                              color: AppColor.disabled),
+                                        )
+                                      : Text(
+                                          "Você ainda não fez nenhuma corrida.",
+                                          style: TextStyle(
+                                              color: AppColor.disabled),
+                                        )
+                                  : ListView.separated(
+                                      controller: scrollController,
+                                      physics: AlwaysScrollableScrollPhysics(),
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                        return buildPastTrip(
+                                          context,
+                                          pastTrips[index],
+                                        );
+                                      },
+                                      separatorBuilder: (context, index) {
+                                        return Divider(
+                                            thickness: 0.1,
+                                            color: Colors.black);
+                                      },
+                                      itemCount: pastTrips.length,
+                                    ),
+                            ),
                 ),
                 Container(
                   height: isLoading ? 50.0 : 0,

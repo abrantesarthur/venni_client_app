@@ -164,9 +164,6 @@ class TripModel extends ChangeNotifier {
       }
       return;
     }
-
-    print("TripModel.downloadData. Status " + trip.tripStatus.toString());
-
     // if trip has a transitory status, like waitingPayment or lookingForPartner,
     // wait a little bit and try again
     if (trip.tripStatus == TripStatus.waitingPayment ||
@@ -196,7 +193,6 @@ class TripModel extends ChangeNotifier {
     }
   }
 
-  // TODO: round fare price up if payment is in money
   void fromTripInterface(Trip trip, {bool notify = true}) {
     if (trip == null) {
       _tripStatus = TripStatus.off;

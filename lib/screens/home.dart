@@ -359,7 +359,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       trip.clear(notify: false);
 
       // download user data to make sure he has no unpaid trips
-      await widget.user.downloadData(firebase);
+      try {
+        await widget.user.downloadData(firebase);
+      } catch (_) {}
       return;
     }
 

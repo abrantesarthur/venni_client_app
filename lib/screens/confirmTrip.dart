@@ -186,41 +186,46 @@ class ConfirmTripState extends State<ConfirmTrip> {
 
     // check for null result, which happens when confirmTrip throws an exception.
     if (result == null) {
-      TripStatus tripStatus =
-          await firebase.database.getTripStatus(firebase.auth.currentUser.uid);
-      if (tripStatus == TripStatus.waitingConfirmation) {
-        //if status is waitingConfirmation, which is very unlikely
-        // cancel trip and show failure message . Otherwise, we would
-        // rebuild the tree the same way as it was when we tapped confirmar.
-        firebase.functions.cancelTrip();
-        trip.clear();
-        partner.clear();
-        await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Algo deu errado."),
-              content: Text(
-                "Tente novamente!",
-                style: TextStyle(color: AppColor.disabled),
-              ),
-              actions: [
-                TextButton(
-                  child: Text(
-                    "ok",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(context),
+      try {
+        TripStatus tripStatus = await firebase.database
+            .getTripStatus(firebase.auth.currentUser.uid);
+        if (tripStatus == TripStatus.waitingConfirmation) {
+          //if status is waitingConfirmation, which is very unlikely
+          // cancel trip and show failure message . Otherwise, we would
+          // rebuild the tree the same way as it was when we tapped confirmar.
+          try {
+            firebase.functions.cancelTrip();
+          } catch (_) {}
+          trip.clear();
+          partner.clear();
+          await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("Algo deu errado."),
+                content: Text(
+                  "Tente novamente!",
+                  style: TextStyle(color: AppColor.disabled),
                 ),
-              ],
-            );
-          },
-        );
-      } else {
-        trip.updateStatus(tripStatus);
-      }
+                actions: [
+                  TextButton(
+                    child: Text(
+                      "ok",
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          trip.updateStatus(tripStatus);
+        }
+      } catch (_) {}
+
       return;
     }
 

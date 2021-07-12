@@ -230,7 +230,9 @@ class UserModel extends ChangeNotifier {
       ClientPaymentMethod(type: PaymentMethodType.cash),
       notify: false,
     );
-    firebase.functions.setDefaultPaymentMethod();
+    try {
+      firebase.functions.setDefaultPaymentMethod();
+    } catch (_) {}
     return "images/money.svg";
   }
 
@@ -256,7 +258,9 @@ class UserModel extends ChangeNotifier {
       ClientPaymentMethod(type: PaymentMethodType.cash),
       notify: false,
     );
-    firebase.functions.setDefaultPaymentMethod();
+    try {
+      firebase.functions.setDefaultPaymentMethod();
+    } catch (_) {}
 
     return "Dinheiro";
   }

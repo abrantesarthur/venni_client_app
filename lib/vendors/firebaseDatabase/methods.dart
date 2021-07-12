@@ -58,7 +58,6 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     });
   }
 
-  // TODO: make sure this still works correctly. Print results and write tests
   Future<ClientInterface> getClientData(FirebaseModel firebase) async {
     ClientInterface result;
     String uid = firebase.auth.currentUser?.uid ?? "";

@@ -46,13 +46,13 @@ extension AppFirebaseAuth on FirebaseAuth {
       );
 
       // try download client data
-      await user.downloadData(firebase);
+      await user.downloadData(firebase, notify: false);
 
       // if user already has a client account
       if (user.id != null && firebase.isRegistered) {
         // try downloading any possible current trips
         try {
-          await trip.downloadData();
+          await trip.downloadData(notify: false);
         } catch (e) {}
 
         // redirect to Home screen

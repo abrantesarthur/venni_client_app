@@ -208,12 +208,10 @@ extension AppFirebaseFunctions on FirebaseFunctions {
   }
 
   Future<Partner> getPartner(String id) async {
-    print("getPartner");
     Map<String, String> data = {"partner_id": id};
     HttpsCallableResult result =
         await this.httpsCallable("partner-get_by_id").call(data);
     if (result != null && result.data != null) {
-      print(result.data);
       return Partner.fromJson(result.data);
     }
     return null;

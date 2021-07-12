@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
@@ -9,14 +10,15 @@ import 'package:rider_frontend/widgets/menuButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 
-class RequestTrip extends StatelessWidget {
+class RequestTripWidgets extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
-  RequestTrip({@required this.scaffoldKey});
+  RequestTripWidgets({@required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     UserModel user = Provider.of<UserModel>(context, listen: false);
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
     ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
       context,
       listen: false,
@@ -53,6 +55,8 @@ class RequestTrip extends StatelessWidget {
                   DefineRoute.routeName,
                   arguments: DefineRouteArguments(
                     mode: DefineRouteMode.request,
+                    user: user,
+                    trip: trip,
                   ),
                 );
               },

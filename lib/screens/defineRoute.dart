@@ -24,18 +24,26 @@ enum DefineRouteMode {
 
 class DefineRouteArguments {
   final DefineRouteMode mode;
+  final TripModel trip;
+  final UserModel user;
 
   DefineRouteArguments({
     @required this.mode,
+    @required this.user,
+    @required this.trip,
   });
 }
 
 class DefineRoute extends StatefulWidget {
   static const String routeName = "DefineRoute";
   final DefineRouteMode mode;
+  final TripModel trip;
+  final UserModel user;
 
   DefineRoute({
     @required this.mode,
+    @required this.trip,
+    @required this.user,
   });
 
   @override
@@ -51,8 +59,6 @@ class DefineRouteState extends State<DefineRoute> {
   Color buttonColor;
   bool activateCallback;
   Widget buttonChild;
-  UserModel _user;
-  TripModel _trip;
   bool lockScreen;
   var _tripListener;
 
@@ -62,47 +68,50 @@ class DefineRouteState extends State<DefineRoute> {
 
     lockScreen = false;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // get relevant models
-      _trip = Provider.of<TripModel>(context, listen: false);
-      _user = Provider.of<UserModel>(context, listen: false);
-
-      // pickUp location defaults to user's current address
-      if (_trip.pickUpAddress == null) {
-        _trip.updatePickUpAddres(Address.fromGeocodingResult(
-          geocodingResult: _user.geocoding,
+    // pickUp location defaults to user's current address. It's ok not to notify
+    // since this widget's tree is only fully buit after we finish initState.
+    if (widget.trip.pickUpAddress == null) {
+      // if we failed to get user's geocoding (e.g., they have no internet), this
+      // will set pickup address to null. We handle that graciously by hiding the
+      // 'Localização atual selecionada' hint and askigng them to pick an origin.
+      widget.trip.updatePickUpAddres(
+        Address.fromGeocodingResult(
+          geocodingResult: widget.user.geocoding,
           dropOff: false,
-        ));
-      }
-
-      // text field initial values
-      dropOffController.text =
-          _trip.dropOffAddress != null ? _trip.dropOffAddress.mainText : "";
-      pickUpController.text = "";
-      final pickUpAddress = _trip.pickUpAddress;
-      final userLatitude = _user.geocoding?.latitude;
-      final userLongitude = _user.geocoding?.longitude;
-      // change pick up text field only if it's different from user location
-      if (userLatitude != pickUpAddress?.latitude ||
-          userLongitude != pickUpAddress?.longitude) {
-        pickUpController.text = pickUpAddress?.mainText;
-      }
-
-      // set button state
-      setButtonState(
-        pickUp: _trip.pickUpAddress,
-        dropOff: _trip.dropOffAddress,
+        ),
+        notify: false,
       );
+    }
 
-      _tripListener = () {
-        setButtonState(
-          pickUp: _trip.pickUpAddress,
-          dropOff: _trip.dropOffAddress,
-        );
-      };
+    // text field initial values
+    dropOffController.text = widget.trip.dropOffAddress != null
+        ? widget.trip.dropOffAddress.mainText
+        : "";
+    pickUpController.text = "";
+    final pickUpAddress = widget.trip.pickUpAddress;
+    final userLatitude = widget.user.geocoding?.latitude;
+    final userLongitude = widget.user.geocoding?.longitude;
+    // change pick up text field only if it's different from user location
+    if (userLatitude != pickUpAddress?.latitude ||
+        userLongitude != pickUpAddress?.longitude) {
+      pickUpController.text = pickUpAddress?.mainText;
+    }
 
-      _trip.addListener(_tripListener);
-    });
+    // set button state
+    setButtonState(
+      pickUp: widget.trip.pickUpAddress,
+      dropOff: widget.trip.dropOffAddress,
+    );
+
+    // add listener to TripModel so we rebuild DefineRoute with an activated or
+    // desactivated button when the user picks an origin or destination
+    _tripListener = () {
+      setButtonState(
+        pickUp: widget.trip.pickUpAddress,
+        dropOff: widget.trip.dropOffAddress,
+      );
+    };
+    widget.trip.addListener(_tripListener);
   }
 
   @override
@@ -118,141 +127,13 @@ class DefineRouteState extends State<DefineRoute> {
     pickUpController.dispose();
     dropOffFocusNode.dispose();
     pickUpFocusNode.dispose();
-    _trip.removeListener(_tripListener);
+    widget.trip.removeListener(_tripListener);
     super.dispose();
-  }
-
-  void setButtonState({@required Address pickUp, @required Address dropOff}) {
-    // not allow user to pick route if they haven't pick both addresses
-    if (pickUp == null || dropOff == null) {
-      setState(() {
-        warning = null;
-        buttonColor = AppColor.disabled;
-        activateCallback = false;
-      });
-    } else {
-      // display warning if both addresses are equal
-      if (pickUp.placeID == dropOff.placeID) {
-        setState(() {
-          warning =
-              "O endereço de partida e o destino são iguais. Tente novamente.";
-          buttonColor = AppColor.disabled;
-          activateCallback = false;
-        });
-      } else {
-        // otherwise, allow user to pick route
-        setState(() {
-          warning = null;
-          buttonColor = AppColor.primaryPink;
-          activateCallback = true;
-        });
-      }
-    }
-  }
-
-  // onTapCallback pushes new screen where user can pick an address
-  Future<void> textFieldCallback({
-    @required BuildContext context,
-    @required bool isDropOff,
-  }) async {
-    UserModel userPos = Provider.of<UserModel>(
-      context,
-      listen: false,
-    );
-    TripModel route = Provider.of<TripModel>(context, listen: false);
-    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-      context,
-      listen: false,
-    );
-
-    // define variables based on whether we're choosing dropOff or not
-    FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
-    TextEditingController controller =
-        isDropOff ? dropOffController : pickUpController;
-    String routeName =
-        isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;
-
-    // unfocus text fields to make it behave like a button
-    focusNode.unfocus();
-
-    // make sure user is connected to the internet
-    if (!connectivity.hasConnection) {
-      await connectivity.alertWhenOffline(context);
-      return;
-    }
-
-    // push screen to allow user to select an address
-    await Navigator.pushNamed(context, routeName);
-
-    // add selected address to text field
-    if (isDropOff && route.dropOffAddress != null) {
-      controller.text = route.dropOffAddress.mainText;
-    } else {
-      if (route.pickUpAddress.placeID != userPos.geocoding.placeID) {
-        // update pick up only if it's different from current location
-        controller.text = route.pickUpAddress.mainText;
-      } else {
-        controller.text = "";
-      }
-    }
-  }
-
-  // buttonCallback enriches pickUp and dropOff addresses with coordinates before
-  // returning to previous screen
-  void buttonCallback(BuildContext context) async {
-    // make sure user is connected to the internet
-    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
-      context,
-      listen: false,
-    );
-    if (!connectivity.hasConnection) {
-      await connectivity.alertWhenOffline(context);
-      return;
-    }
-
-    // show loading icon and lock screen
-    setState(() {
-      buttonChild = CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-      );
-      lockScreen = true;
-    });
-
-    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
-    TripModel trip = Provider.of<TripModel>(context, listen: false);
-
-    // RideRequestResult result;
-    Trip result;
-    if (widget.mode == DefineRouteMode.request) {
-      try {
-        result = await firebase.functions.requestTrip(RequestTripArguments(
-          originPlaceID: trip.pickUpAddress.placeID,
-          destinationPlaceID: trip.dropOffAddress.placeID,
-        ));
-      } on FirebaseFunctionsException catch (e) {
-        // TODO: handle by updating the UI;
-        lockScreen = false;
-      }
-    } else if (widget.mode == DefineRouteMode.edit) {
-      try {
-        // send ride request to retrieve fare price, ride distance, polyline, etc.
-        result = await firebase.functions.editTrip(EditTripArguments(
-          originPlaceID: trip.pickUpAddress.placeID,
-          destinationPlaceID: trip.dropOffAddress.placeID,
-        ));
-      } on FirebaseFunctionsException catch (e) {
-        // TODO: handle by updating the UI;
-        lockScreen = false;
-      }
-    }
-
-    // update trip with response
-    trip.fromTripInterface(result);
-    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    print("BUILD DefineRoute");
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -278,7 +159,12 @@ class DefineRouteState extends State<DefineRoute> {
                 AppInputText(
                     fontSize: 16,
                     width: screenWidth / 1.3,
-                    hintText: "Localização atual selecionada",
+                    hintText: widget.trip.pickUpAddress != null
+                        ? "Localização atual selecionada"
+                        : "De onde?",
+                    hintColor: widget.trip.pickUpAddress != null
+                        ? AppColor.primaryPink
+                        : AppColor.disabled,
                     focusNode: pickUpFocusNode,
                     controller: pickUpController,
                     maxLines: null,
@@ -328,5 +214,125 @@ class DefineRouteState extends State<DefineRoute> {
         ),
       ],
     );
+  }
+
+  void setButtonState({@required Address pickUp, @required Address dropOff}) {
+    // not allow user to click button route if they haven't pick both addresses
+    if (pickUp == null || dropOff == null) {
+      setState(() {
+        warning = null;
+        buttonColor = AppColor.disabled;
+        activateCallback = false;
+      });
+    } else {
+      // display warning if both addresses are equal
+      if (pickUp.placeID == dropOff.placeID) {
+        setState(() {
+          warning =
+              "O endereço de partida e o destino são iguais. Tente novamente.";
+          buttonColor = AppColor.disabled;
+          activateCallback = false;
+        });
+      } else {
+        // otherwise, allow user to pick route
+        setState(() {
+          warning = null;
+          buttonColor = AppColor.primaryPink;
+          activateCallback = true;
+        });
+      }
+    }
+  }
+
+  // onTapCallback pushes new screen where user can pick an address
+  Future<void> textFieldCallback({
+    @required BuildContext context,
+    @required bool isDropOff,
+  }) async {
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+
+    // define variables based on whether we're choosing dropOff or not
+    FocusNode focusNode = isDropOff ? dropOffFocusNode : pickUpFocusNode;
+    TextEditingController controller =
+        isDropOff ? dropOffController : pickUpController;
+    String routeName =
+        isDropOff ? DefineDropOff.routeName : DefinePickUp.routeName;
+
+    // unfocus text fields to make it behave like a button
+    focusNode.unfocus();
+
+    // make sure user is connected to the internet
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(context);
+      return;
+    }
+
+    // push screen to allow user to select an address
+    await Navigator.pushNamed(context, routeName);
+
+    // add selected address to text field
+    if (isDropOff && widget.trip.dropOffAddress != null) {
+      controller.text = widget.trip.dropOffAddress.mainText;
+    } else {
+      if (widget.trip.pickUpAddress.placeID != widget.user.geocoding.placeID) {
+        // update pick up text only if it's different from current location
+        controller.text = widget.trip.pickUpAddress.mainText;
+      } else {
+        controller.text = "";
+      }
+    }
+  }
+
+  // buttonCallback enriches pickUp and dropOff addresses with coordinates before
+  // returning to previous screen
+  void buttonCallback(BuildContext context) async {
+    // make sure user is connected to the internet
+    ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
+      context,
+      listen: false,
+    );
+    if (!connectivity.hasConnection) {
+      await connectivity.alertWhenOffline(context);
+      return;
+    }
+
+    // show loading icon and lock screen
+    setState(() {
+      buttonChild = CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      );
+      lockScreen = true;
+    });
+
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
+    Trip result;
+    try {
+      if (widget.mode == DefineRouteMode.request) {
+        // send request for trip
+        result = await firebase.functions.requestTrip(RequestTripArguments(
+          originPlaceID: widget.trip.pickUpAddress.placeID,
+          destinationPlaceID: widget.trip.dropOffAddress.placeID,
+        ));
+      } else if (widget.mode == DefineRouteMode.edit) {
+        // send ride request to retrieve fare price, ride distance, polyline, etc.
+        result = await firebase.functions.editTrip(EditTripArguments(
+          originPlaceID: widget.trip.pickUpAddress.placeID,
+          destinationPlaceID: widget.trip.dropOffAddress.placeID,
+        ));
+      }
+    } catch (_) {
+      lockScreen = false;
+    }
+
+    // remove listener so this DefineRoute is not rebuilt unecessarily
+    widget.trip.removeListener(_tripListener);
+
+    // update trip with response
+    widget.trip.fromTripInterface(result);
+    Navigator.pop(context);
   }
 }

@@ -31,6 +31,7 @@ class DefinePickUpState extends State<DefinePickUp> {
   String sessionToken;
   bool googleMapsEnabled;
   Address initialAddress;
+  var _textFieldListener;
 
   @override
   void initState() {
@@ -43,18 +44,20 @@ class DefinePickUpState extends State<DefinePickUp> {
       TripModel trip = Provider.of<TripModel>(context, listen: false);
       UserModel user = Provider.of<UserModel>(context, listen: false);
 
-// google maps is enabled if a pickUpAddress is already chosen
+      // google maps is enabled if a pickUpAddress is already chosen
       googleMapsEnabled = trip.pickUpAddress != null;
 
-      // suggest locations as user searches locations
-      pickUpTextEditingController.addListener(() async {
+      // suggest locations as user types into text box
+      _textFieldListener = () async {
         await textFieldListener(false, user.position);
-      });
+      };
+      pickUpTextEditingController.addListener(_textFieldListener);
     });
   }
 
   @override
   void dispose() {
+    pickUpTextEditingController.removeListener(_textFieldListener);
     pickUpTextEditingController.dispose();
     super.dispose();
   }
@@ -63,9 +66,7 @@ class DefinePickUpState extends State<DefinePickUp> {
     String location = pickUpTextEditingController.text ?? "";
     if (location.length == 0) {
       if (this.mounted) {
-        setState(() {
-          addressPredictions = null;
-        });
+        addressPredictions = null;
       }
     } else {
       // get drop off address predictions
@@ -77,11 +78,10 @@ class DefinePickUpState extends State<DefinePickUp> {
         isDropOff: isDropOff,
       );
       if (this.mounted) {
-        setState(() {
-          addressPredictions = predictions;
-        });
+        addressPredictions = predictions;
       }
     }
+    setState(() {});
   }
 
   @override
@@ -119,10 +119,8 @@ class DefinePickUpState extends State<DefinePickUp> {
                     AppInputText(
                       onTapCallback: () {
                         // renew session token and hide map
-                        setState(() {
-                          sessionToken = Uuid().v4();
-                          googleMapsEnabled = false;
-                        });
+                        sessionToken = Uuid().v4();
+                        googleMapsEnabled = false;
                       },
                       fontSize: 16,
                       width: screenWidth / 1.3,
@@ -165,69 +163,70 @@ class DefinePickUpState extends State<DefinePickUp> {
                 )
               : Expanded(
                   child: buildPlacePicker(
-                  context: context,
-                  userPosition: user.position,
-                  isDropOff: false,
-                  initialAddress: trip.pickUpAddress,
-                ))
+                    context: context,
+                    userPosition: user.position,
+                    isDropOff: false,
+                    initialAddress: trip.pickUpAddress,
+                    callback: () => pickUpTextEditingController.removeListener(
+                      _textFieldListener,
+                    ),
+                  ),
+                )
         ],
       ),
     );
   }
-}
 
-// _buildAddressPredictionList returns a ListView of address predictions
-Widget _buildAddressPredictionList(
-  BuildContext context,
-  List<Address> addressPredictions,
-) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  return (addressPredictions != null && addressPredictions.length > 0)
-      ? LayoutBuilder(builder: (context, viewportConstraints) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight:
-                  0.7 * screenHeight - MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              removeBottom: true,
-              child: ListView.separated(
-                physics: AlwaysScrollableScrollPhysics(),
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return BorderlessButton(
-                    onTap: () {
-                      updatePickUpAndPop(context, addressPredictions[index]);
-                    },
-                    iconLeft: Icons.add_location,
-                    primaryText: addressPredictions[index].mainText,
-                    secondaryText: addressPredictions[index].secondaryText,
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return Divider(thickness: 0.1, color: Colors.black);
-                },
-                itemCount: addressPredictions.length,
+  // _buildAddressPredictionList returns a ListView of address predictions
+  Widget _buildAddressPredictionList(
+    BuildContext context,
+    List<Address> addressPredictions,
+  ) {
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
+    final screenHeight = MediaQuery.of(context).size.height;
+    return (addressPredictions != null && addressPredictions.length > 0)
+        ? LayoutBuilder(builder: (context, viewportConstraints) {
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: 0.7 * screenHeight -
+                    MediaQuery.of(context).viewInsets.bottom,
               ),
-            ),
-          );
-        })
-      : Container();
-}
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                removeBottom: true,
+                child: ListView.separated(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return BorderlessButton(
+                      onTap: () {
+                        // set location as pick up point
+                        trip.updatePickUpAddres(addressPredictions[index]);
 
-// updateRoute updates the drop off and pick up locations of the TripModel
-void updatePickUpAndPop(
-  BuildContext context,
-  Address address,
-) {
-  TripModel tripModel = Provider.of<TripModel>(context, listen: false);
+                        // cancel text field listener so it doesn't get triggered
+                        // after we have popped back, causing an exception
+                        pickUpTextEditingController.removeListener(
+                          _textFieldListener,
+                        );
 
-  // set location as pick up point
-  tripModel.updatePickUpAddres(address);
-
-  // go back to DefineRoute screen
-  Navigator.pop(context);
+                        // go back to DefineRoute screen
+                        Navigator.pop(context);
+                      },
+                      iconLeft: Icons.add_location,
+                      primaryText: addressPredictions[index].mainText,
+                      secondaryText: addressPredictions[index].secondaryText,
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return Divider(thickness: 0.1, color: Colors.black);
+                  },
+                  itemCount: addressPredictions.length,
+                ),
+              ),
+            );
+          })
+        : Container();
+  }
 }

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
-import 'package:rider_frontend/screens/defineDropOff.dart';
-import 'package:rider_frontend/screens/definePickUp.dart';
+import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
@@ -14,6 +14,7 @@ Widget buildPlacePicker({
   @required Position userPosition,
   Address initialAddress,
   @required bool isDropOff,
+  VoidCallback callback,
 }) {
   return PlacePicker(
     onMapCreated: (GoogleMapController c) async {
@@ -32,6 +33,7 @@ Widget buildPlacePicker({
         state,
         isSearchBarFocused,
         isDropOff,
+        callback,
       );
     },
   );
@@ -64,6 +66,7 @@ Widget _selectedPlaceWidgetBuilderCallback(
   SearchingState state,
   bool isSearchBarFocused,
   bool isDropOff,
+  VoidCallback callback,
 ) {
   final height = MediaQuery.of(context).size.height;
   final width = MediaQuery.of(context).size.width;
@@ -81,6 +84,7 @@ Widget _selectedPlaceWidgetBuilderCallback(
             context,
             data,
             isDropOff,
+            callback,
           ),
   );
 }
@@ -104,6 +108,7 @@ Widget _buildSelectionDetails(
   BuildContext context,
   PickResult result,
   bool isDropOff,
+  VoidCallback callback,
 ) {
   return Container(
     margin: EdgeInsets.all(10),
@@ -132,12 +137,24 @@ Widget _buildSelectionDetails(
           onPressed: () {
             // build place response
             Address address = Address.fromPickResult(result, isDropOff);
+            TripModel tripModel = Provider.of<TripModel>(
+              context,
+              listen: false,
+            );
 
+            // set route. Notifying is necessary so DefineRoute
+            // is rebuilt properly with button activated
             if (isDropOff) {
-              updateDropOffAndPop(context, address);
+              tripModel.updateDropOffAddres(address);
             } else {
-              updatePickUpAndPop(context, address);
+              tripModel.updatePickUpAddres(address);
             }
+
+            // execute callback before popping
+            callback();
+
+            // go back to DefineRoute screen
+            Navigator.pop(context);
           },
         ),
       ],

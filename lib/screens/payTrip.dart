@@ -59,8 +59,6 @@ class PayTripState extends State<PayTrip> {
           WidgetsBinding.instance.addPostFrameCallback((_) async {
             bool paid;
             if (snapshot.hasError) {
-              print("some error happened");
-              print(snapshot.error);
               paid = false;
             } else {
               paid = snapshot.data;

@@ -330,6 +330,8 @@ class _AppState extends State<App> {
                     return MaterialPageRoute(builder: (context) {
                       return DefineRoute(
                         mode: args.mode,
+                        trip: args.trip,
+                        user: args.user,
                       );
                     });
                   }

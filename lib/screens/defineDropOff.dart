@@ -30,6 +30,7 @@ class DefineDropOffState extends State<DefineDropOff> {
   List<Address> addressPredictions;
   String sessionToken;
   bool googleMapsEnabled;
+  var _textFieldListener;
 
   @override
   void initState() {
@@ -46,16 +47,17 @@ class DefineDropOffState extends State<DefineDropOff> {
       // it is configured to show that address too
       googleMapsEnabled = trip.dropOffAddress != null;
 
-      // suggest locations as user searches locations
-      dropOffTextEditingController.addListener(() async {
-        // TODO: FIX BUG
+      // suggest locations as user types into text box
+      _textFieldListener = () async {
         await textFieldListener(true, user.position);
-      });
+      };
+      dropOffTextEditingController.addListener(_textFieldListener);
     });
   }
 
   @override
   void dispose() {
+    dropOffTextEditingController.removeListener(_textFieldListener);
     dropOffTextEditingController.dispose();
     super.dispose();
   }
@@ -170,65 +172,68 @@ class DefineDropOffState extends State<DefineDropOff> {
                     userPosition: user.position,
                     isDropOff: true,
                     initialAddress: trip.dropOffAddress,
+                    callback: () => dropOffTextEditingController.removeListener(
+                      _textFieldListener,
+                    ),
                   ),
                 )
         ],
       ),
     );
   }
-}
 
-// _buildAddressPredictionList returns a ListView of address predictions
-Widget _buildAddressPredictionList(
-  BuildContext context,
-  List<Address> addressPredictions,
-) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  return (addressPredictions != null && addressPredictions.length > 0)
-      ? LayoutBuilder(builder: (context, viewportConstraints) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight:
-                  0.7 * screenHeight - MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: MediaQuery.removePadding(
-              context: context,
-              removeTop: true,
-              removeBottom: true,
-              child: ListView.separated(
-                physics: AlwaysScrollableScrollPhysics(),
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return BorderlessButton(
-                    onTap: () {
-                      updateDropOffAndPop(context, addressPredictions[index]);
-                    },
-                    iconLeft: Icons.add_location,
-                    primaryText: addressPredictions[index].mainText,
-                    secondaryText: addressPredictions[index].secondaryText,
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return Divider(thickness: 0.1, color: Colors.black);
-                },
-                itemCount: addressPredictions.length,
+  // _buildAddressPredictionList returns a ListView of address predictions
+  Widget _buildAddressPredictionList(
+    BuildContext context,
+    List<Address> addressPredictions,
+  ) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    TripModel tripModel = Provider.of<TripModel>(context, listen: false);
+    return (addressPredictions != null && addressPredictions.length > 0)
+        ? LayoutBuilder(builder: (context, viewportConstraints) {
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: 0.7 * screenHeight -
+                    MediaQuery.of(context).viewInsets.bottom,
               ),
-            ),
-          );
-        })
-      : Container();
-}
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                removeBottom: true,
+                child: ListView.separated(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return BorderlessButton(
+                      onTap: () {
+                        // set location as drop off point
+                        tripModel.updateDropOffAddres(
+                          addressPredictions[index],
+                        );
 
-// updateRoute updates the drop off and pick up locations of the RouteModel
-void updateDropOffAndPop(
-  BuildContext context,
-  Address address,
-) {
-  TripModel tripModel = Provider.of<TripModel>(context, listen: false);
-  // set location as drop off point
-  tripModel.updateDropOffAddres(address);
+                        // cancel text field listener so it doesn't get triggered
+                        // after we have popped back, causing an exception
+                        dropOffTextEditingController.removeListener(
+                          _textFieldListener,
+                        );
 
-  // go back to DefineRoute screen
-  Navigator.pop(context);
+                        // go back to DefineRoute screen
+                        Navigator.pop(context);
+                      },
+                      iconLeft: Icons.add_location,
+                      primaryText: addressPredictions[index].mainText,
+                      secondaryText: addressPredictions[index].secondaryText,
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return Divider(thickness: 0.1, color: Colors.black);
+                  },
+                  itemCount: addressPredictions.length,
+                ),
+              ),
+            );
+          })
+        : Container();
+  }
 }

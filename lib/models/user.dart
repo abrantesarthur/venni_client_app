@@ -149,7 +149,7 @@ class UserModel extends ChangeNotifier {
     try {
       userPos = await determineUserPosition();
     } catch (_) {
-      _position = null;
+      userPos = null;
     }
     _position = userPos;
     if (notify) {

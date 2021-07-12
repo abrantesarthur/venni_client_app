@@ -77,7 +77,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     // if user stopped sharing location, _getUserPosition asks them to reshare
-    await _getUserPosition();
+    _getUserPosition(notify: false);
   }
 
   @override
@@ -100,10 +100,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       // after finishing _getUserPosition,
       userPositionFuture.then((position) async {
         if (position != null) {
-          // user retrieved lat and lng to set maps camera view
-          widget.googleMaps.initialCameraLatLng = LatLng(
-            widget.user.position?.latitude,
-            widget.user.position?.longitude,
+          // user retrieved lat and lng to set maps camera view. notifying is
+          // not necessary
+          widget.googleMaps.setInitialCameraLatLng(
+            LatLng(
+              widget.user.position?.latitude,
+              widget.user.position?.longitude,
+            ),
+            notify: false,
           );
         }
       });
@@ -139,11 +143,13 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    print("BUILD HOME");
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    TripModel trip = Provider.of<TripModel>(context);
+    TripModel trip = Provider.of<TripModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
     GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(context);
-    UserModel user = Provider.of<UserModel>(context);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context);
     ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
 
@@ -204,16 +210,63 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
                   left: screenWidth / 20,
                   right: screenWidth / 20,
                 ),
-                onMapCreated: googleMaps.onMapCreatedCallback,
+                onMapCreated: (c) async {
+                  await googleMaps.onMapCreatedCallback(c, notify: false);
+                },
                 polylines: Set<Polyline>.of(googleMaps.polylines.values),
                 markers: googleMaps.markers,
               ),
-              _buildRemainingStackChildren(
-                context: context,
-                scaffoldKey: _scaffoldKey,
-                trip: trip,
-                user: user,
-              )
+              Consumer<UserModel>(builder: (context, u, _) {
+                print("BUILD USERMODEL CONSUMER");
+                return Stack(
+                  children: [
+                    // lock trip request if user has pending payments
+                    (u.unpaidTrip != null)
+                        ? UnpaidTripWidget(scaffoldKey: _scaffoldKey)
+                        // otherwise, build UI depending on TripModel's state
+                        : Consumer<TripModel>(
+                            builder: (context, t, _) {
+                              print("BUILD TRIPMODEL CONSUMER");
+                              return Stack(
+                                children: [
+                                  (t.tripStatus == null ||
+                                          t.tripStatus == TripStatus.off ||
+                                          t.tripStatus ==
+                                              TripStatus.cancelledByClient ||
+                                          t.tripStatus == TripStatus.completed)
+                                      ? RequestTripWidgets(
+                                          scaffoldKey: _scaffoldKey,
+                                        )
+                                      : Container(),
+                                  (t.tripStatus ==
+                                              TripStatus.waitingConfirmation ||
+                                          t.tripStatus ==
+                                              TripStatus.paymentFailed ||
+                                          t.tripStatus ==
+                                              TripStatus.noPartnersAvailable ||
+                                          t.tripStatus ==
+                                              TripStatus.lookingForPartner ||
+                                          t.tripStatus ==
+                                              TripStatus.cancelledByPartner)
+                                      ?
+                                      // if user is about to confirm trip for the first time (waitingConfirmation)
+                                      // has already confirmed but received a paymentFailed, or the partner canceleld,
+                                      // give them the option of trying again.
+                                      ConfirmTripWidget()
+                                      : Container(),
+                                  (t.tripStatus == TripStatus.waitingPartner)
+                                      ? WaitingPartnerWidget()
+                                      : Container(),
+                                  (t.tripStatus == TripStatus.inProgress)
+                                      ? InProgressWidget()
+                                      : Container(),
+                                ],
+                              );
+                            },
+                          ),
+                  ],
+                );
+              }),
             ],
           ),
         );
@@ -221,7 +274,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     );
   }
 
-  Future<Position> _getUserPosition() async {
+  Future<Position> _getUserPosition({bool notify = true}) async {
     // Try getting user position. If it returns null, it's because user stopped
     // sharing location. getPosition() will automatically handle that case, asking
     // the user to share again and preventing them from using the app if they
@@ -230,6 +283,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     if (pos == null) {
       return null;
     }
+
+    // if we could get position, get user's geocoding.
+    try {
+      await widget.user.getGeocoding(pos, notify: notify);
+    } catch (_) {}
+
     // if we could get position, make sure to resubscribe to position changes
     // again, as the subscription may have been cancelled if user stopped
     // sharing location.
@@ -268,6 +327,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   // _redrawUIOnTripUpdate is triggered whenever we update the tripModel.
   // it looks at the trip status and updates the UI accordingly
   Future<void> _redrawUIOnTripUpdate(BuildContext context) async {
+    print("_redrawUIOnTripUpdate");
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
@@ -289,7 +349,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.cancelledByPartner) {
-      print("cancelledByPartner");
       await showOkDialog(
         context: context,
         title: "Nosso(a) parceiro(a) cancelou a corrida",
@@ -309,6 +368,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     void handlePartnerUpdates(TripStatus expectedStatus) {
+      print("handlePartnerUpdates");
       // only reset subscription if it's null (i.e., it has been cancelled or this
       // is the first time it's being used). We enforce a business rule that
       // when we cancel subscriptions we set them to null. This allows us to
@@ -378,12 +438,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.waitingPartner) {
+      googleMaps.drawPolylineFromPartnerToOrigin(context);
       handlePartnerUpdates(TripStatus.waitingPartner);
       handleTripUpdates(TripStatus.waitingPartner);
       return;
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
+      print("inProgress");
       handlePartnerUpdates(TripStatus.inProgress);
       handleTripUpdates(TripStatus.inProgress);
       return;
@@ -480,43 +542,4 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
     return;
   }
-}
-
-Widget _buildRemainingStackChildren({
-  @required BuildContext context,
-  @required GlobalKey<ScaffoldState> scaffoldKey,
-  @required TripModel trip,
-  @required UserModel user,
-}) {
-  // lock trip request if user has pending payments
-  if (user.unpaidTrip != null) {
-    return UnpaidTripWidget(scaffoldKey: scaffoldKey);
-  }
-
-  if (trip.tripStatus == null ||
-      trip.tripStatus == TripStatus.off ||
-      trip.tripStatus == TripStatus.cancelledByClient ||
-      trip.tripStatus == TripStatus.completed) {
-    return RequestTrip(scaffoldKey: scaffoldKey);
-  }
-
-  if (trip.tripStatus == TripStatus.waitingConfirmation ||
-      trip.tripStatus == TripStatus.paymentFailed ||
-      trip.tripStatus == TripStatus.noPartnersAvailable ||
-      trip.tripStatus == TripStatus.lookingForPartner ||
-      trip.tripStatus == TripStatus.cancelledByPartner) {
-    // if user is about to confirm trip for the first time (waitingConfirmation)
-    // has already confirmed but received a paymentFailed, or the partner canceleld,
-    // give them the option of trying again.
-    return ConfirmTripWidget();
-  }
-
-  if (trip.tripStatus == TripStatus.waitingPartner) {
-    return WaitingPartnerWidget();
-  }
-
-  if (trip.tripStatus == TripStatus.inProgress) {
-    return InProgressWidget();
-  }
-  return Container();
 }

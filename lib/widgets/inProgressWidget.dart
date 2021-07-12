@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_maps_place_picker/flutter_maps_place_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 
 class InProgressWidget extends StatelessWidget {

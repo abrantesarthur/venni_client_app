@@ -77,18 +77,25 @@ class PartnerModel extends ChangeNotifier {
   Future<void> downloadData({
     @required FirebaseModel firebase,
     @required String id,
+    bool notify = true,
   }) async {
     Partner p = await firebase.functions.getPartner(id);
-    await fromPartnerInterface(partner: p);
+    await fromPartnerInterface(partner: p, notify: false);
 
     // download partner profile picture
     if (_id != null) {
       ProfileImage img = await firebase.storage.getPartnerProfilePicture(_id);
-      _profileImage = img;
+      updateProfileImage(img, notify: false);
+    }
+    if (notify) {
+      notifyListeners();
     }
   }
 
-  Future<void> fromPartnerInterface({Partner partner}) async {
+  Future<void> fromPartnerInterface({
+    Partner partner,
+    bool notify = true,
+  }) async {
     if (partner == null) {
       return Future.value();
     }
@@ -107,6 +114,10 @@ class PartnerModel extends ChangeNotifier {
     _memberSince = partner.memberSince == null
         ? null
         : partner.memberSince.getFormatedDate();
+
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   Future<void> fromConfirmTripResult(

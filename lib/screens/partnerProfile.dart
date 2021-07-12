@@ -59,16 +59,20 @@ class PartnerProfile extends StatelessWidget {
               ],
             ),
             SizedBox(height: screenHeight / 50),
-            _buildInfo(context, field: "celular", value: partner.phoneNumber),
+            _buildInfo(context,
+                field: "celular", value: partner.phoneNumber ?? ""),
             _buildInfo(context,
                 field: "corridas realizadas",
-                value: partner.totalTrips.toString()),
+                value: partner.totalTrips?.toString() ?? ""),
             _buildInfo(context,
-                field: "membro desde", value: partner.memberSince),
+                field: "membro desde", value: partner.memberSince ?? ""),
             _buildInfo(context,
                 field: "moto",
-                value: partner.vehicle.brand + " " + partner.vehicle.model),
-            _buildInfo(context, field: "placa", value: partner.vehicle.plate)
+                value: (partner.vehicle?.brand ?? "") +
+                    " - " +
+                    (partner.vehicle?.model ?? "")),
+            _buildInfo(context,
+                field: "placa", value: partner.vehicle?.plate ?? "")
           ],
         ),
       ),

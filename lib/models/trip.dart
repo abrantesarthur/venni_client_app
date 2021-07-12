@@ -43,15 +43,21 @@ class TripModel extends ChangeNotifier {
   String get partnerArrivalString => _partnerArrivalString;
   num get partnerArrivalSeconds => _partnerArrivalSeconds;
 
-  void updatePickUpAddres(Address address) {
+  void updatePickUpAddres(Address address, {bool notify = true}) {
+    print("updatePickUpAdress with address that is null?");
+    print(address == null);
     _currentPickUpAddress = address;
-    notifyListeners();
+    if (notify) {
+      print("notifyListeners");
+      notifyListeners();
+    }
   }
 
-  void updateDropOffAddres(Address address) {
+  void updateDropOffAddres(Address address, {bool notify = true}) {
     _currentDropOffAddress = address;
-
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void updateStatus(TripStatus tripStatus, {bool notify = true}) {
@@ -61,20 +67,24 @@ class TripModel extends ChangeNotifier {
     }
   }
 
-  void updatePartnerArrivalSeconds(int s) {
+  void updatePartnerArrivalSeconds(int s, {bool notify = true}) {
     _partnerArrivalSeconds = s;
     _partnerArrival = _calculatePartnerArrival();
     _partnerArrivalString = _calculatePartnerArrivalString();
     _eta = _calculateETA();
     _etaString = _calculateETAString();
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
-  void updateDurationSeconds(int s) {
+  void updateDurationSeconds(int s, {bool notify = true}) {
     _durationSeconds = s;
     _eta = _calculateETA();
     _etaString = _calculateETAString();
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void clear({
@@ -150,16 +160,27 @@ class TripModel extends ChangeNotifier {
     } on FirebaseException catch (e) {
       // an error was thrown becasue there is no active trip, clear model
       if (e.code == "not-found") {
-        clear();
+        clear(notify: notify);
       }
       return;
+    }
+
+    // if trip has already been completed, clear the model
+    if (trip.tripStatus == TripStatus.completed ||
+        trip.tripStatus == TripStatus.cancelledByClient) {
+      clear(notify: notify);
+      partner.clear(notify: notify);
     }
 
     //if trip exists and has waiting-partner or in-progress status
     if (trip.tripStatus == TripStatus.inProgress ||
         trip.tripStatus == TripStatus.waitingPartner) {
       //  download partner data. This may throw an error.
-      await partner.downloadData(firebase: firebase, id: trip.partnerID);
+      await partner.downloadData(
+        firebase: firebase,
+        id: trip.partnerID,
+        notify: notify,
+      );
     } else {
       partner.clear(notify: notify);
     }

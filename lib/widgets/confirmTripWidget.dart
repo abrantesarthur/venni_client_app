@@ -7,7 +7,6 @@ import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
-import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
@@ -103,7 +102,7 @@ class ConfirmTripWidget extends StatelessWidget {
     TripModel trip,
   ) {
     final screenHeight = MediaQuery.of(context).size.height;
-    TripModel trip = Provider.of<TripModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
 
     return FloatingCard(
       flex: 3,
@@ -114,6 +113,8 @@ class ConfirmTripWidget extends StatelessWidget {
             DefineRoute.routeName,
             arguments: DefineRouteArguments(
               mode: DefineRouteMode.edit,
+              trip: trip,
+              user: user,
             ),
           );
         },

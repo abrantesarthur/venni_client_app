@@ -36,9 +36,11 @@ class GoogleMapsModel extends ChangeNotifier {
         .then((value) => {_mapStyle = value});
   }
 
-  set initialCameraLatLng(LatLng latlng) {
+  void setInitialCameraLatLng(LatLng latlng, {bool notify = true}) {
     _initialCameraLatLng = latlng;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   // getters
@@ -61,9 +63,15 @@ class GoogleMapsModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void onMapCreatedCallback(GoogleMapController c) async {
+  Future<void> onMapCreatedCallback(
+    GoogleMapController c, {
+    bool notify = true,
+  }) async {
     await c.setMapStyle(_mapStyle);
     _googleMapController = c;
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   Future<void> undrawPolyline(
@@ -83,7 +91,7 @@ class GoogleMapsModel extends ChangeNotifier {
     }
 
     // reset maps camera view by showing location button and removing padding
-    setGoogleMapsCameraView();
+    setGoogleMapsCameraView(notify: false);
     notifyListeners();
   }
 
@@ -130,6 +138,13 @@ class GoogleMapsModel extends ChangeNotifier {
       partner.updateCurrentLatitude(response.result.route.originLatitude);
       partner.updateCurrentLongitude(response.result.route.originLongitude);
 
+      // set trip remaining duration. Don't notify. Drawing polyline already
+      // triggers a Home rebuild
+      trip.updateDurationSeconds(
+        response.result.route.durationSeconds,
+        notify: false,
+      );
+
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
       await drawPolyline(
@@ -138,14 +153,10 @@ class GoogleMapsModel extends ChangeNotifier {
         topPadding: screenHeight / 40,
         bottomPadding: screenHeight / 5,
       );
-
-      // set trip remaining duration
-      trip.updateDurationSeconds(response.result.route.durationSeconds);
     }
   }
 
   Future<void> drawPolylineFromPartnerToOrigin(BuildContext context) async {
-    print("drawPolylineFromPartnerToOrigin");
     // only draw polyline between the use and the partner if waitingPartner
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     if (trip.tripStatus != TripStatus.waitingPartner) {
@@ -186,6 +197,13 @@ class GoogleMapsModel extends ChangeNotifier {
       partner
           .updateCurrentLongitude(response.result.route.destinationLongitude);
 
+      // set partner arrival time. Don't notify. Drawing the polyline already
+      // triggers a tree rebuild
+      trip.updatePartnerArrivalSeconds(
+        response.result.route.durationSeconds,
+        notify: false,
+      );
+
       // draw the polyline
       final screenHeight = MediaQuery.of(context).size.height;
       await drawPolyline(
@@ -194,9 +212,6 @@ class GoogleMapsModel extends ChangeNotifier {
         topPadding: screenHeight / 40,
         bottomPadding: screenHeight / 4,
       );
-
-      // set partner arrival time
-      trip.updatePartnerArrivalSeconds(response.result.route.durationSeconds);
     }
   }
 
@@ -221,15 +236,17 @@ class GoogleMapsModel extends ChangeNotifier {
       _polylines[polylineId] = polyline;
     }
 
-    // hide user's location details and set maps padding
+    // hide user's location details and set maps padding. Don't notify, since
+    // we already do this at the end of this method.
     setGoogleMapsCameraView(
       topPadding: topPadding,
       bottomPadding: bottomPadding,
+      notify: false,
     );
 
     // add bounds to map view
     // for some reason we have to delay computation so animateCamera works
-    Future.delayed(Duration(milliseconds: 50), () async {
+    Future.delayed(Duration(milliseconds: 100), () async {
       await _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(
         AppPolylinePoints.calculateBounds(polyline),
         50,
@@ -246,6 +263,7 @@ class GoogleMapsModel extends ChangeNotifier {
     bool locationButtonEnabled = true,
     double topPadding,
     double bottomPadding,
+    bool notify = true,
   }) {
     // hide user's location details (true by default)
     _myLocationEnabled = locationEnabled;
@@ -254,7 +272,9 @@ class GoogleMapsModel extends ChangeNotifier {
     // set paddings (null by default)
     _googleMapsBottomPadding = bottomPadding;
     _googleMapsTopPadding = topPadding;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void _undrawMarkers() {

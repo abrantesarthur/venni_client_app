@@ -237,8 +237,6 @@ class ConfirmTripState extends State<ConfirmTrip> {
       }
     }
 
-    // TODO: update trip not only its status but also with other info returned
-    // by confirmTrip
     // update trip status
     trip.updateStatus(result.tripStatus);
   }

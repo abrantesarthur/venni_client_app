@@ -165,6 +165,16 @@ class TripModel extends ChangeNotifier {
       return;
     }
 
+    print("TripModel.downloadData. Status " + trip.tripStatus.toString());
+
+    // if trip has a transitory status, like waitingPayment or lookingForPartner,
+    // wait a little bit and try again
+    if (trip.tripStatus == TripStatus.waitingPayment ||
+        trip.tripStatus == TripStatus.lookingForPartner) {
+      await Future.delayed(Duration(milliseconds: 500));
+      return downloadData(firebase: firebase, partner: partner, notify: notify);
+    }
+
     // if trip has already been completed, clear the model
     if (trip.tripStatus == TripStatus.completed ||
         trip.tripStatus == TripStatus.cancelledByClient) {

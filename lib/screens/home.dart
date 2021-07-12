@@ -143,8 +143,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD HOME");
-
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     TripModel trip = Provider.of<TripModel>(context, listen: false);
@@ -212,12 +210,13 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
                 ),
                 onMapCreated: (c) async {
                   await googleMaps.onMapCreatedCallback(c, notify: false);
+                  // call _redrawUIOnTripUpdate so UI is updated once when maps is ready
+                  await _redrawUIOnTripUpdate(context);
                 },
                 polylines: Set<Polyline>.of(googleMaps.polylines.values),
                 markers: googleMaps.markers,
               ),
               Consumer<UserModel>(builder: (context, u, _) {
-                print("BUILD USERMODEL CONSUMER");
                 return Stack(
                   children: [
                     // lock trip request if user has pending payments
@@ -226,7 +225,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
                         // otherwise, build UI depending on TripModel's state
                         : Consumer<TripModel>(
                             builder: (context, t, _) {
-                              print("BUILD TRIPMODEL CONSUMER");
                               return Stack(
                                 children: [
                                   (t.tripStatus == null ||
@@ -327,7 +325,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   // _redrawUIOnTripUpdate is triggered whenever we update the tripModel.
   // it looks at the trip status and updates the UI accordingly
   Future<void> _redrawUIOnTripUpdate(BuildContext context) async {
-    print("_redrawUIOnTripUpdate");
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
@@ -343,12 +340,32 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
 
+    if (trip.tripStatus == TripStatus.completed) {
+      await googleMaps.undrawPolyline(context);
+      await Navigator.pushNamed(context, RatePartner.routeName);
+      // important: don't notify listeneres when clearing models. This may cause
+      // null exceptions because there may still be widgets from the previous
+      // screen RatePartner that use the values from the models.
+      partner.clear(notify: false);
+      trip.clear(notify: false);
+
+      // download user data to make sure he has no unpaid trips
+      await widget.user.downloadData(firebase);
+      return;
+    }
+
     if (trip.tripStatus == TripStatus.cancelledByClient) {
       await googleMaps.undrawPolyline(context);
       return;
     }
 
     if (trip.tripStatus == TripStatus.cancelledByPartner) {
+      await widget.googleMaps.drawPolyline(
+        context: context,
+        encodedPoints: trip.encodedPoints,
+        topPadding: MediaQuery.of(context).size.height / 9.5,
+        bottomPadding: MediaQuery.of(context).size.height / 4.8,
+      );
       await showOkDialog(
         context: context,
         title: "Nosso(a) parceiro(a) cancelou a corrida",
@@ -368,7 +385,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     void handlePartnerUpdates(TripStatus expectedStatus) {
-      print("handlePartnerUpdates");
       // only reset subscription if it's null (i.e., it has been cancelled or this
       // is the first time it's being used). We enforce a business rule that
       // when we cancel subscriptions we set them to null. This allows us to
@@ -445,20 +461,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
-      print("inProgress");
+      googleMaps.drawPolylineFromPartnerToDestination(context);
       handlePartnerUpdates(TripStatus.inProgress);
       handleTripUpdates(TripStatus.inProgress);
-      return;
-    }
-
-    if (trip.tripStatus == TripStatus.completed) {
-      await googleMaps.undrawPolyline(context);
-      await Navigator.pushNamed(context, RatePartner.routeName);
-      // important: don't notify listeneres when clearing models. This may cause
-      // null exceptions because there may still be widgets from the previous
-      // screen RatePartner that use the values from the models.
-      partner.clear(notify: false);
-      trip.clear(notify: false);
       return;
     }
 
@@ -498,6 +503,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.paymentFailed) {
+      await widget.googleMaps.drawPolyline(
+        context: context,
+        encodedPoints: trip.encodedPoints,
+        topPadding: MediaQuery.of(context).size.height / 9.5,
+        bottomPadding: MediaQuery.of(context).size.height / 4.8,
+      );
       // give user the option of picking another payment method
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showDialog(

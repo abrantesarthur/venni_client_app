@@ -225,7 +225,7 @@ class RatePartnerState extends State<RatePartner> {
                   ),
                   SizedBox(height: screenHeight / 100),
                   Text(
-                    "R\$ " + (trip.farePrice / 100).toString(),
+                    "R\$ " + (trip.farePrice / 100).toStringAsFixed(2),
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w700,

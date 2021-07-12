@@ -138,7 +138,7 @@ class UserModel extends ChangeNotifier {
     // download user image file
     firebase.storage
         .getUserProfileImage(uid: firebase.auth.currentUser.uid)
-        .then((value) => this.setProfileImage(value, notify: notify));
+        .then((value) => this.setProfileImage(value, notify: false));
 
     ClientInterface client = await firebase.database.getClientData(firebase);
     this.fromClientInterface(client, notify: notify);

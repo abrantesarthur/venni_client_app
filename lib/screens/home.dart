@@ -378,8 +378,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       await showOkDialog(
         context: context,
         title: "Nosso(a) parceiro(a) cancelou a corrida",
-        content: "faça o pedido novamnete",
+        content: "faça o pedido novamente",
       );
+      // change trip status locally so AlertDialog is not shown twice. This could
+      // happen, for example, if route is modified in TripModel, thus rebuilding
+      // the UI
+      trip.updateStatus(TripStatus.waitingConfirmation, notify: false);
       return;
     }
 
@@ -505,9 +509,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         );
       });
       // change trip status locally so AlertDialog is not shown twice. This could
-      // happen, for example, if UI is rebuilt againt because TripModel notified
-      // listeners after user updated route.
-      trip.updateStatus(TripStatus.waitingConfirmation);
+      // happen, for example, if route is modified in TripModel, thus rebuilding
+      // the UI
+      trip.updateStatus(TripStatus.waitingConfirmation, notify: false);
       return;
     }
 
@@ -558,6 +562,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           },
         );
       });
+      // change trip status locally so AlertDialog is not shown twice. This could
+      // happen, for example, if route is modified in TripModel, thus rebuilding
+      // the UI
+      trip.updateStatus(TripStatus.waitingConfirmation, notify: false);
       return;
     }
     return;

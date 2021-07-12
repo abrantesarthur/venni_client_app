@@ -182,7 +182,16 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
         // make sure we successfully got user position
         if (snapshot.data == null) {
-          return ShareLocation(push: Home.routeName);
+          return ShareLocation(
+            push: Home.routeName,
+            routeArguments: HomeArguments(
+              firebase: firebase,
+              googleMaps: widget.googleMaps,
+              trip: widget.trip,
+              user: widget.user,
+              connectivity: connectivity,
+            ),
+          );
         }
 
         return Scaffold(

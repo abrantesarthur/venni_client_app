@@ -8,14 +8,22 @@ import 'package:rider_frontend/widgets/appButton.dart';
 
 class ShareLocationArguments {
   String push;
-  ShareLocationArguments({@required this.push});
+  Object routeArguments;
+  ShareLocationArguments({
+    @required this.push,
+    this.routeArguments,
+  });
 }
 
 class ShareLocation extends StatefulWidget {
   static String routeName = "ShareLocation";
   final String push;
+  final Object routeArguments;
 
-  ShareLocation({@required this.push});
+  ShareLocation({
+    @required this.push,
+    this.routeArguments,
+  });
 
   @override
   ShareLocationState createState() => ShareLocationState();
@@ -45,7 +53,11 @@ class ShareLocationState extends State<ShareLocation> {
               borderRadius: 10.0,
               textData: "Recarregar Aplicatiavo",
               onTapCallBack: () async {
-                Navigator.pushReplacementNamed(context, widget.push);
+                Navigator.pushReplacementNamed(
+                  context,
+                  widget.push,
+                  arguments: widget.routeArguments,
+                );
               },
             )
           : AppButton(

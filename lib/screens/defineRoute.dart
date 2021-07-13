@@ -133,7 +133,6 @@ class DefineRouteState extends State<DefineRoute> {
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD DefineRoute");
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -310,6 +309,7 @@ class DefineRouteState extends State<DefineRoute> {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
 
     Trip result;
+    bool success;
     try {
       if (widget.mode == DefineRouteMode.request) {
         // send request for trip
@@ -324,8 +324,10 @@ class DefineRouteState extends State<DefineRoute> {
           destinationPlaceID: widget.trip.dropOffAddress.placeID,
         ));
       }
+      success = true;
     } catch (_) {
       lockScreen = false;
+      success = false;
     }
 
     // remove listener so this DefineRoute is not rebuilt unecessarily
@@ -333,6 +335,6 @@ class DefineRouteState extends State<DefineRoute> {
 
     // update trip with response
     widget.trip.fromTripInterface(result);
-    Navigator.pop(context);
+    Navigator.pop(context, success);
   }
 }

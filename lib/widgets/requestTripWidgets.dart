@@ -5,6 +5,7 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
 import 'package:rider_frontend/widgets/menuButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
@@ -50,7 +51,7 @@ class RequestTripWidgets extends StatelessWidget {
                   await connectivity.alertWhenOffline(context);
                   return;
                 }
-                Navigator.pushNamed(
+                final success = await Navigator.pushNamed(
                   context,
                   DefineRoute.routeName,
                   arguments: DefineRouteArguments(
@@ -58,7 +59,15 @@ class RequestTripWidgets extends StatelessWidget {
                     user: user,
                     trip: trip,
                   ),
-                );
+                ) as bool;
+                if (!success) {
+                  await showOkDialog(
+                    context: context,
+                    title: "Algo deu errado",
+                    content:
+                        "Cheque a sua conexão com a internet e tente novamente",
+                  );
+                }
               },
             ),
           ),

@@ -44,11 +44,8 @@ class TripModel extends ChangeNotifier {
   num get partnerArrivalSeconds => _partnerArrivalSeconds;
 
   void updatePickUpAddres(Address address, {bool notify = true}) {
-    print("updatePickUpAdress with address that is null?");
-    print(address == null);
     _currentPickUpAddress = address;
     if (notify) {
-      print("notifyListeners");
       notifyListeners();
     }
   }

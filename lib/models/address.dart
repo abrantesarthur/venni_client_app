@@ -23,8 +23,6 @@ class Address {
     @required GeocodingResult geocodingResult,
     @required bool dropOff,
   }) {
-    print("fromGeocodingResult with null geocodingResult?");
-    print(geocodingResult == null);
     if (geocodingResult == null) {
       return null;
     }

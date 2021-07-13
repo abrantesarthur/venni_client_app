@@ -4,6 +4,7 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/screens/privacy.dart';
 import 'package:rider_frontend/screens/profile.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
@@ -47,15 +48,11 @@ class Settings extends StatelessWidget {
           padding: EdgeInsets.only(top: screenHeight / 80),
           child: GestureDetector(
             onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return YesNoDialog(
-                    title: "Deseja sair?",
-                    onPressedYes: () async {
-                      await firebase.auth.signOut();
-                    },
-                  );
+              showYesNoDialog(
+                context,
+                title: "Deseja sair?",
+                onPressedYes: () async {
+                  await firebase.auth.signOut();
                 },
               );
             },

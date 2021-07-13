@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 
 class ConnectivityModel extends ChangeNotifier {
   bool _hasConnection;
@@ -50,26 +51,10 @@ class ConnectivityModel extends ChangeNotifier {
   }
 
   Future<void> alertWhenOffline(BuildContext context, {String message}) async {
-    await showDialog(
+    await showOkDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Você está offline."),
-          content: Text(
-            message ?? "Conecte-se à internet para pedir uma corrida.",
-            style: TextStyle(color: AppColor.disabled),
-          ),
-          actions: [
-            TextButton(
-              child: Text(
-                "ok",
-                style: TextStyle(fontSize: 18),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        );
-      },
+      title: "Você está offline.",
+      content: message ?? "Conecte-se à internet para continuar.",
     );
   }
 }

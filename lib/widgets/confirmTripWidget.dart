@@ -9,6 +9,7 @@ import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/defineRoute.dart';
 import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
@@ -67,30 +68,26 @@ class ConfirmTripWidget extends StatelessWidget {
           );
           return;
         }
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return YesNoDialog(
-              title: title ?? "Cancelar Pedido?",
-              content: content,
-              onPressedYes: () async {
-                if (!connectivity.hasConnection) {
-                  await connectivity.alertWhenOffline(
-                    context,
-                    message: "Conecte-se à internet para cancelar o pedido,",
-                  );
-                  return;
-                }
-                // cancel trip and update trip and partner models once it succeeds
-                try {
-                  firebase.functions.cancelTrip();
-                } catch (_) {}
-                // update models
-                trip.clear(status: TripStatus.cancelledByClient);
-                partner.clear();
-                Navigator.pop(context);
-              },
-            );
+        showYesNoDialog(
+          context,
+          title: title ?? "Cancelar Pedido?",
+          content: content,
+          onPressedYes: () async {
+            if (!connectivity.hasConnection) {
+              await connectivity.alertWhenOffline(
+                context,
+                message: "Conecte-se à internet para cancelar o pedido,",
+              );
+              return;
+            }
+            // cancel trip and update trip and partner models once it succeeds
+            try {
+              firebase.functions.cancelTrip();
+            } catch (_) {}
+            // update models
+            trip.clear(status: TripStatus.cancelledByClient);
+            partner.clear();
+            Navigator.pop(context);
           },
         );
       },

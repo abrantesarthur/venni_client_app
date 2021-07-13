@@ -11,6 +11,7 @@ import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
@@ -198,28 +199,10 @@ class ConfirmTripState extends State<ConfirmTrip> {
           } catch (_) {}
           trip.clear();
           partner.clear();
-          await showDialog(
+          await showOkDialog(
             context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("Algo deu errado."),
-                content: Text(
-                  "Tente novamente!",
-                  style: TextStyle(color: AppColor.disabled),
-                ),
-                actions: [
-                  TextButton(
-                    child: Text(
-                      "ok",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              );
-            },
+            title: "Algo deu errado",
+            content: "Tente novamente",
           );
         } else {
           trip.updateStatus(tripStatus);

@@ -618,27 +618,10 @@ class AddCreditCardState extends State<AddCreditCard> {
       String warningMessage = e.code == "invalid-argument"
           ? "Dados inválidos."
           : "Algo deu errado.";
-
-      await showDialog(
+      await showOkDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(warningMessage),
-            content: Text(
-              "Verifique os dados inseridos e tente novamente.",
-              style: TextStyle(color: AppColor.disabled),
-            ),
-            actions: [
-              TextButton(
-                child: Text(
-                  "ok",
-                  style: TextStyle(fontSize: 18),
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          );
-        },
+        title: warningMessage,
+        content: "Verifique os dados inseridos e tente novamente.",
       );
       return;
     }

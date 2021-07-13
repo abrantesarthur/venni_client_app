@@ -486,28 +486,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         trip.tripStatus == TripStatus.lookingForPartner) {
       // alert user to wait
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
+        showOkDialog(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Nenhum motorista disponível"),
-              content: Text(
-                "Aguarde um minutinho e tente novamente.",
-                style: TextStyle(color: AppColor.disabled),
-              ),
-              actions: [
-                TextButton(
-                  child: Text(
-                    "ok",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            );
-          },
+          title: "Nenhum motorista disponível",
+          content: "Aguarde um minutinho e tente novamente.",
         );
       });
       // change trip status locally so AlertDialog is not shown twice. This could

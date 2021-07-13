@@ -5,6 +5,7 @@ import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
@@ -140,28 +141,10 @@ class CreditCardDetailState extends State<CreditCardDetail> {
         setState(() {
           buttonChild = null;
         });
-        await showDialog(
+        await showOkDialog(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Falha ao deletar cartão."),
-              content: Text(
-                "Verifique a sua conexão com a internet e tente novamente.",
-                style: TextStyle(color: AppColor.disabled),
-              ),
-              actions: [
-                TextButton(
-                  child: Text(
-                    "ok",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            );
-          },
+          title: "Falha ao deletar cartão.",
+          content: "Verifique a sua conexão com a internet e tente novamente.",
         );
         return;
       }

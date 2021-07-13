@@ -2,21 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
 Future<void> _askPermission(
   BuildContext context,
   String description,
 ) async {
-  return showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return YesNoDialog(
-          title: description,
-          onPressedYes: () async {
-            await openAppSettings();
-            Navigator.pop(context);
-          });
+  showYesNoDialog(
+    context,
+    title: description,
+    onPressedYes: () async {
+      await openAppSettings();
+      Navigator.pop(context);
     },
   );
 }

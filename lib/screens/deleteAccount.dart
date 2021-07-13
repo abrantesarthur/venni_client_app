@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/styles.dart';
+import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/vendors/firebaseAuth/interfaces.dart';
@@ -99,87 +100,83 @@ class DeleteAccountState extends State<DeleteAccount> {
       listen: false,
     );
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return YesNoDialog(
-          title: "Tem certeza?",
-          content:
-              "Atenção: esta operação não pode ser desfeita e você perderá todos os dados da sua conta.",
-          onPressedYes: () async {
-            // show loading icon and lock screen
-            setState(() {
-              buttonChild = CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              );
-              lockScreen = true;
-            });
+    showYesNoDialog(
+      context,
+      title: "Tem certeza?",
+      content:
+          "Atenção: esta operação não pode ser desfeita e você perderá todos os dados da sua conta.",
+      onPressedYes: () async {
+        // show loading icon and lock screen
+        setState(() {
+          buttonChild = CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          );
+          lockScreen = true;
+        });
 
-            // pop off dialog
-            Navigator.pop(context);
+        // pop off dialog
+        Navigator.pop(context);
 
-            // get password
-            String password = passwordTextEditingController.text;
+        // get password
+        String password = passwordTextEditingController.text;
 
-            // remove focus from text field
-            passwordFocusNode.unfocus();
+        // remove focus from text field
+        passwordFocusNode.unfocus();
 
-            // clear password field
-            passwordTextEditingController.text = "";
+        // clear password field
+        passwordTextEditingController.text = "";
 
-            // make sure the user has entered a correct password
-            CheckPasswordResponse cpr;
-            try {
-              cpr = await firebase.auth.checkPassword(
-                password,
-              );
-            } catch (_) {}
+        // make sure the user has entered a correct password
+        CheckPasswordResponse cpr;
+        try {
+          cpr = await firebase.auth.checkPassword(
+            password,
+          );
+        } catch (_) {}
 
-            if (cpr != null && !cpr.successful) {
-              // if password is wrong remove loading icon and display warnings
-              setState(() {
-                buttonChild = null;
-                warningMessage = Warning(message: cpr.message);
-                lockScreen = false;
-              });
-              return;
-            }
+        if (cpr != null && !cpr.successful) {
+          // if password is wrong remove loading icon and display warnings
+          setState(() {
+            buttonChild = null;
+            warningMessage = Warning(message: cpr.message);
+            lockScreen = false;
+          });
+          return;
+        }
 
-            // submit delete reasons
-            try {
-              await firebase.database.submitDeleteReasons(
-                reasons: deleteReasons,
-                uid: firebase.auth.currentUser.uid,
-              );
-            } catch (_) {}
+        // submit delete reasons
+        try {
+          await firebase.database.submitDeleteReasons(
+            reasons: deleteReasons,
+            uid: firebase.auth.currentUser.uid,
+          );
+        } catch (_) {}
 
-            // request to delete
-            try {
-              await firebase.functions.deleteAccount();
-              // on success, log user out
-              await firebase.auth.signOut();
-            } catch (e) {
-              setState(() {
-                warningMessage = Warning(
-                  message: "Algo deu errado. Tente novamente mais tarde.",
-                );
-              });
-            }
+        // request to delete
+        try {
+          await firebase.functions.deleteAccount();
+          // on success, log user out
+          await firebase.auth.signOut();
+        } catch (e) {
+          setState(() {
+            warningMessage = Warning(
+              message: "Algo deu errado. Tente novamente mais tarde.",
+            );
+          });
+        }
 
-            // remove loading icon and unlock screen
-            setState(() {
-              buttonChild = null;
-              lockScreen = false;
-            });
-          },
-          onPressedNo: () {
-            // pop off dialog
-            Navigator.pop(context);
+        // remove loading icon and unlock screen
+        setState(() {
+          buttonChild = null;
+          lockScreen = false;
+        });
+      },
+      onPressedNo: () {
+        // pop off dialog
+        Navigator.pop(context);
 
-            // remove focus from text field
-            passwordFocusNode.unfocus();
-          },
-        );
+        // remove focus from text field
+        passwordFocusNode.unfocus();
       },
     );
   }

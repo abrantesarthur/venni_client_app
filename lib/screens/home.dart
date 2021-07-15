@@ -152,6 +152,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    print("BUILD HOME");
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     TripModel trip = Provider.of<TripModel>(context, listen: false);
@@ -303,14 +304,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   }
 
   Future<Position> _getUserPosition({bool notify = true}) async {
-    print("_getUserPosition");
     // Try getting user position. If it returns null, it's because user stopped
     // sharing location. getPosition() will automatically handle that case, asking
     // the user to share again and preventing them from using the app if they
     // don't.
     Position pos = await widget.user.getPosition(notify: false);
     if (pos == null) {
-      print("pos == null");
       return null;
     }
 
@@ -373,8 +372,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.completed) {
-      await googleMaps.undrawPolyline(context);
       await Navigator.pushNamed(context, RatePartner.routeName);
+      await googleMaps.undrawPolyline(context);
       // important: don't notify listeneres when clearing models. This may cause
       // null exceptions because there may still be widgets from the previous
       // screen RatePartner that use the values from the models.
@@ -479,8 +478,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
               trip.updateStatus(newTripStatus);
               googleMaps.drawPolylineFromPartnerToDestination(context);
             } else if (newTripStatus != trip.tripStatus) {
-              print("trip is no longer in progress. it is " +
-                  newTripStatus.toString());
               // otherwise, do something only if local trip status has not
               // been already updated to newTripStatus by some other code path
               // (i.e., user canceled the trip request, which immediately updates

@@ -20,6 +20,7 @@ import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
+import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/confirmTripWidget.dart';
 import 'package:rider_frontend/widgets/inProgressWidget.dart';
 import 'package:rider_frontend/widgets/requestTripWidgets.dart';
@@ -70,18 +71,26 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   bool _hasConnection;
   var _firebaseListener;
   var _tripListener;
+  VoidCallback didChangeAppLifecycleCallback;
 
   // didChangeAppLifecycleState is notified whenever the system puts the app in
   // the background or returns the app to the foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    print("didChangeAppLifecycleState");
     super.didChangeAppLifecycleState(state);
-    // if user stopped sharing location, _getUserPosition asks them to reshare
-    _getUserPosition(notify: false);
+    // if user stopped sharing location, didChangeAppLifecycleCallback should
+    // ask them to reshare. The function is only defined once the tree has been
+    // built though, to avoid exceptions of trying to ask for location permission
+    // simultaneously. After all, we already ask for them in initState.
+    if (didChangeAppLifecycleCallback != null) {
+      didChangeAppLifecycleCallback();
+    }
   }
 
   @override
   void initState() {
+    print("initState");
     super.initState();
 
     // HomeState uses WidgetsBindingObserver as a mixin. Thus, we can pass it as
@@ -194,6 +203,18 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           );
         }
 
+        // after having waited succesfully, define didChangeAppLifecycleCallback
+        // so if user stops sharing location, we will know.
+        if (didChangeAppLifecycleCallback == null) {
+          didChangeAppLifecycleCallback = () async {
+            try {
+              await determineUserPosition();
+            } catch (e) {
+              _getUserPosition();
+            }
+          };
+        }
+
         return Scaffold(
           key: _scaffoldKey,
           drawer: Menu(),
@@ -219,7 +240,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
                 ),
                 onMapCreated: (c) async {
                   await googleMaps.onMapCreatedCallback(c, notify: false);
-                  // call _redrawUIOnTripUpdate so UI is updated once when maps is ready
+                  // call _redrawUIOnTripUpdate so UI is updated only when maps is ready
                   await _redrawUIOnTripUpdate(context);
                 },
                 polylines: Set<Polyline>.of(googleMaps.polylines.values),
@@ -282,12 +303,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   }
 
   Future<Position> _getUserPosition({bool notify = true}) async {
+    print("_getUserPosition");
     // Try getting user position. If it returns null, it's because user stopped
     // sharing location. getPosition() will automatically handle that case, asking
     // the user to share again and preventing them from using the app if they
     // don't.
     Position pos = await widget.user.getPosition(notify: false);
     if (pos == null) {
+      print("pos == null");
       return null;
     }
 

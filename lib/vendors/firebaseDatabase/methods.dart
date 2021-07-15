@@ -90,19 +90,6 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     return null;
   }
 
-  Future<String> getPartnerID(String userUID) async {
-    try {
-      DataSnapshot snapshot = await this
-          .reference()
-          .child("trip-requests")
-          .child(userUID)
-          .child("partner_id")
-          .once();
-      return snapshot.value;
-    } catch (_) {}
-    return null;
-  }
-
   Future<void> createClient(User user) async {
     return await this.reference().child("clients").child(user.uid).set({
       "uid": user.uid,

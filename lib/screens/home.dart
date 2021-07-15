@@ -430,7 +430,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       // redefining subscriptions when _redrawUIOnTripUpdate is called again.
       if (partnerSubscription == null) {
         partnerSubscription =
-            firebase.database.onPartnerUpdate(partner.id, (e) {
+            firebase.database.onPartnerUpdate(partner.id, (e) async {
           // if partner was set free, stop listening for his updates, as he is
           // no longer handling our trip.
           PartnerStatus partnerStatus =
@@ -456,9 +456,9 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
             partner.updateCurrentLongitude(newLng);
             // draw polyline from partner to origin or from partner to destination
             if (expectedStatus == TripStatus.waitingPartner) {
-              googleMaps.drawPolylineFromPartnerToOrigin(context);
+              await googleMaps.drawPolylineFromPartnerToOrigin(context);
             } else if (expectedStatus == TripStatus.inProgress) {
-              googleMaps.drawPolylineFromPartnerToDestination(context);
+              await googleMaps.drawPolylineFromPartnerToDestination(context);
             }
           }
         });
@@ -468,7 +468,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     void handleTripUpdates(TripStatus expectedStatus) {
       if (tripSubscription == null) {
         String uid = firebase.auth.currentUser.uid;
-        tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) {
+        tripSubscription = firebase.database.onTripStatusUpdate(uid, (e) async {
           TripStatus newTripStatus = getTripStatusFromString(e.snapshot.value);
           if (newTripStatus != expectedStatus) {
             // stop subscriptions when new trip status is not what we expected
@@ -479,11 +479,13 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
               trip.updateStatus(newTripStatus);
               googleMaps.drawPolylineFromPartnerToDestination(context);
             } else if (newTripStatus != trip.tripStatus) {
+              print("trip is no longer in progress. it is " +
+                  newTripStatus.toString());
               // otherwise, do something only if local trip status has not
               // been already updated to newTripStatus by some other code path
               // (i.e., user canceled the trip request, which immediately updates
               // local status, but also sends a request to cancel in firebase),
-              googleMaps.undrawPolyline(context);
+              await googleMaps.undrawPolyline(context);
               trip.updateStatus(newTripStatus);
             }
           }

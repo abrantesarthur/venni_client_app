@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>110541534901-g4954q6tes6hberjsg293pvqnb8og0oc.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.110541534901-g4954q6tes6hberjsg293pvqnb8og0oc</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>110541534901-em77jb871fgn09gunpgpt3aqcb0h3pbn.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAVnW5WPfY8sAyHPXJLMDJHdTZnCpJlr58</string>
+	<key>GCM_SENDER_ID</key>
+	<string>110541534901</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.venni.client</string>
+	<key>PROJECT_ID</key>
+	<string>venni-production</string>
+	<key>STORAGE_BUCKET</key>
+	<string>venni-production.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:110541534901:ios:9a6c1b6446ff2a4e6c70fc</string>
+	<key>DATABASE_URL</key>
+	<string>https://venni-production-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

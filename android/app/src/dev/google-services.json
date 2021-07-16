@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:433294907451:android:2b8f7ff554fc8667a6e41e",
+        "mobilesdk_app_id": "1:433294907451:android:134f61ca7186a2a9a6e41e",
         "android_client_info": {
-          "package_name": "com.venni.client"
+          "package_name": "com.venni.client.dev"
         }
       },
       "oauth_client": [

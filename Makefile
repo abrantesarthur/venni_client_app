@@ -19,11 +19,6 @@ ifndef HOST_IP_ADDRESS
 endif
 
 
-check-stag-env:
-ifndef STAG_GOOGLE_MAPS_API_KEY
-	$(error STAG_GOOGLE_MAPS_API_KEY is undefined)
-endif
-
 
 check-env: prod.env
 ifndef GOOGLE_MAPS_API_KEY
@@ -52,13 +47,6 @@ rundev: check-dev-env
 	--dart-define=DEV_GOOGLE_MAPS_API_KEY=$(DEV_GOOGLE_MAPS_API_KEY) \
 	-t lib/main_dev.dart
 
-
-.PHONY: runstag
-runstag: check-stag-env
-	$(FLUTTERRUN) \
-	--flavor stag \
-	--dart-define=STAG_GOOGLE_MAPS_API_KEY=$(STAG_GOOGLE_MAPS_API_KEY) \
-	-t lib/main_stag.dart
 
 .PHONY: run
 run: check-env

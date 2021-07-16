@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
-enum Flavor { DEV, STAG, PROD }
+enum Flavor { DEV, PROD }
 
 // TODO: add sensitive variables to secure storage package
 class ConfigValues {
@@ -54,9 +54,6 @@ class AppConfig {
     if (flavor == Flavor.DEV) {
       return DotEnv.env["DEV_REALTIME_DATABASE_BASE_URL"];
     }
-    if (flavor == Flavor.STAG) {
-      return DotEnv.env["STAG_REALTIME_DATABASE_BASE_URL"];
-    }
     if (flavor == Flavor.PROD) {
       return DotEnv.env["REALTIME_DATABASE_BASE_URL"];
     }
@@ -66,9 +63,6 @@ class AppConfig {
   static String _buildGoogleMapsApiKey(Flavor flavor) {
     if (flavor == Flavor.DEV) {
       return DotEnv.env["DEV_GOOGLE_MAPS_API_KEY"];
-    }
-    if (flavor == Flavor.STAG) {
-      return DotEnv.env["STAG_GOOGLE_MAPS_API_KEY"];
     }
     if (flavor == Flavor.PROD) {
       return DotEnv.env["GOOGLE_MAPS_API_KEY"];

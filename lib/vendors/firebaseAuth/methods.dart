@@ -91,7 +91,6 @@ extension AppFirebaseAuth on FirebaseAuth {
   }
 
   String verificationFailedCallback(FirebaseAuthException e) {
-    print(e);
     String warningMessage;
     if (e.code == "invalid-phone-number") {
       warningMessage = "Número de telefone inválido. Por favor, tente outro.";

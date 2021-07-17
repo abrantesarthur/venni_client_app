@@ -23,13 +23,8 @@ class Geocoding extends GoogleWebService {
 
   GeocodingResponse _decode(http.Response response) {
     if (response != null && response.statusCode == 200) {
-      print("response != null && response.statusCode == 200");
-      print(response.body);
       return GeocodingResponse.fromJson(jsonDecode(response.body));
-    } else {
-      print("response failed");
-      print(response);
-    }
+    } else {}
 
     return null;
   }

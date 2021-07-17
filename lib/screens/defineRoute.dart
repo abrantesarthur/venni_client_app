@@ -71,8 +71,6 @@ class DefineRouteState extends State<DefineRoute> {
     // pickUp location defaults to user's current address. It's ok not to notify
     // since this widget's tree is only fully buit after we finish initState.
     if (widget.trip.pickUpAddress == null) {
-      print("widget.trip.pickUpAddress == null");
-      print(widget.user.geocoding);
       // if we failed to get user's geocoding (e.g., they have no internet), this
       // will set pickup address to null. We handle that graciously by hiding the
       // 'Localização atual selecionada' hint and askigng them to pick an origin.

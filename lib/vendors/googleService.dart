@@ -17,9 +17,7 @@ class GoogleWebService {
     http.Response response;
     try {
       response = await http.get(_buildUrl(params));
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
     return response;
   }
 

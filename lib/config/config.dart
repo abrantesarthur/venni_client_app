@@ -87,7 +87,6 @@ class AppConfig {
       if (Platform.isAndroid) {
         return DotEnv.env["ANDROID_GOOGLE_MAPS_API_KEY"];
       } else if (Platform.isIOS) {
-        print("Platform.isIOS");
         return DotEnv.env["IOS_GOOGLE_MAPS_API_KEY"];
       }
     }

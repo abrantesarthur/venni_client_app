@@ -54,7 +54,6 @@ class PaymentsState extends State<Payments> {
               iconRightSize: 15,
               primaryText: "Dinheiro",
               paddingBottom: screenHeight / 200,
-              // TODO: extract to function
               onTap: () {
                 if (widget.mode == PaymentsMode.pick) {
                   // set 'cash' as default payment method locally and remotely
@@ -189,6 +188,3 @@ class PaymentsState extends State<Payments> {
     );
   }
 }
-
-// TODO: tapping payment method in pick mode sets it as default locally and remotely and pops back
-// TODO: adding card in pick mode also sets it as default

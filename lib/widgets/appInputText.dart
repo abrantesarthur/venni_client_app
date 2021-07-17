@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rider_frontend/styles.dart';
 
-// TODO: add default endIcon that, when tapped, clears input field
 class AppInputText extends StatelessWidget {
   final Function onTapCallback;
   final String hintText;

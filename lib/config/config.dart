@@ -5,7 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
 enum Flavor { DEV, PROD }
 
-// TODO: add sensitive variables to secure storage package
 class ConfigValues {
   final String geocodingBaseURL;
   final String urlsApiKey;

@@ -14,7 +14,6 @@ import 'package:rider_frontend/widgets/warning.dart';
 import '../models/firebase.dart';
 import '../widgets/appButton.dart';
 
-// TODO: add lockScreen (and wherever else there is a CircularProgressIndicator)
 class InsertNewPassword extends StatefulWidget {
   static const String routeName = "InsertNewPassword";
 

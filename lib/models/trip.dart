@@ -28,7 +28,6 @@ class TripModel extends ChangeNotifier {
     _tripStatus = TripStatus.off;
   }
 
-  // TODO: try moving partner data to partner model
   Address get pickUpAddress => _currentPickUpAddress;
   Address get dropOffAddress => _currentDropOffAddress;
   TripStatus get tripStatus => _tripStatus;

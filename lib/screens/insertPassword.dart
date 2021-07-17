@@ -22,7 +22,6 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/passwordWarning.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-// TODO: fix napshotting a view (0x10847deb0, _UIReplicantView) that has not been rendered at least once requires afterScreenUpdates:YES.
 class InsertPasswordArguments {
   final UserCredential userCredential;
   final String name;

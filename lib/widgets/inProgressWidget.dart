@@ -8,7 +8,6 @@ import 'package:rider_frontend/widgets/overallPadding.dart';
 class InProgressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: should we listen?
     TripModel trip = Provider.of<TripModel>(context);
     UserModel user = Provider.of<UserModel>(context);
 

@@ -1,4 +1,3 @@
-// TODO: test
 import 'dart:math';
 import 'dart:ui'
     as ui; // imported as ui to prevent conflict between ui.Image and the Image widget
@@ -136,7 +135,6 @@ extension ExpirationDateExtension on String {
   }
 }
 
-// TODO: test
 extension CreditCardExtension on String {
   String getCleanedCardNumber() {
     if (this == null || this.length != 19) {

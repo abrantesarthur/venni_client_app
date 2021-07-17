@@ -19,7 +19,6 @@ import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 class WaitingPartnerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: should we listen?
     TripModel trip = Provider.of<TripModel>(context);
     UserModel user = Provider.of<UserModel>(context);
 
@@ -69,7 +68,6 @@ class WaitingPartnerWidget extends StatelessWidget {
               );
               return;
             }
-            // TODO: charge fee if necessary
             // cancel trip and update trip and partner models once it succeeds
             try {
               firebase.functions.cancelTrip();
@@ -106,7 +104,6 @@ class WaitingPartnerWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // TODO: notify client when partner is near
                     trip.partnerArrivalSeconds > 90
                         ? "Motorista a caminho"
                         : (trip.partnerArrivalSeconds > 5

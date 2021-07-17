@@ -14,10 +14,10 @@ import GoogleMaps
     var dartEnvironmentVariables: String = Bundle.main.infoDictionary?["DartEnvironmentVariables"] as! String ?? ""
     // use ',' as a serapator to convert dartEnvironmentVariables string into array
     let dartEnvironmentVariablesArray = dartEnvironmentVariables.components(separatedBy: ",")
-    // look for entry in dartEnvironmentVariablesArray containing 'GOOGLE_MAPS_API_KEY' string
+    // look for entry in dartEnvironmentVariablesArray containing 'IOS_GOOGLE_MAPS_API_KEY' string
     var googleMapsApiKeyEntry : String = ""
     for entry in dartEnvironmentVariablesArray {
-      if entry.contains("GOOGLE_MAPS_API_KEY") {
+      if entry.contains("IOS_GOOGLE_MAPS_API_KEY") {
         googleMapsApiKeyEntry = entry
         break
       }

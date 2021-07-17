@@ -60,7 +60,7 @@ class RequestTripWidgets extends StatelessWidget {
                     trip: trip,
                   ),
                 ) as bool;
-                if (!success) {
+                if (success != null && !success) {
                   await showOkDialog(
                     context: context,
                     title: "Algo deu errado",

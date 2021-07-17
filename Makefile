@@ -20,7 +20,7 @@ endif
 
 
 
-check-env: prod.env
+check-env:
 ifndef GOOGLE_MAPS_API_KEY
 	$(error GOOGLE_MAPS_API_KEY is undefined)
 endif

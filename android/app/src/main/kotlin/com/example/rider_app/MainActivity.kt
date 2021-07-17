@@ -1,4 +1,4 @@
-package com.venni.client.dev
+package com.venni.client
 
 import io.flutter.embedding.android.FlutterActivity
 

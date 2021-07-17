@@ -145,7 +145,6 @@ class UserModel extends ChangeNotifier {
   }
 
   Future<Position> getPosition({bool notify = true}) async {
-    print("getPosition");
     Position userPos;
     try {
       userPos = await determineUserPosition();
@@ -169,7 +168,6 @@ class UserModel extends ChangeNotifier {
 
   // updates user geocoding whenever they move at least 50 meters
   void updateGeocodingOnPositionChange() {
-    print("updateGeocodingOnPositionChange");
     try {
       Stream<Position> userPositionStream = Geolocator.getPositionStream(
         desiredAccuracy: LocationAccuracy.best,
@@ -188,7 +186,6 @@ class UserModel extends ChangeNotifier {
 
   // getGeocoding updates _geocoding. On failure, _geocoding is set to null.
   Future<void> getGeocoding(Position pos, {bool notify = true}) async {
-    print("getGeocoding");
     if (pos == null) {
       // don't update geocoding position is null
       return;

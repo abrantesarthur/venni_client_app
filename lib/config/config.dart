@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
-enum Flavor { DEV, STAG, PROD }
+enum Flavor { DEV, PROD }
 
 // TODO: add sensitive variables to secure storage package
 class ConfigValues {
   final String geocodingBaseURL;
+  final String urlsApiKey;
   final String autocompleteBaseURL;
   final String googleMapsApiKey;
   final bool emulateCloudFunctions;
@@ -15,6 +18,7 @@ class ConfigValues {
 
   ConfigValues({
     @required this.geocodingBaseURL,
+    @required this.urlsApiKey,
     @required this.autocompleteBaseURL,
     @required this.googleMapsApiKey,
     @required this.emulateCloudFunctions,
@@ -39,6 +43,7 @@ class AppConfig {
   factory AppConfig({@required Flavor flavor}) {
     ConfigValues values = ConfigValues(
       geocodingBaseURL: DotEnv.env["GEOCODING_BASE_URL"],
+      urlsApiKey: AppConfig._buildUrlsApiKey(flavor),
       autocompleteBaseURL: DotEnv.env["AUTOCOMPLETE_BASE_URL"],
       googleMapsApiKey: AppConfig._buildGoogleMapsApiKey(flavor),
       emulateCloudFunctions: DotEnv.env["EMULATE_CLOUD_FUNCTIONS"] == "true",
@@ -50,12 +55,19 @@ class AppConfig {
     return _instance;
   }
 
+  static String _buildUrlsApiKey(Flavor flavor) {
+    if (flavor == Flavor.DEV) {
+      return DotEnv.env["DEV_URLS_API_KEY"];
+    }
+    if (flavor == Flavor.PROD) {
+      return DotEnv.env["URLS_API_KEY"];
+    }
+    return "";
+  }
+
   static String _buildRealtimeDatabaseURL(Flavor flavor) {
     if (flavor == Flavor.DEV) {
       return DotEnv.env["DEV_REALTIME_DATABASE_BASE_URL"];
-    }
-    if (flavor == Flavor.STAG) {
-      return DotEnv.env["STAG_REALTIME_DATABASE_BASE_URL"];
     }
     if (flavor == Flavor.PROD) {
       return DotEnv.env["REALTIME_DATABASE_BASE_URL"];
@@ -65,13 +77,18 @@ class AppConfig {
 
   static String _buildGoogleMapsApiKey(Flavor flavor) {
     if (flavor == Flavor.DEV) {
-      return DotEnv.env["DEV_GOOGLE_MAPS_API_KEY"];
-    }
-    if (flavor == Flavor.STAG) {
-      return DotEnv.env["STAG_GOOGLE_MAPS_API_KEY"];
+      if (Platform.isAndroid) {
+        return DotEnv.env["DEV_ANDROID_GOOGLE_MAPS_API_KEY"];
+      } else if (Platform.isIOS) {
+        return DotEnv.env["DEV_IOS_GOOGLE_MAPS_API_KEY"];
+      }
     }
     if (flavor == Flavor.PROD) {
-      return DotEnv.env["GOOGLE_MAPS_API_KEY"];
+      if (Platform.isAndroid) {
+        return DotEnv.env["ANDROID_GOOGLE_MAPS_API_KEY"];
+      } else if (Platform.isIOS) {
+        return DotEnv.env["IOS_GOOGLE_MAPS_API_KEY"];
+      }
     }
     return "";
   }

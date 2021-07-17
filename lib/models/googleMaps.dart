@@ -92,7 +92,6 @@ class GoogleMapsModel extends ChangeNotifier {
 
     // reset maps camera view by showing location button and removing padding
     setGoogleMapsCameraView(notify: false);
-    print("undrawPolylines notifyListeners");
     notifyListeners();
   }
 

@@ -77,7 +77,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   // the background or returns the app to the foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    print("didChangeAppLifecycleState");
     super.didChangeAppLifecycleState(state);
     // if user stopped sharing location, didChangeAppLifecycleCallback should
     // ask them to reshare. The function is only defined once the tree has been
@@ -90,7 +89,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    print("initState");
     super.initState();
 
     // HomeState uses WidgetsBindingObserver as a mixin. Thus, we can pass it as
@@ -152,7 +150,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD HOME");
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     TripModel trip = Provider.of<TripModel>(context, listen: false);

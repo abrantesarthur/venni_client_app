@@ -4,12 +4,12 @@ import 'package:rider_frontend/config/config.dart';
 
 class GoogleWebService {
   String _baseUrl;
-  String _googleApiKey;
+  String _apiKey;
 
   GoogleWebService({@required String baseUrl})
       : assert(baseUrl != null && baseUrl.length > 0) {
     _baseUrl = baseUrl;
-    _googleApiKey = AppConfig.env.values.googleMapsApiKey;
+    _apiKey = AppConfig.env.values.urlsApiKey;
   }
 
   @protected
@@ -17,13 +17,13 @@ class GoogleWebService {
     http.Response response;
     try {
       response = await http.get(_buildUrl(params));
-    } catch (_) {}
+    } catch (e) {}
     return response;
   }
 
   String _buildUrl(String params) {
     return _baseUrl +
-        "/json?key=$_googleApiKey&language=pt-BR" +
+        "/json?key=$_apiKey&language=pt-BR" +
         (params.length > 0 ? "&" + params : "");
   }
 }

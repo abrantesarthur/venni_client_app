@@ -190,6 +190,7 @@ class UserModel extends ChangeNotifier {
   Future<void> getGeocoding(Position pos, {bool notify = true}) async {
     print("getGeocoding");
     if (pos == null) {
+      print("pos == null");
       // don't update geocoding position is null
       return;
     }
@@ -204,6 +205,8 @@ class UserModel extends ChangeNotifier {
       geocodingResult = geocoding.results[0];
     }
     // set user position
+    print("set geocoding");
+    print(geocodingResult != null);
     _geocoding = geocodingResult;
     if (notify) {
       notifyListeners();

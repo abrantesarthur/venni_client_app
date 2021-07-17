@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rider_frontend/widgets/appInputText.dart';
 
-// TODO: write tests
 class InputPhone extends StatelessWidget {
   final Function onSubmittedCallback;
   final TextEditingController controller;
@@ -40,7 +39,6 @@ class InputPhone extends StatelessWidget {
 }
 
 /// Format incoming numeric text to fit the format of (##) #####-####
-/// TODO: use MaskedInputFormatter instead
 class _BrNumberTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

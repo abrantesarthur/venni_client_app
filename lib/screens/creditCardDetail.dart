@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
-import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
@@ -13,7 +12,6 @@ import 'package:rider_frontend/widgets/goBackButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
-// TODO: allow user to set as default
 class CreditCardDetailArguments {
   final CreditCard creditCard;
 
@@ -36,7 +34,6 @@ class CreditCardDetailState extends State<CreditCardDetail> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // TODO: maybe allow tapping
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,

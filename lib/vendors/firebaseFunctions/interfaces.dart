@@ -82,8 +82,6 @@ class CreateCardArguments {
         "&card_cvv=" +
         this.cardCvv;
 
-    // TODO: can I use this strategy to create a cache?
-    // store public key in '.pem' file in cache
     final dir = await pp.getTemporaryDirectory();
     final pkFile = await io.File(dir.path + "/public.pem")
         .writeAsString(hashKey.publicKey);
@@ -184,7 +182,6 @@ class Trip {
     this.transactionID,
   });
 
-  // TODO: test the shit out of this and all other fromJson functions!!!
   factory Trip.fromJson(Map<dynamic, dynamic> json) {
     if (json == null || json.isEmpty) return null;
     TripStatus status = getTripStatusFromString(json["trip_status"]);

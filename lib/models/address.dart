@@ -54,7 +54,6 @@ class Address {
     placeID = pickResult.placeId;
   }
 
-  // TODO: format just like GeocodingResult
   Address.fromAutocompleteResponse(Map<String, dynamic> json, bool dropOff) {
     isDropOff = dropOff;
     mainText = json["structured_formatting"]["main_text"];

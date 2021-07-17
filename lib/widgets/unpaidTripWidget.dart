@@ -45,7 +45,6 @@ class UnpaidTripWidget extends StatelessWidget {
     );
   }
 
-  // TODO: update map paddings
   Widget _buildPendingPaymentFloatingCard(
     BuildContext context,
     Trip trip,

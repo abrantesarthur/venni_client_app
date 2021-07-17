@@ -16,11 +16,6 @@ import 'package:path/path.dart' as path;
 
 import '../models/firebase.dart';
 
-// TODO: write comments
-// TODO: fix image overflow
-// TODO: change default avatar
-// TODO: save image in storage
-
 class Profile extends StatefulWidget {
   static const String routeName = "Profile";
 

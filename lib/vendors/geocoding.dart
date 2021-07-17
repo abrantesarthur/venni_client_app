@@ -133,7 +133,6 @@ class AddressComponents {
     return field ?? "";
   }
 
-// TODO: fix this. it didn;t save my alterations
   String buildAddressMainText() {
     String route = this._search("route");
     String streetNumber = this._search("street_number");

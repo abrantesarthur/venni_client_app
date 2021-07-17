@@ -20,8 +20,6 @@ extension AppFirebaseStorage on FirebaseStorage {
     } catch (e) {}
   }
 
-  // TODO: cache downloaded images
-  // TODO: use something other than NetworkImage so it can load right away
   Future<ProfileImage> getUserProfileImage({@required String uid}) async {
     ListResult results;
     try {

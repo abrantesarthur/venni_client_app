@@ -10,7 +10,6 @@ import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
-import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
@@ -19,7 +18,6 @@ import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
-// TODO: test
 class ConfirmTripArguments {
   final FirebaseModel firebase;
   final TripModel trip;

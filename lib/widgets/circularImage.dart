@@ -5,8 +5,6 @@ class CircularImage extends StatelessWidget {
   final double size;
 
   CircularImage({this.imageFile, this.size});
-  // TODO: use screenWidth instead of screenHeight
-
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;

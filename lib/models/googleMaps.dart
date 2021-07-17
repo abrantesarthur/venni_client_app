@@ -12,7 +12,6 @@ import 'package:rider_frontend/vendors/polylinePoints.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-// TODO: write tests
 class GoogleMapsModel extends ChangeNotifier {
   Map<PolylineId, Polyline> _polylines;
   Set<Marker> _markers;
@@ -121,10 +120,6 @@ class GoogleMapsModel extends ChangeNotifier {
     );
 
     // request google directions API for encoded points between partner and destination
-    // TODO: move directions api requests to server. Request it when partner reports
-    // their position and, besides their coordinates, set the encoded points too.
-    // Also, user placeIDs instead of coordinates whenever possible. This makes
-    // markers more precise
     DirectionsResponse response = await Directions().searchByCoordinates(
       originCoordinates: partnerCoordinates,
       destinationCoordinates: destinationCoordinates,
@@ -181,8 +176,6 @@ class GoogleMapsModel extends ChangeNotifier {
     );
 
     // request google directions API for encoded points between user and partner
-    // TODO: move directions api requests to server. Request it when partner reports
-    // their position and, besides their coordinates, set the encoded points too.
     DirectionsResponse response = await Directions().searchByCoordinates(
       originCoordinates: originCoordinates,
       destinationCoordinates: partnerCoordinates,

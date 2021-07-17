@@ -13,8 +13,6 @@ import 'package:rider_frontend/widgets/inputPhone.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
 
-// TODO: allow user to sign in with email, specially if limit of phone verifications was reached
-
 class InsertPhone extends StatefulWidget {
   static const String routeName = "insertPhone";
 
@@ -162,9 +160,6 @@ class InsertPhoneNumberState extends State<InsertPhone> {
           forceResendingToken: _resendToken);
     }
   }
-
-  // TODO: inform users that sms rates may apply (https://firebase.google.com/docs/auth/android/phone-auth)
-  // TODO: allow phone authentication for iOS after developer account is approved
 
   @override
   Widget build(BuildContext context) {

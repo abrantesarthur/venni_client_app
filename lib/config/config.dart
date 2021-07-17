@@ -43,7 +43,7 @@ class AppConfig {
   factory AppConfig({@required Flavor flavor}) {
     ConfigValues values = ConfigValues(
       geocodingBaseURL: DotEnv.env["GEOCODING_BASE_URL"],
-      geocodingApiKey: DotEnv.env["GEOCODING_API_KEY"],
+      geocodingApiKey: AppConfig._buildGeocodingApiKey(flavor),
       autocompleteBaseURL: DotEnv.env["AUTOCOMPLETE_BASE_URL"],
       googleMapsApiKey: AppConfig._buildGoogleMapsApiKey(flavor),
       emulateCloudFunctions: DotEnv.env["EMULATE_CLOUD_FUNCTIONS"] == "true",
@@ -53,6 +53,16 @@ class AppConfig {
     );
     _instance ??= AppConfig._internal(flavor: flavor, values: values);
     return _instance;
+  }
+
+  static String _buildGeocodingApiKey(Flavor flavor) {
+    if (flavor == Flavor.DEV) {
+      return DotEnv.env["DEV_GEOCODING_API_KEY"];
+    }
+    if (flavor == Flavor.PROD) {
+      return DotEnv.env["GEOCODING_API_KEY"];
+    }
+    return "";
   }
 
   static String _buildRealtimeDatabaseURL(Flavor flavor) {

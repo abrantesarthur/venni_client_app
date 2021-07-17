@@ -97,6 +97,7 @@ class GoogleMapsModel extends ChangeNotifier {
 
   Future<void> drawPolylineFromPartnerToDestination(
       BuildContext context) async {
+    print("drawPolylineFromPartnerToDestination");
     // only draw polyline between the partner and origin if inProgress
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     if (trip.tripStatus != TripStatus.inProgress) {
@@ -129,6 +130,9 @@ class GoogleMapsModel extends ChangeNotifier {
       originCoordinates: partnerCoordinates,
       destinationCoordinates: destinationCoordinates,
     );
+
+    print(response);
+    print(response.errorMessage);
 
     if (response != null && response.status == "OK") {
       // get encodedPoints

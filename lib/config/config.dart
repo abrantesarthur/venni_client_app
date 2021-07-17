@@ -8,7 +8,7 @@ enum Flavor { DEV, PROD }
 // TODO: add sensitive variables to secure storage package
 class ConfigValues {
   final String geocodingBaseURL;
-  final String geocodingApiKey;
+  final String urlsApiKey;
   final String autocompleteBaseURL;
   final String googleMapsApiKey;
   final bool emulateCloudFunctions;
@@ -18,7 +18,7 @@ class ConfigValues {
 
   ConfigValues({
     @required this.geocodingBaseURL,
-    @required this.geocodingApiKey,
+    @required this.urlsApiKey,
     @required this.autocompleteBaseURL,
     @required this.googleMapsApiKey,
     @required this.emulateCloudFunctions,
@@ -43,7 +43,7 @@ class AppConfig {
   factory AppConfig({@required Flavor flavor}) {
     ConfigValues values = ConfigValues(
       geocodingBaseURL: DotEnv.env["GEOCODING_BASE_URL"],
-      geocodingApiKey: AppConfig._buildGeocodingApiKey(flavor),
+      urlsApiKey: AppConfig._buildGeocodingApiKey(flavor),
       autocompleteBaseURL: DotEnv.env["AUTOCOMPLETE_BASE_URL"],
       googleMapsApiKey: AppConfig._buildGoogleMapsApiKey(flavor),
       emulateCloudFunctions: DotEnv.env["EMULATE_CLOUD_FUNCTIONS"] == "true",
@@ -57,10 +57,10 @@ class AppConfig {
 
   static String _buildGeocodingApiKey(Flavor flavor) {
     if (flavor == Flavor.DEV) {
-      return DotEnv.env["DEV_GEOCODING_API_KEY"];
+      return DotEnv.env["DEV_URLS"];
     }
     if (flavor == Flavor.PROD) {
-      return DotEnv.env["GEOCODING_API_KEY"];
+      return DotEnv.env["URLS"];
     }
     return "";
   }

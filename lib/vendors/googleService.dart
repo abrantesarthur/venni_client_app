@@ -9,7 +9,7 @@ class GoogleWebService {
   GoogleWebService({@required String baseUrl})
       : assert(baseUrl != null && baseUrl.length > 0) {
     _baseUrl = baseUrl;
-    _apiKey = AppConfig.env.values.geocodingApiKey;
+    _apiKey = AppConfig.env.values.urlsApiKey;
   }
 
   @protected

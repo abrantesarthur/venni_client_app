@@ -289,7 +289,11 @@ void main() {
           ],
           builder: (context, child) {
             return MaterialApp(
-              home: DefineRoute(mode: DefineRouteMode.request),
+              home: DefineRoute(
+                mode: DefineRouteMode.request,
+                trip: mockTripModel,
+                user: mockUserModel,
+              ),
               onGenerateRoute: (RouteSettings settings) {
                 return MaterialPageRoute(builder: (context) {
                   return DefineDropOff(

@@ -1,4 +1,3 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';

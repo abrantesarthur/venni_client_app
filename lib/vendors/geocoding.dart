@@ -12,6 +12,7 @@ class Geocoding extends GoogleWebService {
   Geocoding() : super(baseUrl: AppConfig.env.values.geocodingBaseURL);
 
   Future<GeocodingResponse> searchByPosition(Position position) async {
+    print("searchByPosition");
     String params = "latlng=${position.latitude},${position.longitude}";
     return _decode(await doGet(params));
   }
@@ -22,6 +23,8 @@ class Geocoding extends GoogleWebService {
   }
 
   GeocodingResponse _decode(http.Response response) {
+    print("_decode");
+    print(response.body);
     if (response != null && response.statusCode == 200) {
       return GeocodingResponse.fromJson(jsonDecode(response.body));
     } else {}

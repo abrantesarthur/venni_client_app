@@ -43,7 +43,7 @@ class AppConfig {
   factory AppConfig({@required Flavor flavor}) {
     ConfigValues values = ConfigValues(
       geocodingBaseURL: DotEnv.env["GEOCODING_BASE_URL"],
-      urlsApiKey: AppConfig._buildGeocodingApiKey(flavor),
+      urlsApiKey: AppConfig._buildUrlsApiKey(flavor),
       autocompleteBaseURL: DotEnv.env["AUTOCOMPLETE_BASE_URL"],
       googleMapsApiKey: AppConfig._buildGoogleMapsApiKey(flavor),
       emulateCloudFunctions: DotEnv.env["EMULATE_CLOUD_FUNCTIONS"] == "true",
@@ -55,12 +55,12 @@ class AppConfig {
     return _instance;
   }
 
-  static String _buildGeocodingApiKey(Flavor flavor) {
+  static String _buildUrlsApiKey(Flavor flavor) {
     if (flavor == Flavor.DEV) {
-      return DotEnv.env["DEV_URLS"];
+      return DotEnv.env["DEV_URLS_API_KEY"];
     }
     if (flavor == Flavor.PROD) {
-      return DotEnv.env["URLS"];
+      return DotEnv.env["URLS_API_KEY"];
     }
     return "";
   }

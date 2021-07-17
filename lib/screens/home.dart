@@ -495,7 +495,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     }
 
     if (trip.tripStatus == TripStatus.inProgress) {
-      print("inProgress");
       googleMaps.drawPolylineFromPartnerToDestination(context);
       handlePartnerUpdates(TripStatus.inProgress);
       handleTripUpdates(TripStatus.inProgress);

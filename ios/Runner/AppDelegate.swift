@@ -30,7 +30,8 @@ import GoogleMaps
       googleMapsApiKey = googleMapsApiKeyNameAndValue[1]
     }
     // provide API key so google Maps SDK works for iOS
-    GMSServices.provideAPIKey(googleMapsApiKey)
+    // TODO: get from --dart-define
+    GMSServices.provideAPIKey("AIzaSyCK58KogR8m_I_unlhint9mwQkAy-_Ft3g")
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

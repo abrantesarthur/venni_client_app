@@ -138,6 +138,7 @@ class DefineRouteState extends State<DefineRoute> {
     return GoBackScaffold(
       resizeToAvoidBottomInset: false,
       lockScreen: lockScreen,
+      onPressed: () => Navigator.pop(context, true),
       children: [
         Text(
           "Escolha o ponto de partida e o destino.",

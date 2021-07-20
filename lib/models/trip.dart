@@ -160,10 +160,9 @@ class TripModel extends ChangeNotifier {
       }
       return;
     }
-    // if trip has a transitory status, like waitingPayment or lookingForPartner,
+    // if trip has a transitory status, like waitingPayment,
     // wait a little bit and try again
-    if (trip.tripStatus == TripStatus.waitingPayment ||
-        trip.tripStatus == TripStatus.lookingForPartner) {
+    if (trip.tripStatus == TripStatus.waitingPayment) {
       await Future.delayed(Duration(milliseconds: 500));
       return downloadData(firebase: firebase, partner: partner, notify: notify);
     }

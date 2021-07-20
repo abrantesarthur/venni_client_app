@@ -12,6 +12,7 @@ class GoBackScaffold extends StatelessWidget {
   final bool lockScreen;
   final IconData goBackIcon;
   final TextStyle titleStyle;
+  final VoidCallback onPressed;
 
   GoBackScaffold({
     @required this.children,
@@ -21,6 +22,7 @@ class GoBackScaffold extends StatelessWidget {
     this.lockScreen,
     this.goBackIcon,
     this.titleStyle,
+    this.onPressed,
   });
 
   @override
@@ -39,9 +41,10 @@ class GoBackScaffold extends StatelessWidget {
                   icon: goBackIcon,
                   onPressed: lockScreen != null && lockScreen
                       ? () {}
-                      : () {
-                          Navigator.pop(context);
-                        },
+                      : onPressed ??
+                          () {
+                            Navigator.pop(context);
+                          },
                 ),
                 Spacer(),
               ],

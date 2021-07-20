@@ -135,6 +135,7 @@ class UserModel extends ChangeNotifier {
     FirebaseModel firebase, {
     bool notify = true,
   }) async {
+    print("user.downloadData");
     // download user image file
     firebase.storage
         .getUserProfileImage(uid: firebase.auth.currentUser.uid)

@@ -1,5 +1,6 @@
 FLUTTER ?= flutter
 FLUTTERRUN ?= $(FLUTTER) run
+FLUTTERBUILD ?= $(FLUTTER) build
 
 # load environment variabels
 include .env
@@ -38,7 +39,7 @@ endif
 
 
 ################################################################################
-## Main make targets
+## run targets
 ################################################################################
 .PHONY: rundev
 rundev: check-dev-env
@@ -63,7 +64,21 @@ rundev: check-dev-env
 run: check-env
 	$(FLUTTERRUN) \
 	-v \
-	--profile \
+	--release \
+	--flavor prod \
+	--dart-define=IOS_GOOGLE_MAPS_API_KEY=$(IOS_GOOGLE_MAPS_API_KEY) \
+	--dart-define=ANDROID_GOOGLE_MAPS_API_KEY=$(ANDROID_GOOGLE_MAPS_API_KEY) \
+	-t lib/main.dart
+
+################################################################################
+## build targets
+################################################################################
+.PHONY: build-ipa
+build-ipa: check-env
+	$(FLUTTERBUILD) ipa \
+	-v \
+	--obfuscate \
+	--split-debug-info=/rider_app/. \
 	--flavor prod \
 	--dart-define=IOS_GOOGLE_MAPS_API_KEY=$(IOS_GOOGLE_MAPS_API_KEY) \
 	--dart-define=ANDROID_GOOGLE_MAPS_API_KEY=$(ANDROID_GOOGLE_MAPS_API_KEY) \

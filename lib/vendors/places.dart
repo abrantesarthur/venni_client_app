@@ -2,18 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/address.dart';
+import 'package:rider_frontend/vendors/googleService.dart';
 import 'package:uuid/uuid.dart';
 
 // create autocomplete class similar to Geocoding
 
-class Places {
-  String _googleApiKey;
-
-  Places() {
-    _googleApiKey = AppConfig.env.values.googleMapsApiKey;
-  }
+class Places extends GoogleWebService {
+  Places() : super(serviceName: "place/autocomplete");
 
   Future<List<Address>> findAddressPredictions({
     @required String placeName,
@@ -26,30 +22,29 @@ class Places {
 
     List<Address> predictionList = [];
     if (placeName.length > 1) {
-      String autoCompleteUrl = AppConfig.env.values.autocompleteBaseURL +
-          "input=$placeName&" +
-          "key=$_googleApiKey&" +
+      String params = "input=$placeName&" +
           "sessiontoken=$sessionToken&" +
           "location=$latitude,$longitude&" +
           "radius=${30000}&" +
-          "strictbounds&" +
-          "language=pt-BR";
+          "strictbounds";
 
-      var autocompleteResponse;
-      try {
-        autocompleteResponse = await http.get(autoCompleteUrl);
-      } catch (_) {}
-      if (autocompleteResponse != null &&
-          autocompleteResponse.statusCode < 300) {
-        var autocompleteJson = jsonDecode(autocompleteResponse.body);
-        if (autocompleteJson["status"] == "OK") {
-          var predictions = autocompleteJson["predictions"];
-          predictionList = (predictions as List).map((p) {
-            return Address.fromAutocompleteResponse(p, isDropOff);
-          }).toList();
-        }
+      predictionList = _decode(await doGet(params), isDropOff);
+    }
+    return predictionList;
+  }
+
+  List<Address> _decode(http.Response response, bool isDropOff) {
+    List<Address> predictionList = [];
+    if (response != null && response.statusCode < 300) {
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse["status"] == "OK") {
+        var predictions = jsonResponse["predictions"];
+        predictionList = (predictions as List).map((p) {
+          return Address.fromAutocompleteResponse(p, isDropOff);
+        }).toList();
       }
     }
     return predictionList;
+    ;
   }
 }

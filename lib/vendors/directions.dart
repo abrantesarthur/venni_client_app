@@ -5,11 +5,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/vendors/googleService.dart';
 
 class Directions extends GoogleWebService {
-  Directions() : super(baseUrl: AppConfig.env.values.directionsBaseURL);
+  Directions() : super(serviceName: "directions");
 
   Future<DirectionsResponse> searchByPlaceIDs({
     @required String originPlaceID,

@@ -5,13 +5,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/vendors/googleService.dart';
 
 class Geocoding extends GoogleWebService {
-  Geocoding() : super(baseUrl: AppConfig.env.values.geocodingBaseURL);
+  Geocoding() : super(serviceName: "geocode");
 
   Future<GeocodingResponse> searchByPosition(Position position) async {
+    print("searchByPosition");
     String params = "latlng=${position.latitude},${position.longitude}";
     return _decode(await doGet(params));
   }

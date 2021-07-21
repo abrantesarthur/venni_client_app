@@ -3,12 +3,11 @@ import 'package:http/http.dart' as http;
 import 'package:rider_frontend/config/config.dart';
 
 class GoogleWebService {
-  String _baseUrl;
+  String _serviceName;
   String _apiKey;
 
-  GoogleWebService({@required String baseUrl})
-      : assert(baseUrl != null && baseUrl.length > 0) {
-    _baseUrl = baseUrl;
+  GoogleWebService({@required String serviceName}) {
+    _serviceName = serviceName;
     _apiKey = AppConfig.env.values.urlsApiKey;
   }
 
@@ -21,10 +20,13 @@ class GoogleWebService {
     return response;
   }
 
-  String _buildUrl(String params) {
-    return _baseUrl +
-        "/json?key=$_apiKey&language=pt-BR" +
-        (params.length > 0 ? "&" + params : "");
+  Uri _buildUrl(String params) {
+    return Uri.parse(
+      "https://maps.googleapis.com/maps/api/" +
+          _serviceName +
+          "/json?key=$_apiKey&language=pt-BR" +
+          (params.length > 0 ? "&" + params : ""),
+    );
   }
 }
 

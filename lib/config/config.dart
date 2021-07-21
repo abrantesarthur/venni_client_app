@@ -6,24 +6,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 enum Flavor { DEV, PROD }
 
 class ConfigValues {
-  final String geocodingBaseURL;
   final String urlsApiKey;
-  final String autocompleteBaseURL;
   final String googleMapsApiKey;
   final bool emulateCloudFunctions;
   final String cloudFunctionsBaseURL;
   final String realtimeDatabaseURL;
-  final String directionsBaseURL;
 
   ConfigValues({
-    @required this.geocodingBaseURL,
     @required this.urlsApiKey,
-    @required this.autocompleteBaseURL,
     @required this.googleMapsApiKey,
     @required this.emulateCloudFunctions,
     @required this.cloudFunctionsBaseURL,
     @required this.realtimeDatabaseURL,
-    @required this.directionsBaseURL,
   });
 }
 
@@ -41,14 +35,11 @@ class AppConfig {
 
   factory AppConfig({@required Flavor flavor}) {
     ConfigValues values = ConfigValues(
-      geocodingBaseURL: DotEnv.env["GEOCODING_BASE_URL"],
       urlsApiKey: AppConfig._buildUrlsApiKey(flavor),
-      autocompleteBaseURL: DotEnv.env["AUTOCOMPLETE_BASE_URL"],
       googleMapsApiKey: AppConfig._buildGoogleMapsApiKey(flavor),
       emulateCloudFunctions: DotEnv.env["EMULATE_CLOUD_FUNCTIONS"] == "true",
       cloudFunctionsBaseURL: AppConfig._buildCloudFunctionsBaseURL(),
       realtimeDatabaseURL: _buildRealtimeDatabaseURL(flavor),
-      directionsBaseURL: DotEnv.env["DIRECTIONS_BASE_URL"],
     );
     _instance ??= AppConfig._internal(flavor: flavor, values: values);
     return _instance;

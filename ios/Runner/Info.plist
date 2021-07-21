@@ -40,7 +40,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<string>1</string>
 	<key>DartEnvironmentVariables</key>
 	<string>$(DART_DEFINES)</string>
 	<key>LSRequiresIPhoneOS</key>

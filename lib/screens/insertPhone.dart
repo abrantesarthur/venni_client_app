@@ -125,6 +125,7 @@ class InsertPhoneNumberState extends State<InsertPhone> {
     FirebaseAuth firebaseAuth,
     FirebaseDatabase firebaseDatabase,
   ) async {
+    print("buttonCallback");
     if (phoneNumber != null) {
       // prevent users from editing phone number and show loading icon
       setState(() {
@@ -144,12 +145,15 @@ class InsertPhoneNumberState extends State<InsertPhone> {
                 firebaseDatabase: firebaseDatabase,
                 firebaseAuth: firebaseAuth,
                 onExceptionCallback: (FirebaseAuthException e) {
+                  print(e);
                   setInactiveState(
                     message: "Algo deu errado. Tente novamente.",
                   );
                 });
           },
           verificationFailed: (FirebaseAuthException e) {
+            print("verificationFailed");
+            print(e);
             String errorMsg = firebaseAuth.verificationFailedCallback(e);
             setInactiveState(message: errorMsg);
           },

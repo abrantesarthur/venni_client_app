@@ -228,6 +228,7 @@ class _AppState extends State<App> {
 
               return MaterialApp(
                 theme: ThemeData(fontFamily: "OpenSans"),
+                debugShowCheckedModeBanner: false,
                 // push Start screen if user is not registered, we can't find his
                 // entry in the database, or we failed to his data. In this last case
                 // it will come a step in which he will be warned to connect to the

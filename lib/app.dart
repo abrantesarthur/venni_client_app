@@ -174,6 +174,7 @@ class _AppState extends State<App> {
           if (snapshot.hasError &&
               error.code == "firebase-initialization-error") {
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               home: Scaffold(
                 body: Container(
                   color: Colors.white,
@@ -438,8 +439,5 @@ class _AppState extends State<App> {
             },
           );
         });
-
-    // if everything is setup, show Home screen or Start screen, depending
-    // on whether user is signed in
   }
 }

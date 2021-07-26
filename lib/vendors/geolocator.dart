@@ -5,6 +5,7 @@ Position userPosition;
 
 // Determine the current position of the device
 Future<Position> determineUserPosition() async {
+  print("determineUserPosition");
   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     return Future.error("Location services are disabled.");
@@ -34,8 +35,14 @@ Future<Position> determineUserPosition() async {
           "Location permissions denied (actual value: $permission).");
     }
   }
+  Position userPosition;
 
-  return await Geolocator.getCurrentPosition(
-    desiredAccuracy: LocationAccuracy.high,
-  );
+  try {
+    userPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+      timeLimit: Duration(seconds: 5),
+    );
+  } catch (_) {}
+
+  return userPosition;
 }

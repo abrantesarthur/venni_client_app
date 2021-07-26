@@ -155,7 +155,6 @@ class _AppState extends State<App> {
   Future<void> initializeUser() async {
     // download client and trip data
     await user.downloadData(firebaseModel, notify: false);
-    print("call download data");
     await tripModel.downloadData(
       firebase: firebaseModel,
       partner: partner,

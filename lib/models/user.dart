@@ -135,7 +135,6 @@ class UserModel extends ChangeNotifier {
     FirebaseModel firebase, {
     bool notify = true,
   }) async {
-    print("user.downloadData");
     // download user image file
     firebase.storage
         .getUserProfileImage(uid: firebase.auth.currentUser.uid)
@@ -146,12 +145,15 @@ class UserModel extends ChangeNotifier {
   }
 
   Future<Position> getPosition({bool notify = true}) async {
+    print("getPosition");
     Position userPos;
     try {
       userPos = await determineUserPosition();
+      print("done with determineUserPosition");
     } catch (_) {
       userPos = null;
     }
+    print("got position");
     _position = userPos;
     if (notify) {
       notifyListeners();
@@ -187,6 +189,7 @@ class UserModel extends ChangeNotifier {
 
   // getGeocoding updates _geocoding. On failure, _geocoding is set to null.
   Future<void> getGeocoding(Position pos, {bool notify = true}) async {
+    print("getGeocoding");
     if (pos == null) {
       // don't update geocoding position is null
       return;

@@ -301,6 +301,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   }
 
   Future<Position> _getUserPosition({bool notify = true}) async {
+    print("_getUserPosition");
     // Try getting user position. If it returns null, it's because user stopped
     // sharing location. getPosition() will automatically handle that case, asking
     // the user to share again and preventing them from using the app if they
@@ -319,6 +320,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     // again, as the subscription may have been cancelled if user stopped
     // sharing location.
     widget.user.updateGeocodingOnPositionChange();
+    print("return");
     return pos;
   }
 

@@ -11,7 +11,6 @@ class Geocoding extends GoogleWebService {
   Geocoding() : super(serviceName: "geocode");
 
   Future<GeocodingResponse> searchByPosition(Position position) async {
-    print("searchByPosition");
     String params = "latlng=${position.latitude},${position.longitude}";
     return _decode(await doGet(params));
   }

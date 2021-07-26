@@ -390,6 +390,7 @@ Future<T> showYesNoDialog<T>(
   BuildContext context, {
   @required String title,
   String content,
+  Widget child,
   VoidCallback onPressedNo,
   @required VoidCallback onPressedYes,
 }) async {
@@ -399,6 +400,7 @@ Future<T> showYesNoDialog<T>(
       return YesNoDialog(
         title: title,
         content: content,
+        child: child,
         onPressedYes: onPressedYes,
         onPressedNo: onPressedNo,
       );

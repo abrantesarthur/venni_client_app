@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/passwordWarning.dart';
 import 'package:rider_frontend/widgets/warning.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InsertPasswordArguments {
   final UserCredential userCredential;
@@ -217,9 +219,6 @@ class InsertPasswordState extends State<InsertPassword> {
     FirebaseModel firebase,
     UserModel user,
   ) async {
-    // dismiss keyboard
-    FocusScope.of(context).requestFocus(FocusNode());
-
     // if user already has a partner account
     if (firebase.isRegistered) {
       // make sure they've entered a correct password
@@ -282,12 +281,50 @@ class InsertPasswordState extends State<InsertPassword> {
   void buttonCallback(BuildContext context) async {
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     UserModel user = Provider.of<UserModel>(context, listen: false);
-    setState(() {
-      successfullyRegisteredUser = registerUser(
-        firebase,
-        user,
-      );
-    });
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    // ask user to abide by privacy terms
+    await showYesNoDialog(
+      context,
+      title: "Termos de Uso",
+      child: RichText(
+        text: TextSpan(
+          text: "Você precisa aceitar os nossos ",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 14,
+          ),
+          children: [
+            TextSpan(
+                text: "termos de uso",
+                style: TextStyle(color: Colors.blue),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    String _url = "https://venni.app/termos/clientes";
+                    if (await canLaunch(_url)) {
+                      try {
+                        await launch(_url);
+                      } catch (_) {}
+                    }
+                  }),
+            TextSpan(
+              text: " para criar a sua conta. Deseja aceitar os termos?",
+            ),
+          ],
+        ),
+      ),
+      onPressedYes: () {
+        // dismiss dialog
+        Navigator.pop(context);
+        setState(() {
+          successfullyRegisteredUser = registerUser(
+            firebase,
+            user,
+          );
+        });
+      },
+    );
   }
 
   @override

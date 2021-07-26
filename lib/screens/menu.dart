@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/screens/help.dart';
 import 'package:rider_frontend/screens/pastTrips.dart';
 import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/screens/profile.dart';
@@ -108,6 +109,18 @@ class Menu extends StatelessWidget {
                   iconLeft: Icons.payment_rounded,
                   iconRight: Icons.keyboard_arrow_right,
                   primaryText: "Pagamento",
+                  primaryTextSize: 18,
+                  paddingTop: screenHeight / 80,
+                  paddingBottom: screenHeight / 80,
+                ),
+                Divider(thickness: 0.1, color: Colors.black),
+                BorderlessButton(
+                  onTap: () {
+                    Navigator.pushNamed(context, Help.routeName);
+                  },
+                  iconLeft: Icons.headset_mic,
+                  iconRight: Icons.keyboard_arrow_right,
+                  primaryText: "Ajuda",
                   primaryTextSize: 18,
                   paddingTop: screenHeight / 80,
                   paddingBottom: screenHeight / 80,

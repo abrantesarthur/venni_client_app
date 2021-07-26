@@ -21,6 +21,7 @@ import 'package:rider_frontend/screens/definePickUp.dart';
 import 'package:rider_frontend/screens/deleteAccount.dart';
 import 'package:rider_frontend/screens/editEmail.dart';
 import 'package:rider_frontend/screens/editPhone.dart';
+import 'package:rider_frontend/screens/help.dart';
 import 'package:rider_frontend/screens/home.dart';
 import 'package:rider_frontend/screens/insertName.dart';
 import 'package:rider_frontend/screens/insertNewEmail.dart';
@@ -434,6 +435,7 @@ class _AppState extends State<App> {
                   RatePartner.routeName: (context) => RatePartner(),
                   AddCreditCard.routeName: (context) => AddCreditCard(),
                   CashDetail.routeName: (context) => CashDetail(),
+                  Help.routeName: (context) => Help(),
                 },
               );
             },

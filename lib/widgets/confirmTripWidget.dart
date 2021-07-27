@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/partner.dart';
+import 'package:rider_frontend/models/timer.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
@@ -314,6 +315,7 @@ Future<void> confirmTripCallback(
     }
   }
 
+  TimerModel timer = Provider.of<TimerModel>(context, listen: false);
   // push confirmation screen if user picks a card or decides to continue cash payment
   await Navigator.pushNamed(
     context,
@@ -322,6 +324,7 @@ Future<void> confirmTripCallback(
       firebase: firebase,
       trip: trip,
       user: user,
+      timer: timer,
     ),
   );
 }

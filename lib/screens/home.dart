@@ -8,8 +8,10 @@ import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/timer.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
+import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:rider_frontend/screens/menu.dart';
 import 'package:rider_frontend/screens/payments.dart';
 import 'package:rider_frontend/screens/ratePartner.dart';
@@ -356,6 +358,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
     PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
+    UserModel user = Provider.of<UserModel>(context, listen: false);
+    TimerModel timer = Provider.of<TimerModel>(context, listen: false);
     GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(
       context,
       listen: false,
@@ -501,8 +505,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
 
-    if (trip.tripStatus == TripStatus.noPartnersAvailable ||
-        trip.tripStatus == TripStatus.lookingForPartner) {
+    if (trip.tripStatus == TripStatus.noPartnersAvailable) {
       // alert user to wait
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showOkDialog(
@@ -516,6 +519,22 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
       // the UI
       trip.updateStatus(TripStatus.waitingConfirmation, notify: false);
       return;
+    }
+
+    if (trip.tripStatus == TripStatus.lookingForPartner) {
+      // lookingForPartner is a temporary state that transitions to to either
+      // noPartnersAvailable or waitingParner. In either case, push splash screen
+      // that will show a countdown timer until the state gets resolved.
+      await Navigator.pushNamed(
+        context,
+        ConfirmTrip.routeName,
+        arguments: ConfirmTripArguments(
+          firebase: firebase,
+          trip: trip,
+          user: user,
+          timer: timer,
+        ),
+      );
     }
 
     if (trip.tripStatus == TripStatus.paymentFailed) {

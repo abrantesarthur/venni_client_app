@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/address.dart';
 import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/timer.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
@@ -22,10 +24,12 @@ class ConfirmTripArguments {
   final FirebaseModel firebase;
   final TripModel trip;
   final UserModel user;
+  final TimerModel timer;
   ConfirmTripArguments({
     @required this.firebase,
     @required this.trip,
     @required this.user,
+    @required this.timer,
   });
 }
 
@@ -34,11 +38,13 @@ class ConfirmTrip extends StatefulWidget {
   final FirebaseModel firebase;
   final TripModel trip;
   final UserModel user;
+  final TimerModel timer;
 
   ConfirmTrip({
     @required this.firebase,
     @required this.trip,
     @required this.user,
+    @required this.timer,
   });
 
   @override
@@ -64,6 +70,12 @@ class ConfirmTripState extends State<ConfirmTrip> {
         .listen(tripStatusListener);
 
     confirmTripResult = confirmTrip();
+
+    // kickOff timer after tree has been built to avoid exceptions
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.timer.kickOff(durationSeconds: 30);
+    });
+
     super.initState();
   }
 
@@ -137,8 +149,25 @@ class ConfirmTripState extends State<ConfirmTrip> {
           AsyncSnapshot<ConfirmTripResult> snapshot,
         ) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // show Splash screen while waiting for confirmTrip to finish
-            return Splash(text: splashMessage);
+            // show Splash screen with a countdown timer while waiting for
+            // confirmTrip to finish if timer goes to 0, display a circular progress indicator
+            return Splash(
+              text: splashMessage,
+              child: Consumer<TimerModel>(builder: (context, timer, _) {
+                if (timer.remainingSeconds == 0) {
+                  return CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  );
+                }
+                return Text(
+                  timer.remainingSeconds.toString() + "s",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                );
+              }),
+            );
           }
 
           // regardless of whether request failed or not, we go back Home once
@@ -168,13 +197,14 @@ class ConfirmTripState extends State<ConfirmTrip> {
   }
 
   // when _tripConfirming is called, status will be one of the following:
-  // paymentFailed, noPartnersAvailable - error was thrown
+  // paymentFailed - error was thrown
   // waitingConfirmation - very unlikely. Will only throw if
   //      request is unauthenticated (not the case) or there's no active
   //      trip request (not the case)
+  // noPartnersAvailable - all partners are busy or timed out because no partner
+  ///     accepted the request
   // waitingPartner - request succeded! We should start listening for
   //      updates in partner position
-  // lookingForPartners - timed out looking for partners and threw error
   Future<void> finishConfirmation(
     BuildContext context,
     ConfirmTripResult result,
@@ -206,7 +236,6 @@ class ConfirmTripState extends State<ConfirmTrip> {
           trip.updateStatus(tripStatus);
         }
       } catch (_) {}
-
       return;
     }
 

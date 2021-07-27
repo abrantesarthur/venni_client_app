@@ -353,9 +353,10 @@ class InsertPasswordState extends State<InsertPassword> {
           // future builder must return Widget, but we want to push a route.
           // thus, schedule pushing for right afer returning a Container.
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacementNamed(
+            Navigator.pushNamedAndRemoveUntil(
               context,
               Home.routeName,
+              (_) => false,
               arguments: HomeArguments(
                 firebase: firebase,
                 trip: trip,

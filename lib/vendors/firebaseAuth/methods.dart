@@ -56,9 +56,10 @@ extension AppFirebaseAuth on FirebaseAuth {
         } catch (e) {}
 
         // redirect to Home screen
-        Navigator.pushReplacementNamed(
+        Navigator.pushNamedAndRemoveUntil(
           context,
           Home.routeName,
+          (_) => false,
           arguments: HomeArguments(
             firebase: firebase,
             trip: trip,

@@ -325,7 +325,8 @@ class DefineRouteState extends State<DefineRoute> {
         ));
       }
       success = true;
-    } catch (_) {
+    } catch (e) {
+      print(e);
       lockScreen = false;
       success = false;
     }

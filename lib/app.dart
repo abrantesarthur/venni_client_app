@@ -7,6 +7,7 @@ import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/timer.dart';
 import 'package:rider_frontend/screens/cashDetail.dart';
 import 'package:rider_frontend/screens/confirmTrip.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,7 @@ class _AppState extends State<App> {
   ConnectivityModel connectivity;
   GoogleMapsModel googleMaps;
   PartnerModel partner;
+  TimerModel timer;
   FirebaseAuth firebaseAuth;
   FirebaseDatabase firebaseDatabase;
   FirebaseStorage firebaseStorage;
@@ -150,6 +152,7 @@ class _AppState extends State<App> {
     googleMaps = GoogleMapsModel();
     partner = PartnerModel();
     connectivity = ConnectivityModel();
+    timer = TimerModel();
   }
 
   Future<void> initializeUser() async {
@@ -218,6 +221,9 @@ class _AppState extends State<App> {
               ),
               ChangeNotifierProvider<ConnectivityModel>(
                 create: (context) => connectivity,
+              ),
+              ChangeNotifierProvider<TimerModel>(
+                create: (context) => timer,
               ),
             ], // pass user model down
             builder: (context, child) {
@@ -343,6 +349,7 @@ class _AppState extends State<App> {
                         firebase: args.firebase,
                         trip: args.trip,
                         user: args.user,
+                        timer: args.timer,
                       );
                     });
                   }

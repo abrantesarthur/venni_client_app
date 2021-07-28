@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -28,6 +29,11 @@ import 'package:rider_frontend/widgets/inProgressWidget.dart';
 import 'package:rider_frontend/widgets/requestTripWidgets.dart';
 import 'package:rider_frontend/widgets/unpaidTripWidget.dart';
 import 'package:rider_frontend/widgets/waitingPartnerWidget.dart';
+import 'package:system_settings/system_settings.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
 
 class HomeArguments {
   final FirebaseModel firebase;
@@ -80,8 +86,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
-    // if user stopped sharing location, didChangeAppLifecycleCallback should
-    // ask them to reshare. The function is only defined once the tree has been
+    // if user stopped sharing location or notifications, didChangeAppLifecycleCallback
+    // asks them to reshare. The function is only defined once the tree has been
     // built though, to avoid exceptions of trying to ask for location permission
     // simultaneously. After all, we already ask for them in initState.
     if (didChangeAppLifecycleCallback != null) {
@@ -132,6 +138,17 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         await _redrawUIOnTripUpdate(context);
       };
       widget.trip.addListener(_tripListener);
+
+      // ask user to allow notifications
+      await widget.firebase.requestNotifications(context);
+
+      try {
+        String token = await widget.firebase.messaging.getToken();
+        await saveTokenToDatabase(token);
+
+        // Any time the token refreshes, store this in the database too.
+        FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToDatabase);
+      } catch (_) {}
     });
   }
 
@@ -171,6 +188,10 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           user.downloadData(firebase);
           trip.downloadData();
         } catch (e) {}
+        // save fcm token to database
+        firebase.messaging.getToken().then(
+              (token) => saveTokenToDatabase(token),
+            );
       }
     }
 
@@ -204,7 +225,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         }
 
         // after having waited succesfully, define didChangeAppLifecycleCallback
-        // so if user stops sharing location, we will know.
+        // so if user stops sharing location or disable notificatoin, we will know.
         if (didChangeAppLifecycleCallback == null) {
           didChangeAppLifecycleCallback = () async {
             try {
@@ -212,6 +233,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
             } catch (e) {
               _getUserPosition();
             }
+
+            await firebase.requestNotifications(context);
           };
         }
 
@@ -299,6 +322,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           ),
         );
       },
+    );
+  }
+
+  // save firebase cloud messaging token on database
+  Future<void> saveTokenToDatabase(String token) async {
+    await widget.firebase.database.updateFCMToken(
+      uid: widget.firebase.auth.currentUser.uid,
+      token: token,
     );
   }
 

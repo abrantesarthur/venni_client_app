@@ -113,6 +113,16 @@ extension AppFirebaseDatabase on FirebaseDatabase {
     return null;
   }
 
+  // updateFCMToken updates the user's firebase cloud messaging token so they
+  // can receive targeted notifications from the backend
+  Future<void> updateFCMToken({String uid, String token}) async {
+    return await this
+        .reference()
+        .child("clients")
+        .child(uid)
+        .update({"fcm_token": token});
+  }
+
   // onPartnerUpdate subscribes onData to handle changes in the partner with uid partnerID
   StreamSubscription onPartnerUpdate(
     String partnerID,

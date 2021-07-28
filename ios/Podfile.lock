@@ -17,6 +17,9 @@ PODS:
   - Firebase/Functions (8.3.0):
     - Firebase/CoreOnly
     - FirebaseFunctions (~> 8.3.0)
+  - Firebase/Messaging (8.3.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 8.3.0)
   - Firebase/Storage (8.3.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 8.3.0)
@@ -29,6 +32,10 @@ PODS:
     - Flutter
   - firebase_database (7.1.2):
     - Firebase/Database (= 8.3.0)
+    - firebase_core
+    - Flutter
+  - firebase_messaging (10.0.4):
+    - Firebase/Messaging (= 8.3.0)
     - firebase_core
     - Flutter
   - firebase_storage (8.1.3):
@@ -55,6 +62,18 @@ PODS:
   - FirebaseFunctions (8.3.0):
     - FirebaseCore (~> 8.0)
     - GTMSessionFetcher/Core (~> 1.5)
+  - FirebaseInstallations (8.4.0):
+    - FirebaseCore (~> 8.0)
+    - GoogleUtilities/Environment (~> 7.4)
+    - GoogleUtilities/UserDefaults (~> 7.4)
+    - PromisesObjC (< 3.0, >= 1.2)
+  - FirebaseMessaging (8.3.0):
+    - FirebaseCore (~> 8.0)
+    - FirebaseInstallations (~> 8.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.4)
+    - GoogleUtilities/Environment (~> 7.4)
+    - GoogleUtilities/Reachability (~> 7.4)
+    - GoogleUtilities/UserDefaults (~> 7.4)
   - FirebaseStorage (8.3.0):
     - FirebaseCore (~> 8.0)
     - GTMSessionFetcher/Core (~> 1.5)
@@ -88,6 +107,8 @@ PODS:
   - "GoogleUtilities/NSData+zlib (7.5.0)"
   - GoogleUtilities/Reachability (7.5.0):
     - GoogleUtilities/Logger
+  - GoogleUtilities/UserDefaults (7.5.0):
+    - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (1.6.1)
   - image_picker (0.0.1):
     - Flutter
@@ -105,6 +126,8 @@ PODS:
     - Flutter
   - PromisesObjC (2.0.0)
   - Reachability (3.2)
+  - system_settings (0.0.1):
+    - Flutter
   - url_launcher (0.0.1):
     - Flutter
 
@@ -114,6 +137,7 @@ DEPENDENCIES:
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
+  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
   - geolocator (from `.symlinks/plugins/geolocator/ios`)
@@ -122,6 +146,7 @@ DEPENDENCIES:
   - package_info (from `.symlinks/plugins/package_info/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
+  - system_settings (from `.symlinks/plugins/system_settings/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
 
 SPEC REPOS:
@@ -132,6 +157,8 @@ SPEC REPOS:
     - FirebaseCoreDiagnostics
     - FirebaseDatabase
     - FirebaseFunctions
+    - FirebaseInstallations
+    - FirebaseMessaging
     - FirebaseStorage
     - GoogleDataTransport
     - GoogleMaps
@@ -153,6 +180,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_core/ios"
   firebase_database:
     :path: ".symlinks/plugins/firebase_database/ios"
+  firebase_messaging:
+    :path: ".symlinks/plugins/firebase_messaging/ios"
   firebase_storage:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
@@ -169,6 +198,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider/ios"
   permission_handler:
     :path: ".symlinks/plugins/permission_handler/ios"
+  system_settings:
+    :path: ".symlinks/plugins/system_settings/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
 
@@ -179,12 +210,15 @@ SPEC CHECKSUMS:
   firebase_auth: 5d48a6c2c9de6d8f7946269ef904136298c6aa12
   firebase_core: 72374607c8c6f5a0adc0559e5c5bf57deda975e3
   firebase_database: 27de7affa8b73e25afe25ee7ec18e3216d8d279c
+  firebase_messaging: 55c5b8184efd330b9d1f1765b55c4ae57e015c5e
   firebase_storage: 93642c2a5d403bd218134a2bfe61e311a6f446bc
   FirebaseAuth: fd12c82de44e7ad3b821610c387b8251f03aa0f9
   FirebaseCore: a6dba751680d7033b9d3831e1cfc95ead0605118
   FirebaseCoreDiagnostics: cad03be1904b975f845e632f2720c3337da27faf
   FirebaseDatabase: 3cb36bbf667be87d72cebc8dbe72e2e8cac1d615
   FirebaseFunctions: f391cdeef45d2e85ef4e16a6ecca05f30e162c41
+  FirebaseInstallations: 1585729afc787877763208c2088ed84221161f77
+  FirebaseMessaging: 42252b79b860482021483748669ec32e22196462
   FirebaseStorage: ff380720c204593d98c3e5482e62ccfbb522f0c5
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   geolocator: f5e3de65e241caba7ce3e8a618803387bda73384
@@ -201,6 +235,7 @@ SPEC CHECKSUMS:
   permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
+  system_settings: 8f5cdbfa72c677fc8d665b863bcc20d393d87e9d
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
 
 PODFILE CHECKSUM: fe0e1ee7f3d1f7d00b11b474b62dd62134535aea

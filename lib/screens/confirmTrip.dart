@@ -199,8 +199,8 @@ class ConfirmTripState extends State<ConfirmTrip> {
   // when _tripConfirming is called, status will be one of the following:
   // paymentFailed - error was thrown
   // waitingConfirmation - very unlikely. Will only throw if
-  //      request is unauthenticated (not the case) or there's no active
-  //      trip request (not the case)
+  //      request is unauthenticated (not the case), the client doenst exist on
+  //      database (probably not the case), or there's no active trip request (not the case)
   // noPartnersAvailable - all partners are busy or timed out because no partner
   ///     accepted the request
   // waitingPartner - request succeded! We should start listening for

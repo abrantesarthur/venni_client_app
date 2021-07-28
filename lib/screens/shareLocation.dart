@@ -5,6 +5,7 @@ import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/appButton.dart';
+import 'package:system_settings/system_settings.dart';
 
 class ShareLocationArguments {
   String push;
@@ -69,11 +70,11 @@ class ShareLocationState extends State<ShareLocation> {
               borderRadius: 10.0,
               textData: "Abrir Configurações",
               onTapCallBack: () async {
-                Position userPos = await user.getPosition();
-                await user.getGeocoding(userPos);
                 setState(() {
                   reload = true;
                 });
+                await SystemSettings.location();
+                
               },
             ),
     );

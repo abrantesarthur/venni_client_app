@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rider_frontend/config/config.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/partner.dart';
@@ -70,6 +71,7 @@ class _AppState extends State<App> {
   FirebaseDatabase firebaseDatabase;
   FirebaseStorage firebaseStorage;
   FirebaseFunctions firebaseFunctions;
+  FirebaseMessaging firebaseMessaging;
   Future<void> initializationFinished;
 
   @override
@@ -125,6 +127,7 @@ class _AppState extends State<App> {
     firebaseDatabase = FirebaseDatabase.instance;
     firebaseStorage = FirebaseStorage.instance;
     firebaseFunctions = FirebaseFunctions.instance;
+    firebaseMessaging = FirebaseMessaging.instance;
 
     // check if cloud functions are being emulated locally
     if (AppConfig.env.values.emulateCloudFunctions) {
@@ -144,6 +147,7 @@ class _AppState extends State<App> {
       firebaseDatabase: firebaseDatabase,
       firebaseStorage: firebaseStorage,
       firebaseFunctions: firebaseFunctions,
+      firebaseMessaging: firebaseMessaging,
     );
 
     // initialize models

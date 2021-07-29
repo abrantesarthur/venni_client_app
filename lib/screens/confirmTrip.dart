@@ -73,7 +73,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
 
     // kickOff timer after tree has been built to avoid exceptions
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.timer.kickOff(durationSeconds: 30);
+      widget.timer.kickOff(durationSeconds: 35);
     });
 
     super.initState();

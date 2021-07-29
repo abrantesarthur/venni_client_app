@@ -9,7 +9,6 @@ class GoBackScaffold extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   final bool resizeToAvoidBottomInset;
   final String title;
-  final bool lockScreen;
   final IconData goBackIcon;
   final TextStyle titleStyle;
   final VoidCallback onPressed;
@@ -19,7 +18,6 @@ class GoBackScaffold extends StatelessWidget {
     this.crossAxisAlignment,
     this.resizeToAvoidBottomInset,
     this.title,
-    this.lockScreen,
     this.goBackIcon,
     this.titleStyle,
     this.onPressed,
@@ -39,12 +37,10 @@ class GoBackScaffold extends StatelessWidget {
               children: [
                 GoBackButton(
                   icon: goBackIcon,
-                  onPressed: lockScreen != null && lockScreen
-                      ? () {}
-                      : onPressed ??
-                          () {
-                            Navigator.pop(context);
-                          },
+                  onPressed: onPressed ??
+                      () {
+                        Navigator.pop(context);
+                      },
                 ),
                 Spacer(),
               ],

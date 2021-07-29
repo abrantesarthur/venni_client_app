@@ -7,10 +7,16 @@ import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
-import 'package:rider_frontend/widgets/yesNoDialog.dart';
 
-class Settings extends StatelessWidget {
+class Settings extends StatefulWidget {
   static const String routeName = "Settings";
+
+  @override
+  SettingsState createState() => SettingsState();
+}
+
+class SettingsState extends State<Settings> {
+  bool lockScreen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +25,14 @@ class Settings extends StatelessWidget {
         Provider.of<FirebaseModel>(context, listen: false);
     return GoBackScaffold(
       title: "Configurações",
+      onPressed: lockScreen ? () {} : () => Navigator.pop(context),
       children: [
         BorderlessButton(
-          onTap: () {
-            Navigator.pushNamed(context, Profile.routeName);
-          },
+          onTap: lockScreen
+              ? () {}
+              : () {
+                  Navigator.pushNamed(context, Profile.routeName);
+                },
           iconLeft: Icons.account_circle_rounded,
           iconLeftSize: 26,
           primaryText: "Perfil",
@@ -33,9 +42,11 @@ class Settings extends StatelessWidget {
         ),
         Divider(thickness: 0.1, color: Colors.black),
         BorderlessButton(
-          onTap: () {
-            Navigator.pushNamed(context, Privacy.routeName);
-          },
+          onTap: lockScreen
+              ? () {}
+              : () {
+                  Navigator.pushNamed(context, Privacy.routeName);
+                },
           iconLeft: Icons.lock_rounded,
           iconLeftSize: 26,
           primaryText: "Privacidade",
@@ -47,15 +58,20 @@ class Settings extends StatelessWidget {
         Padding(
           padding: EdgeInsets.only(top: screenHeight / 80),
           child: GestureDetector(
-            onTap: () {
-              showYesNoDialog(
-                context,
-                title: "Deseja sair?",
-                onPressedYes: () async {
-                  await firebase.auth.signOut();
-                },
-              );
-            },
+            onTap: lockScreen
+                ? () {}
+                : () {
+                    showYesNoDialog(
+                      context,
+                      title: "Deseja sair?",
+                      onPressedYes: () async {
+                        setState(() {
+                          lockScreen = true;
+                        });
+                        await firebase.auth.signOut();
+                      },
+                    );
+                  },
             child: Text(
               "Sair",
               style: TextStyle(

@@ -29,11 +29,6 @@ import 'package:rider_frontend/widgets/inProgressWidget.dart';
 import 'package:rider_frontend/widgets/requestTripWidgets.dart';
 import 'package:rider_frontend/widgets/unpaidTripWidget.dart';
 import 'package:rider_frontend/widgets/waitingPartnerWidget.dart';
-import 'package:system_settings/system_settings.dart';
-
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
-}
 
 class HomeArguments {
   final FirebaseModel firebase;
@@ -148,6 +143,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
         // Any time the token refreshes, store this in the database too.
         FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToDatabase);
+
+        // FirebaseMessaging.onMessage.listen((RemoteMessage event) {
+        //   print("message recieved");
+        //   print(event.notification.body);
+        // });
+        // FirebaseMessaging.onMessageOpenedApp.listen((message) {
+        //   print('Message clicked!');
+        // });
       } catch (_) {}
     });
   }

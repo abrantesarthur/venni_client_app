@@ -397,7 +397,7 @@ class RatePartnerState extends State<RatePartner> {
                                       BorderlessButton(
                                         onTap: () => selectFeedback(
                                             FeedbackComponent.safety_went_well),
-                                        primaryText: "Segurança ao partnerar.",
+                                        primaryText: "Segurança ao pilotar.",
                                         iconRight: _safetyIcon,
                                         iconRightColor: AppColor.primaryPink,
                                         primaryTextSize: 15,

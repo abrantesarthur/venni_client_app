@@ -15,7 +15,7 @@ class CashDetail extends StatelessWidget {
               "Assim, o pagamento é feito automaticamente e com segurança. " +
               "Caso opte por pagamentos em dinheiro, o " +
               "valor a ser pago será mostrado ao final da corrida para você " +
-              "e para o partner. Garanta que você tenha troco!",
+              "e para o(a) parceiro(a). Garanta que você tenha troco!",
           style: TextStyle(color: AppColor.disabled),
         ),
       ],

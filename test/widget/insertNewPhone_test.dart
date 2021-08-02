@@ -67,7 +67,6 @@ void main() {
           break;
         case "verificationFailed":
           {
-            print("VERIFICATIONFAILED");
             String errorMsg =
                 mockFirebaseAuth.verificationFailedCallback(exception);
             insertNewPhoneState.setInactiveState(message: errorMsg);

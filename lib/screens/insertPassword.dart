@@ -219,7 +219,6 @@ class InsertPasswordState extends State<InsertPassword> {
     FirebaseModel firebase,
     UserModel user,
   ) async {
-    print("registerUSER");
     // if user already has a partner account
     if (firebase.isRegistered) {
       // make sure they've entered a correct password
@@ -326,7 +325,6 @@ class InsertPasswordState extends State<InsertPassword> {
         ),
       ),
       onPressedYes: () {
-        print("pressed yes");
         // dismiss dialog
         Navigator.pop(context);
         setState(() {

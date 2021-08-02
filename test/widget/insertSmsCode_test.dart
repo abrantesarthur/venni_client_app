@@ -312,8 +312,8 @@ void main() {
       await tester.pump();
 
       // after tapping button, verifySmsCode is called and sets the following state
-      expect(insertSmsState.circularButtonCallback, isNull);
       expect(insertSmsState.warningMessage, isNull);
+      expect(insertSmsState.circularButtonCallback, isNull);
     });
 
     testWidgets("pushes Home screen when user has client account",

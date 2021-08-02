@@ -179,12 +179,14 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
     FirebaseAuth firebaseAuth,
     FirebaseDatabase firebaseDatabase,
   ) async {
+    print("buttonCallback");
     // ensure user is connected to the internet
     ConnectivityModel connectivity = Provider.of<ConnectivityModel>(
       context,
       listen: false,
     );
     if (!connectivity.hasConnection) {
+      print("no connection");
       await connectivity.alertWhenOffline(
         context,
         message: "Conecte-se à internet para alterar o número de telefone.",
@@ -192,6 +194,7 @@ class InsertNewPhoneState extends State<InsertNewPhone> {
       return;
     }
     if (phoneNumber != null) {
+      print("phoneNumber != null");
       if (phoneNumber.withCountryCode() ==
           firebaseAuth.currentUser.phoneNumber) {
         // only alter phone number if new number is different

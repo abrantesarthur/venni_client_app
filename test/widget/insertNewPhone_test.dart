@@ -67,6 +67,7 @@ void main() {
           break;
         case "verificationFailed":
           {
+            print("VERIFICATIONFAILED");
             String errorMsg =
                 mockFirebaseAuth.verificationFailedCallback(exception);
             insertNewPhoneState.setInactiveState(message: errorMsg);
@@ -358,13 +359,15 @@ void main() {
 
         // after tapping button, we receive a warning about exception
         final warningFinder = find.byType(Warning);
+        expect(warningFinder, findsOneWidget);
         expect(
-            tester.firstWidget(warningFinder),
-            isA<Warning>().having(
-              (w) => w.message,
-              "message",
-              equals(warningMessage),
-            ));
+          tester.firstWidget(warningFinder),
+          isA<Warning>().having(
+            (w) => w.message,
+            "message",
+            equals(warningMessage),
+          ),
+        );
       });
     }
 

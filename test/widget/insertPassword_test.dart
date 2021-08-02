@@ -288,8 +288,14 @@ void main() {
       // expect registrationErrorWarnings to be null
       expect(insertPasswordState.registrationErrorWarnings, isNull);
 
-      // simulate tapping button to register the user
+      // tap circular button to show dialog
       await tester.tap(find.byType(CircularButton));
+      await tester.pump();
+
+      // simulate tapping 'sim' button to register the user
+      final yesButtonFinder = find.widgetWithText(TextButton, "sim");
+      expect(yesButtonFinder, findsOneWidget);
+      await tester.tap(yesButtonFinder);
       await tester.pump();
 
       // expect registrationErrorWarnings not to be null
@@ -361,6 +367,12 @@ void main() {
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
 
+      // simulate tapping 'sim' button to register the user
+      final yesButtonFinder = find.widgetWithText(TextButton, "sim");
+      expect(yesButtonFinder, findsOneWidget);
+      await tester.tap(yesButtonFinder);
+      await tester.pump();
+
       // expect successfullyRegisteredUser to be a future  bool
       expect(
           insertPasswordState.successfullyRegisteredUser, isA<Future<bool>>());
@@ -412,9 +424,15 @@ void main() {
       // before tapping, expect successfullyRegisteredUser to be null
       expect(insertPasswordState.successfullyRegisteredUser, isNull);
 
-      // tap button
+      // tap button to show dialog
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
+
+      // simulate tapping 'sim' button to register the user
+      final yesButtonFinder = find.widgetWithText(TextButton, "sim");
+      expect(yesButtonFinder, findsOneWidget);
+      await tester.tap(yesButtonFinder);
+      await tester.pump();
 
       // expect successfullyRegisteredUser to be a future  bool
       expect(
@@ -466,9 +484,15 @@ void main() {
       // verify that user was not deleted yet
       verifyNever(mockUser.delete());
 
-      // simulate tapping button to register the user
+      // simulate tapping button to show dialog
       await tester.tap(find.byType(CircularButton));
       await tester.pumpAndSettle();
+
+      // simulate tapping 'sim' button to register the user
+      final yesButtonFinder = find.widgetWithText(TextButton, "sim");
+      expect(yesButtonFinder, findsOneWidget);
+      await tester.tap(yesButtonFinder);
+      await tester.pump();
 
       // verify that user was deleted
       verify(mockUser.delete()).called(1);

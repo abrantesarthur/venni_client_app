@@ -1,8 +1,12 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rider_frontend/models/firebase.dart';
+import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/screens/ratePartner.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseAnalytics.dart';
 
 extension AppFirebaseFunctions on FirebaseFunctions {
   Future<Trip> _doTrip({
@@ -39,11 +43,26 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     );
   }
 
-  Future<Trip> cancelTrip() async {
-    return this._doTrip(functionName: "trip-client_cancel");
+  Future<Trip> cancelTrip(BuildContext context) async {
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+    Trip t;
+    try {
+      t = await this._doTrip(functionName: "trip-client_cancel");
+      // log event
+      try {
+        await firebase.analytics.logClientCancelTrip();
+      } catch (e) {}
+    } catch (e) {
+      throw e;
+    }
+    return t;
   }
 
-  Future<ConfirmTripResult> confirmTrip({String cardID}) async {
+  Future<ConfirmTripResult> confirmTrip({
+    @required TripModel trip,
+    @required FirebaseModel firebase,
+    @required String cardID,
+  }) async {
     Map data = {};
     if (cardID != null) {
       data["card_id"] = cardID;
@@ -51,6 +70,17 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     HttpsCallableResult result =
         await this.httpsCallable("trip-confirm").call(data);
     if (result != null && result.data != null) {
+      // log event
+      try {
+        await firebase.analytics.logClientConfirmTrip(
+          distance: trip.distanceMeters,
+          price: trip.farePrice,
+          paymentMethod: cardID != null
+              ? PaymentMethodType.credit_card
+              : PaymentMethodType.cash,
+        );
+      } catch (_) {}
+
       return ConfirmTripResult.fromJson(result.data);
     }
     return null;
@@ -119,11 +149,14 @@ extension AppFirebaseFunctions on FirebaseFunctions {
   }
 
   Future<void> ratePartner({
+    BuildContext context,
     @required String partnerID,
     @required int score,
     Map<FeedbackComponent, bool> feedbackComponents,
     String feedbackMessage,
   }) async {
+    FirebaseModel firebase = Provider.of<FirebaseModel>(context, listen: false);
+
     // build argument
     Map<String, dynamic> args = {
       "partner_id": partnerID,
@@ -147,6 +180,9 @@ extension AppFirebaseFunctions on FirebaseFunctions {
     }
     try {
       await this.httpsCallable("trip-rate_partner").call(args);
+
+      // log event
+      await firebase.analytics.logClientRatePartner(score);
     } catch (_) {}
   }
 

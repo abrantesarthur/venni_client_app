@@ -50,6 +50,11 @@ extension AppFirebaseAuth on FirebaseAuth {
 
       // if user already has a client account
       if (user.id != null && firebase.isRegistered) {
+        // log event
+        try {
+          await firebase.analytics.logLogin();
+        } catch (_) {}
+
         // try downloading any possible current trips
         try {
           await trip.downloadData(notify: false);

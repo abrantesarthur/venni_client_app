@@ -25,6 +25,17 @@ extension PaymentMethodTypeExtension on PaymentMethodType {
         return null;
     }
   }
+
+  String getString() {
+    switch (this) {
+      case PaymentMethodType.credit_card:
+        return "credit_card";
+      case PaymentMethodType.cash:
+        return "cash";
+      default:
+        return "";
+    }
+  }
 }
 
 class ClientPaymentMethod {

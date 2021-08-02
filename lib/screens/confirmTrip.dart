@@ -17,6 +17,7 @@ import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/interfaces.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
+import 'package:rider_frontend/vendors/firebaseAnalytics.dart';
 import 'package:rider_frontend/vendors/firebaseStorage.dart';
 import 'package:rider_frontend/vendors/geocoding.dart';
 
@@ -137,7 +138,11 @@ class ConfirmTripState extends State<ConfirmTrip> {
         PaymentMethodType.credit_card) {
       cardID = widget.user.defaultPaymentMethod.creditCardID;
     }
-    return await widget.firebase.functions.confirmTrip(cardID: cardID);
+    return await widget.firebase.functions.confirmTrip(
+      trip: widget.trip,
+      firebase: widget.firebase,
+      cardID: cardID,
+    );
   }
 
   @override
@@ -223,7 +228,7 @@ class ConfirmTripState extends State<ConfirmTrip> {
           // cancel trip and show failure message . Otherwise, we would
           // rebuild the tree the same way as it was when we tapped confirmar.
           try {
-            firebase.functions.cancelTrip();
+            firebase.functions.cancelTrip(context);
           } catch (_) {}
           trip.clear();
           partner.clear();
@@ -234,6 +239,16 @@ class ConfirmTripState extends State<ConfirmTrip> {
           );
         } else {
           trip.updateStatus(tripStatus);
+        }
+
+        // log event if no partner was found
+        if (tripStatus == TripStatus.noPartnersAvailable) {
+          await firebase.analytics.logPartnerNotFound();
+        }
+
+        // log event if payment method failed
+        if (tripStatus == TripStatus.paymentFailed) {
+          await firebase.analytics.logCreditCardPaymentFailed();
         }
       } catch (_) {}
       return;
@@ -250,6 +265,9 @@ class ConfirmTripState extends State<ConfirmTrip> {
         );
         partner.updateProfileImage(img, notify: false);
       }
+
+      // log event
+      await firebase.analytics.logPartnerFound();
     }
 
     // update trip status

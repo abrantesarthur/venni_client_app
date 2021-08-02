@@ -49,6 +49,7 @@ import 'package:rider_frontend/screens/splash.dart';
 import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/screens/pickMapLocation.dart';
 import 'package:rider_frontend/vendors/places.dart';
+import 'package:rider_frontend/vendors/firebaseAnalytics.dart';
 
 /**
  * https://github.com/flutter/flutter/issues/41383#issuecomment-549432413
@@ -161,6 +162,15 @@ class _AppState extends State<App> {
     partner = PartnerModel();
     connectivity = ConnectivityModel();
     timer = TimerModel();
+  }
+
+  Future<void> logEvents() async {
+    try {
+      await Future.wait([
+        firebaseAnalytics.logAppOpen(),
+        firebaseAnalytics.setClientUserProperty(),
+      ]);
+    } catch (_) {}
   }
 
   Future<void> initializeUser() async {

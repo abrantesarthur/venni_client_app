@@ -144,13 +144,12 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         // Any time the token refreshes, store this in the database too.
         FirebaseMessaging.instance.onTokenRefresh.listen(saveTokenToDatabase);
 
-        // FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-        //   print("message recieved");
-        //   print(event.notification.body);
-        // });
-        // FirebaseMessaging.onMessageOpenedApp.listen((message) {
-        //   print('Message clicked!');
-        // });
+        // log events
+        try {
+          await Future.wait([
+            widget.firebase.analytics.logAppOpen(),
+          ]);
+        } catch (_) {}
       } catch (_) {}
     });
   }

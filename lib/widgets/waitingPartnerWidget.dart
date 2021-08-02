@@ -13,7 +13,6 @@ import 'package:rider_frontend/widgets/cancelButton.dart';
 import 'package:rider_frontend/widgets/circularImage.dart';
 import 'package:rider_frontend/widgets/floatingCard.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
-import 'package:rider_frontend/widgets/yesNoDialog.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 
 class WaitingPartnerWidget extends StatelessWidget {
@@ -70,7 +69,7 @@ class WaitingPartnerWidget extends StatelessWidget {
             }
             // cancel trip and update trip and partner models once it succeeds
             try {
-              firebase.functions.cancelTrip();
+              firebase.functions.cancelTrip(context);
             } catch (_) {}
             // update models
             trip.clear(status: TripStatus.cancelledByClient);

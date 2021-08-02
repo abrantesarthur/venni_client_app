@@ -481,6 +481,7 @@ class RatePartnerState extends State<RatePartner> {
                             // call rate Partner
                             try {
                               firebase.functions.ratePartner(
+                                context: context,
                                 partnerID: partner.id,
                                 score: _rate,
                                 feedbackComponents: feedbackComponents,

@@ -83,7 +83,7 @@ class ConfirmTripWidget extends StatelessWidget {
             }
             // cancel trip and update trip and partner models once it succeeds
             try {
-              firebase.functions.cancelTrip();
+              firebase.functions.cancelTrip(context);
             } catch (_) {}
             // update models
             trip.clear(status: TripStatus.cancelledByClient);

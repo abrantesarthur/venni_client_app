@@ -251,6 +251,11 @@ class InsertPasswordState extends State<InsertPassword> {
         // we enforce a variant that, by the time Home is pushed, user model
         // must be already populated
         await user.downloadData(firebase);
+
+        // log event
+        try {
+          await firebase.analytics.logSignUp(signUpMethod: "phoneNubmer");
+        } catch (e) {}
         return true;
       } catch (e) {
         await handleRegistrationFailure(firebase, e);
@@ -270,6 +275,11 @@ class InsertPasswordState extends State<InsertPassword> {
       // we enforce a variant that, by the time Home is pushed, user model
       // must be already populated
       await user.downloadData(firebase);
+
+      // log event
+      try {
+        await firebase.analytics.logSignUp(signUpMethod: "phoneNubmer");
+      } catch (e) {}
       return true;
     } on FirebaseAuthException catch (e) {
       await handleRegistrationFailure(firebase, e);

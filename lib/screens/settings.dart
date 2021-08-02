@@ -7,6 +7,7 @@ import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/widgets/borderlessButton.dart';
 import 'package:rider_frontend/widgets/goBackScaffold.dart';
+import 'package:rider_frontend/vendors/firebaseAnalytics.dart';
 
 class Settings extends StatefulWidget {
   static const String routeName = "Settings";
@@ -68,7 +69,13 @@ class SettingsState extends State<Settings> {
                         setState(() {
                           lockScreen = true;
                         });
+                        try {
+                          await firebase.analytics.logLogout();
+                        } catch (e) {}
                         await firebase.auth.signOut();
+                         setState(() {
+                          lockScreen = false;
+                        });
                       },
                     );
                   },

@@ -55,6 +55,6 @@
         <!--@arthur added googleMapsApiKey so google maps sdk works-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/googleMapsApiKey" />
+            android:value="AIzaSyDtewMXcgzwFyulh6SkPH7_aMRXRVQDLiA" />
     </application>
 </manifest>

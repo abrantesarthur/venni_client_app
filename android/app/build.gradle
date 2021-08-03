@@ -59,7 +59,7 @@ android {
 
     defaultConfig {
         applicationId "com.venni.client"
-        minSdkVersion 21
+        minSdkVersion 20
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -93,6 +93,10 @@ android {
             resValue "string", "app_name", "Venni"
             resValue "string", "googleMapsApiKey", dartEnvironmentVariables.ANDROID_GOOGLE_MAPS_API_KEY
         }
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
     }
 
 }

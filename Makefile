@@ -79,7 +79,7 @@ build-ipa: check-env
 	$(FLUTTERBUILD) ipa \
 	-v \
 	--obfuscate \
-	--split-debug-info=/rider_app/. \
+	--split-debug-info=./rider_app/. \
 	--flavor prod \
 	--dart-define=IOS_GOOGLE_MAPS_API_KEY=$(IOS_GOOGLE_MAPS_API_KEY) \
 	--dart-define=ANDROID_GOOGLE_MAPS_API_KEY=$(ANDROID_GOOGLE_MAPS_API_KEY) \

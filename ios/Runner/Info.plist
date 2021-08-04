@@ -38,7 +38,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>5</string>
 	<key>DartEnvironmentVariables</key>
 	<string>$(DART_DEFINES)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -51,9 +51,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>O aplicativo precisa de acesso à camera para adicionar foto de perfil.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>A Venni usa a sua localização para melhorar a sua experiência, sugerindo os pontos de partida das suas corridas e te ajudando a se situar no mapa.</string>
+	<string>A Venni usa a sua localização para melhorar a sua experiência, sugerindo os pontos de partida das suas corridas e te ajudando a se localizar no mapa.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>A Venni usa a sua localização para melhorar a sua experiência, sugerindo os pontos de partida das suas corridas e te ajudando a se situar no mapa.</string>
+	<string>A Venni usa a sua localização para melhorar a sua experiência, sugerindo os pontos de partida das suas corridas e te ajudando a se localizar no mapa.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>O aplicativo precisa de acesso à biblioteca de fotos para adicionar foto de perfil.</string>
 	<key>UIBackgroundModes</key>

@@ -64,7 +64,7 @@ rundev: check-dev-env
 run: check-env
 	$(FLUTTERRUN) \
 	-v \
-	--release \
+	--debug \
 	--flavor prod \
 	--dart-define=IOS_GOOGLE_MAPS_API_KEY=$(IOS_GOOGLE_MAPS_API_KEY) \
 	--dart-define=ANDROID_GOOGLE_MAPS_API_KEY=$(ANDROID_GOOGLE_MAPS_API_KEY) \
@@ -90,6 +90,8 @@ build-ipa: check-env
 build-appbundle: check-env
 	$(FLUTTERBUILD) appbundle \
 	-v \
+	--obfuscate \
+	--split-debug-info=./partner_app/. \
 	--flavor prod \
 	--dart-define=IOS_GOOGLE_MAPS_API_KEY=$(IOS_GOOGLE_MAPS_API_KEY) \
 	--dart-define=ANDROID_GOOGLE_MAPS_API_KEY=$(ANDROID_GOOGLE_MAPS_API_KEY) \

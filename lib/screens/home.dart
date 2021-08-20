@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
+import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/confirmTripWidget.dart';
@@ -237,6 +239,13 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
             }
 
             await firebase.requestNotifications(context);
+
+            // on android, workaround the google maps issue of not displaying the
+            // maps after phone being in background for a while by. See here:
+            // https://stackoverflow.com/questions/59374010/flutter-googlemap-is-blank-after-resuming-from-background/59435683#59435683
+            if (Platform.isAndroid) {
+              widget.googleMaps.rebuild();
+            }
           };
         }
 

@@ -333,4 +333,16 @@ class GoogleMapsModel extends ChangeNotifier {
     _markers.add(firstMarker);
     _markers.add(secondMarker);
   }
+
+  // rebuild triggers a map rebuild by notifying listeners. This is used as a
+  // workaround on an android issue that hides the map from view if the app
+  // stays on background for a long time
+  void rebuild() {
+    if (_googleMapController != null) {
+      _googleMapController.setMapStyle('[]');
+      notifyListeners();
+      _googleMapController.setMapStyle(_mapStyle);
+      notifyListeners();
+    }
+  }
 }

@@ -16,6 +16,7 @@ Widget buildPlacePicker({
   @required bool isDropOff,
   VoidCallback callback,
 }) {
+  print(AppConfig.env.values.googleMapsApiKey);
   return PlacePicker(
     onMapCreated: (GoogleMapController c) async {
       await _moveCameraToAddress(c, initialAddress);

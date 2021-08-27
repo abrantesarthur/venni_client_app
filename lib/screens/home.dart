@@ -23,7 +23,6 @@ import 'package:rider_frontend/screens/start.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 import 'package:rider_frontend/vendors/firebaseFunctions/interfaces.dart';
-import 'package:rider_frontend/vendors/firebaseFunctions/methods.dart';
 import 'package:rider_frontend/vendors/firebaseDatabase/methods.dart';
 import 'package:rider_frontend/vendors/geolocator.dart';
 import 'package:rider_frontend/widgets/confirmTripWidget.dart';
@@ -87,7 +86,8 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     // asks them to reshare. The function is only defined once the tree has been
     // built though, to avoid exceptions of trying to ask for location permission
     // simultaneously. After all, we already ask for them in initState.
-    if (didChangeAppLifecycleCallback != null) {
+    if (didChangeAppLifecycleCallback != null &&
+        state == AppLifecycleState.resumed) {
       didChangeAppLifecycleCallback();
     }
   }
@@ -109,7 +109,6 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
 
     // add listeners after tree is built and we have context
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // after finishing _getUserPosition,
       userPositionFuture.then((position) async {
         if (position != null) {
           // user retrieved lat and lng to set maps camera view. notifying is
@@ -177,7 +176,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     final screenWidth = MediaQuery.of(context).size.width;
     TripModel trip = Provider.of<TripModel>(context, listen: false);
     UserModel user = Provider.of<UserModel>(context, listen: false);
-    GoogleMapsModel googleMaps = Provider.of<GoogleMapsModel>(context);
+    PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
     FirebaseModel firebase = Provider.of<FirebaseModel>(context);
     ConnectivityModel connectivity = Provider.of<ConnectivityModel>(context);
 
@@ -190,12 +189,14 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         // download user data
         try {
           user.downloadData(firebase);
-          trip.downloadData();
+          trip.downloadData(firebase, partner);
         } catch (e) {}
         // save fcm token to database
         firebase.messaging.getToken().then(
               (token) => saveTokenToDatabase(token),
             );
+        // update user position
+        _getUserPosition();
       }
     }
 
@@ -232,12 +233,21 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
         // so if user stops sharing location or disable notificatoin, we will know.
         if (didChangeAppLifecycleCallback == null) {
           didChangeAppLifecycleCallback = () async {
+            Position userPos;
             try {
-              await determineUserPosition();
-            } catch (e) {
+              userPos = await determineUserPosition();
+              if (userPos != null) {
+                // if user has not stopped sharing location, call handlePositionUpdates so
+                // we are sure we're listening to location updates, just in case the OS
+                // decided to kill the process while the app was in the background.
+                widget.user.handlePositionUpdates();
+              }
+            } catch (_) {
+              // if user stopped sharing location, trigger getUserPosition
               _getUserPosition();
             }
 
+            // ask user to reactivate notificaitons if they stopped them
             await firebase.requestNotifications(context);
 
             // on android, workaround the google maps issue of not displaying the
@@ -254,32 +264,33 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
           drawer: Menu(),
           body: Stack(
             children: [
-              GoogleMap(
-                myLocationButtonEnabled: googleMaps.myLocationButtonEnabled,
-                myLocationEnabled: googleMaps.myLocationEnabled,
-                trafficEnabled: false,
-                zoomControlsEnabled: false,
-                mapType: MapType.normal,
-                initialCameraPosition: CameraPosition(
-                  target: googleMaps.initialCameraLatLng ??
-                      LatLng(-17.217600, -46.874621), // defaults to paracatu
-                  zoom: googleMaps.initialZoom ?? 16.5,
-                ),
-                padding: EdgeInsets.only(
-                  top: googleMaps.googleMapsTopPadding ?? screenHeight / 12,
-                  bottom:
-                      googleMaps.googleMapsBottomPadding ?? screenHeight / 8.5,
-                  left: screenWidth / 20,
-                  right: screenWidth / 20,
-                ),
-                onMapCreated: (c) async {
-                  await googleMaps.onMapCreatedCallback(c, notify: false);
-                  // call _redrawUIOnTripUpdate so UI is updated only when maps is ready
-                  await _redrawUIOnTripUpdate(context);
-                },
-                polylines: Set<Polyline>.of(googleMaps.polylines.values),
-                markers: googleMaps.markers,
-              ),
+              Consumer<GoogleMapsModel>(builder: (context, g, _) {
+                return GoogleMap(
+                  myLocationButtonEnabled: g.myLocationButtonEnabled,
+                  myLocationEnabled: g.myLocationEnabled,
+                  trafficEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapType: MapType.normal,
+                  initialCameraPosition: CameraPosition(
+                    target: g.initialCameraLatLng ??
+                        LatLng(-17.217600, -46.874621), // defaults to paracatu
+                    zoom: g.initialZoom ?? 16.5,
+                  ),
+                  padding: EdgeInsets.only(
+                    top: g.googleMapsTopPadding ?? screenHeight / 12,
+                    bottom: g.googleMapsBottomPadding ?? screenHeight / 8.5,
+                    left: screenWidth / 20,
+                    right: screenWidth / 20,
+                  ),
+                  onMapCreated: (c) async {
+                    await g.onMapCreatedCallback(c, notify: false);
+                    // call _redrawUIOnTripUpdate so UI is updated only when maps is ready
+                    await _redrawUIOnTripUpdate(context);
+                  },
+                  polylines: Set<Polyline>.of(g.polylines.values),
+                  markers: g.markers,
+                );
+              }),
               Consumer<UserModel>(builder: (context, u, _) {
                 return Stack(
                   children: [
@@ -362,7 +373,7 @@ class HomeState extends State<Home> with WidgetsBindingObserver {
     // if we could get position, make sure to resubscribe to position changes
     // again, as the subscription may have been cancelled if user stopped
     // sharing location.
-    widget.user.updateGeocodingOnPositionChange();
+    widget.user.handlePositionUpdates();
     return pos;
   }
 

@@ -8,6 +8,7 @@ import 'package:rider_frontend/widgets/arrowBackButton.dart';
 import 'package:rider_frontend/widgets/circularButton.dart';
 import 'package:rider_frontend/widgets/overallPadding.dart';
 import 'package:rider_frontend/widgets/warning.dart';
+import 'package:rider_frontend/utils/utils.dart';
 
 class InsertNameArguments {
   final UserCredential userCredential;
@@ -90,9 +91,9 @@ class InsertNameState extends State<InsertName> {
       InsertPassword.routeName,
       arguments: InsertPasswordArguments(
           userCredential: widget.userCredential,
-          name: nameTextEditingController.text,
-          surname: surnameTextEditingController.text,
-          userEmail: widget.userEmail),
+          name: nameTextEditingController.text.trim().capitalize,
+          surname: surnameTextEditingController.text.trim().capitalize,
+          userEmail: widget.userEmail.trim()),
     );
   }
 

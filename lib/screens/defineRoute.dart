@@ -138,7 +138,19 @@ class DefineRouteState extends State<DefineRoute> {
     return GoBackScaffold(
       resizeToAvoidBottomInset: false,
       lockScreen: lockScreen,
-      onPressed: () => Navigator.pop(context, true),
+      onPressed: () {
+        // if user is not accessing this screen in 'edit' mode, clear pickUp and
+        // dropOff points if they pop back to the previous screen. This way, when
+        // they reopen this screen the next time around, "Localização atual selecionada"
+        // will show up and correclty display their current location, as opposed ot
+        // it not showing up and a previous current location being preselected as
+        // their pickUP point
+        if (widget.mode == DefineRouteMode.request) {
+          widget.trip.updatePickUpAddres(null);
+          widget.trip.updateDropOffAddres(null);
+        }
+        Navigator.pop(context, true);
+      },
       children: [
         Text(
           "Escolha o ponto de partida e o destino.",

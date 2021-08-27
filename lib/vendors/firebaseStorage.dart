@@ -1,22 +1,28 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as i;
 import 'package:image_picker/image_picker.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io' as dartIo;
 
+import 'package:rider_frontend/utils/utils.dart';
+
 extension AppFirebaseStorage on FirebaseStorage {
   void putProfileImage({
     @required String uid,
-    @required PickedFile img,
+    @required XFile img,
   }) {
+    // resize image before uploading it to firebase
+    dartIo.File imgFile = resizeImage(img.path, 500);
+
     try {
       this
           .ref()
           .child("client-photos")
           .child(uid)
           .child("profile" + path.extension(img.path))
-          .putFile(dartIo.File(img.path));
+          .putFile(imgFile);
     } catch (e) {}
   }
 

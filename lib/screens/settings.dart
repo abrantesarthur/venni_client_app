@@ -73,7 +73,7 @@ class SettingsState extends State<Settings> {
                           await firebase.analytics.logLogout();
                         } catch (e) {}
                         await firebase.auth.signOut();
-                         setState(() {
+                        setState(() {
                           lockScreen = false;
                         });
                       },
@@ -88,6 +88,14 @@ class SettingsState extends State<Settings> {
             ),
           ),
         ),
+        Spacer(),
+        Center(
+          child: Text("versão 1.1.0+4",
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColor.disabled,
+              )),
+        )
       ],
     );
   }

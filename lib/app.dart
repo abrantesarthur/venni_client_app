@@ -101,6 +101,13 @@ class _AppState extends State<App> {
       );
     }
     initializeModels();
+
+    // throw error if there is no connection, so Start screen can be pushed
+    bool hasConnection = await connectivity.checkConnection();
+    if (!hasConnection) {
+      throw FirebaseAuthException(code: "network-error");
+    }
+
     // download user data so we can know whether client has an account and
     // decide to push Start or Home screens
     try {
@@ -177,8 +184,8 @@ class _AppState extends State<App> {
     // download client and trip data
     await user.downloadData(firebaseModel, notify: false);
     await tripModel.downloadData(
-      firebase: firebaseModel,
-      partner: partner,
+      firebaseModel,
+      partner,
       notify: false,
     );
   }
@@ -261,7 +268,8 @@ class _AppState extends State<App> {
                 initialRoute: !firebase.isRegistered ||
                         user.id == null ||
                         (snapshot.hasError &&
-                            error.code == "user-initialization-error")
+                            (error.code == "user-initialization-error" ||
+                                error.code == "network-error"))
                     ? Start.routeName
                     : Home.routeName,
                 // pass appropriate arguments to routes

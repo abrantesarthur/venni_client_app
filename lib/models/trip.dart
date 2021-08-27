@@ -144,9 +144,9 @@ class TripModel extends ChangeNotifier {
   }
 
   // downloadData sends requests to download data about current trips and partner
-  Future<void> downloadData({
+  Future<void> downloadData(
     FirebaseModel firebase,
-    PartnerModel partner,
+    PartnerModel partner, {
     bool notify = true,
   }) async {
     Trip trip;
@@ -164,7 +164,7 @@ class TripModel extends ChangeNotifier {
     // wait a little bit and try again
     if (trip.tripStatus == TripStatus.waitingPayment) {
       await Future.delayed(Duration(milliseconds: 500));
-      return downloadData(firebase: firebase, partner: partner, notify: notify);
+      return downloadData(firebase, partner, notify: notify);
     }
 
     // if trip has already been completed, clear the model

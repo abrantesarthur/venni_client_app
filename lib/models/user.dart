@@ -166,16 +166,16 @@ class UserModel extends ChangeNotifier {
     }
   }
 
-  // updates user geocoding whenever they move at least 50 meters
-  void updateGeocodingOnPositionChange() {
+  // updates user geocoding whenever they move at least 5 meters
+  void handlePositionUpdates() {
     try {
       Stream<Position> userPositionStream = Geolocator.getPositionStream(
         desiredAccuracy: LocationAccuracy.best,
-        distanceFilter: 50,
+        distanceFilter: 10,
       );
       // cancel previous subscription if it exists
       cancelPositionChangeSubscription();
-      // subscribe to changes in position, updating position and gocoding on changes
+      // subscribe to changes in position, updating position and geocoding on changes
       _positionSubscription = userPositionStream.listen((position) async {
         _position = position;
         await getGeocoding(position, notify: false);
@@ -200,7 +200,7 @@ class UserModel extends ChangeNotifier {
         geocoding.results.length > 0) {
       geocodingResult = geocoding.results[0];
     }
-    // set user position
+    // set user geocoding
     _geocoding = geocodingResult;
     if (notify) {
       notifyListeners();

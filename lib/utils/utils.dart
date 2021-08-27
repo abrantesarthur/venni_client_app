@@ -8,6 +8,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/widgets/okDialog.dart';
 import 'package:rider_frontend/widgets/yesNoDialog.dart';
+import 'package:image/image.dart' as i;
+import 'dart:io' as dartIo;
 
 enum States {
   AC,
@@ -415,4 +417,21 @@ extension IntExtension on int {
     String month = d.month < 10 ? "0" + d.month.toString() : d.month.toString();
     return day + "/" + month + "/" + d.year.toString();
   }
+}
+
+extension CapExtension on String {
+  String get capitalize => this.length > 0
+      ? '${this[0].toUpperCase()}${this.substring(1).toLowerCase()}'
+      : '';
+}
+
+dartIo.File resizeImage(String path, int width) {
+  // Read an image from file
+  i.Image image = i.decodeImage(dartIo.File(path).readAsBytesSync());
+
+  // Resize the image to a 120x thumbnail (maintaining the aspect ratio).
+  i.Image thumbnail = i.copyResize(image, width: 500);
+
+  // Write resized image back
+  return dartIo.File(path)..writeAsBytesSync(i.encodeJpg(thumbnail));
 }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:rider_frontend/models/connectivity.dart';
 import 'package:rider_frontend/models/firebase.dart';
 import 'package:rider_frontend/models/googleMaps.dart';
+import 'package:rider_frontend/models/partner.dart';
 import 'package:rider_frontend/models/trip.dart';
 import 'package:rider_frontend/models/user.dart';
 import 'package:rider_frontend/screens/home.dart';
@@ -44,6 +45,7 @@ extension AppFirebaseAuth on FirebaseAuth {
         context,
         listen: false,
       );
+      PartnerModel partner = Provider.of<PartnerModel>(context, listen: false);
 
       // try download client data
       await user.downloadData(firebase, notify: false);
@@ -57,7 +59,7 @@ extension AppFirebaseAuth on FirebaseAuth {
 
         // try downloading any possible current trips
         try {
-          await trip.downloadData(notify: false);
+          await trip.downloadData(firebase, partner, notify: false);
         } catch (e) {}
 
         // redirect to Home screen
@@ -103,6 +105,9 @@ extension AppFirebaseAuth on FirebaseAuth {
     } else if (e.code == "too-many-requests") {
       warningMessage =
           "Ops, número de tentativas excedidas. Tente novamente em alguns minutos.";
+    } else if (e.code == "network-request-failed") {
+      warningMessage =
+          "Você está offline. Conecte-se à internet e tente novamente.";
     } else {
       warningMessage = "Ops, algo deu errado. Tente novamente mais tarde.";
     }

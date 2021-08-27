@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.2+3
+version: 1.1.0+4
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -36,6 +36,7 @@ dependencies:
   flutter_credit_card: ^2.0.0
   url_launcher: ^6.0.9
   system_settings: ^2.0.0
+  image: ^3.0.2
   flutter_maps_place_picker:
     git:
       url: git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git

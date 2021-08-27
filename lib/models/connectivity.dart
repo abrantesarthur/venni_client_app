@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:rider_frontend/styles.dart';
 import 'package:rider_frontend/utils/utils.dart';
 
 class ConnectivityModel extends ChangeNotifier {
@@ -17,8 +16,8 @@ class ConnectivityModel extends ChangeNotifier {
     // start listening for connectivity changes
     _connectivity = Connectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged
-        .listen((e) async => await _checkConnection());
-    _checkConnection();
+        .listen((e) async => await checkConnection());
+    checkConnection();
   }
 
   @override
@@ -30,7 +29,7 @@ class ConnectivityModel extends ChangeNotifier {
   }
 
   // checkConnection tests whether there is a connection
-  Future<void> _checkConnection() async {
+  Future<bool> checkConnection() async {
     bool previousHasConnection = _hasConnection;
 
     try {
@@ -48,6 +47,8 @@ class ConnectivityModel extends ChangeNotifier {
     if (previousHasConnection != _hasConnection) {
       notifyListeners();
     }
+
+    return _hasConnection;
   }
 
   Future<void> alertWhenOffline(BuildContext context, {String message}) async {

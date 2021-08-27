@@ -19,13 +19,13 @@ Future<void> _askPermission(
   );
 }
 
-Future<PickedFile> _pickImageFrom(
+Future<XFile> _pickImageFrom(
   BuildContext context,
   ImageSource source,
 ) async {
   // try to get image
   try {
-    PickedFile pickedFile = await ImagePicker().getImage(source: source);
+    XFile pickedFile = await ImagePicker().pickImage(source: source);
     return pickedFile;
   } catch (e) {
     // ask user to update permission in app settings
@@ -37,16 +37,16 @@ Future<PickedFile> _pickImageFrom(
   return null;
 }
 
-Future<PickedFile> pickImageFromGallery(BuildContext context) async {
+Future<XFile> pickImageFromGallery(BuildContext context) async {
   return _pickImageFrom(context, ImageSource.gallery);
 }
 
-Future<PickedFile> pickImageFromCamera(BuildContext context) async {
+Future<XFile> pickImageFromCamera(BuildContext context) async {
   return _pickImageFrom(context, ImageSource.camera);
 }
 
-Future<PickedFile> pickImage(BuildContext context) {
-  return showDialog<PickedFile>(
+Future<XFile> pickImage(BuildContext context) {
+  return showDialog<XFile>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -58,7 +58,7 @@ Future<PickedFile> pickImage(BuildContext context) {
               ListTile(
                 onTap: () async {
                   // get image from gallery
-                  PickedFile img = await pickImageFromGallery(context);
+                  XFile img = await pickImageFromGallery(context);
                   Navigator.pop(context, img);
                 },
                 title: Text("Galeria"),
@@ -71,7 +71,7 @@ Future<PickedFile> pickImage(BuildContext context) {
               ListTile(
                 onTap: () async {
                   // get image from camera
-                  PickedFile img = await pickImageFromCamera(context);
+                  XFile img = await pickImageFromCamera(context);
                   Navigator.pop(context, img);
                 },
                 title: Text("Câmera"),

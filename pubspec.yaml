@@ -40,7 +40,7 @@ dependencies:
   flutter_maps_place_picker:
     git:
       url: git@gitlab.com:arthur_abrantes/flutter_maps_place_picker.git
-      ref: 6323602d551ce66bd18349832ef93f0827683c55
+      ref: 2ae68deb3977fcb17323d4de987b46ef35c7b6b9
 
 dev_dependencies:
   flutter_test:

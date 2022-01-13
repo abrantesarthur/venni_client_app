@@ -7,7 +7,7 @@
 </p>
 <p float="center">
   <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_four.jpg" width="250" />
-  <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_three.jpg" width="250" /> 
+  <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_tree.jpg" width="250" /> 
   <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_six.jpg"  width="250" />
 </p>
 <p float="center">

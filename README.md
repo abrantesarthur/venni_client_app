@@ -3,7 +3,7 @@
 <p float="center">
   <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_one.jpg" width="250" />
   <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_two.jpg" width="250" /> 
-  <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_thee.jpg"  width="250" />
+  <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_tree.jpg"  width="250" />
 </p>
 
 <img src="https://github.com/abrantesarthur/venni_client_app/blob/master/assets/screenshot_four.jpg " alt="screenshot one" width="300">
